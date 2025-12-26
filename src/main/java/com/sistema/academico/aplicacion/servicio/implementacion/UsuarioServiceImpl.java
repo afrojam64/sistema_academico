@@ -33,6 +33,11 @@ public class UsuarioServiceImpl implements IUsuarioService {
             throw new RecursoDuplicadoException("El nombre de usuario ya existe");
         }
 
+        // Validar que el email no exista
+        if (usuarioRepository.existsByEmail(request.getEmail())) {
+            throw new RecursoDuplicadoException("El email ya está registrado");
+        }
+
         // Convertir DTO a Entity
         Usuario usuario = usuarioMapper.toEntity(request);
 

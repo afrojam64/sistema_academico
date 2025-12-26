@@ -19,6 +19,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Buscar usuarios por estado
     List<Usuario> findByEstado(Estado estado);
 
+    /**
+     * Verifica si existe un usuario con el email dado
+     */
+    boolean existsByEmail(String email);
+
     // Buscar usuarios activos
     default List<Usuario> findActivos() {
         return findByEstado(Estado.ACTIVO);

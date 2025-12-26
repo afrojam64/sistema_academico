@@ -1,6 +1,7 @@
 package com.sistema.academico.aplicacion.dto.request;
 
 import com.sistema.academico.dominio.enumeracion.Rol;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,6 +21,10 @@ public class UsuarioRequestDTO {
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String contrasena;
+
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El email debe ser válido")
+    private String email;
 
     @NotNull(message = "El rol es obligatorio")
     private Rol rol;
