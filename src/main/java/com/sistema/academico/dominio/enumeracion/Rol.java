@@ -4,7 +4,8 @@ package com.sistema.academico.dominio.enumeracion;
  * Enumeración que define los roles de usuario en el sistema.
  *
  * Los roles determinan los permisos y accesos que tiene cada usuario:
- * - ADMIN: Acceso total al sistema, puede gestionar todas las entidades
+ * - SUPER_ADMIN: Acceso total incluyendo eliminación física de registros
+ * - ADMIN: Acceso total al sistema, puede gestionar todas las entidades (soft delete)
  * - PROFESOR: Puede ver sus cursos y gestionar calificaciones de sus estudiantes
  * - ESTUDIANTE: Puede ver sus cursos, calificaciones e historial académico
  *
@@ -19,12 +20,25 @@ package com.sistema.academico.dominio.enumeracion;
 public enum Rol {
 
     /**
+     * Rol de Super Administrador del sistema.
+     * Permisos:
+     * - CRUD completo de todas las entidades
+     * - Acceso a todos los reportes y estadísticas
+     * - Gestión de usuarios (crear profesores, estudiantes y administradores)
+     * - Asignación de cursos y materias
+     * - ÚNICO ROL que puede ELIMINAR FÍSICAMENTE registros de la BD (hard delete)
+     * - Puede restaurar registros inactivos
+     */
+    SUPER_ADMIN("Super Administrador", "Control total del sistema con eliminación física"),
+
+    /**
      * Rol de Administrador del sistema.
      * Permisos:
      * - CRUD completo de todas las entidades
      * - Acceso a todos los reportes y estadísticas
      * - Gestión de usuarios (crear profesores y estudiantes)
      * - Asignación de cursos y materias
+     * - Solo puede desactivar registros (soft delete), NO eliminar físicamente
      */
     ADMIN("Administrador", "Control total del sistema"),
 
@@ -35,6 +49,7 @@ public enum Rol {
      * - Registrar y editar calificaciones de sus estudiantes
      * - Ver estadísticas de sus cursos
      * - Consultar lista de estudiantes inscritos en sus cursos
+     * - NO puede eliminar ni desactivar registros
      */
     PROFESOR("Profesor", "Gestión de cursos y calificaciones"),
 
@@ -45,6 +60,7 @@ public enum Rol {
      * - Consultar sus calificaciones
      * - Ver su historial académico y promedio
      * - Consultar información de profesores de sus cursos
+     * - NO puede eliminar ni desactivar registros
      */
     ESTUDIANTE("Estudiante", "Consulta de información académica");
 
@@ -52,39 +68,13 @@ public enum Rol {
     // ATRIBUTOS DEL ENUM
     // =========================================================================
 
-    /**
-     * Nombre legible del rol para mostrar en la interfaz de usuario.
-     * Ejemplo: "Administrador" en lugar de "ADMIN"
-     *
-     * Se usa en:
-     * - Vistas Thymeleaf para mostrar al usuario
-     * - Mensajes de logs
-     * - Reportes
-     */
     private final String nombreMostrar;
-
-    /**
-     * Descripción breve del rol y sus responsabilidades.
-     * Se puede usar en:
-     * - Tooltips en la interfaz
-     * - Páginas de ayuda
-     * - Documentación del sistema
-     */
     private final String descripcion;
 
     // =========================================================================
     // CONSTRUCTOR
     // =========================================================================
 
-    /**
-     * Constructor privado del enum.
-     * Los enums en Java tienen constructores privados por diseño.
-     * No se pueden crear instancias con 'new Rol()', las instancias ya existen
-     * como constantes (ADMIN, PROFESOR, ESTUDIANTE).
-     *
-     * @param nombreMostrar Nombre legible para mostrar en UI
-     * @param descripcion Descripción de las responsabilidades del rol
-     */
     Rol(String nombreMostrar, String descripcion) {
         this.nombreMostrar = nombreMostrar;
         this.descripcion = descripcion;
@@ -94,23 +84,10 @@ public enum Rol {
     // GETTERS
     // =========================================================================
 
-    /**
-     * Obtiene el nombre legible del rol.
-     *
-     * Ejemplo de uso en vista Thymeleaf:
-     * <span th:text="${usuario.rol.nombreMostrar}"></span>
-     *
-     * @return Nombre del rol para mostrar en interfaz (ej: "Administrador")
-     */
     public String getNombreMostrar() {
         return nombreMostrar;
     }
 
-    /**
-     * Obtiene la descripción del rol.
-     *
-     * @return Descripción de las responsabilidades del rol
-     */
     public String getDescripcion() {
         return descripcion;
     }
@@ -120,12 +97,16 @@ public enum Rol {
     // =========================================================================
 
     /**
-     * Verifica si el rol es de tipo ADMIN.
+     * Verifica si el rol es de tipo SUPER_ADMIN.
      *
-     * Útil para validaciones de permisos en el código:
-     * if (usuario.getRol().esAdmin()) {
-     *     // Permitir acceso a funcionalidad administrativa
-     * }
+     * @return true si el rol es SUPER_ADMIN, false en caso contrario
+     */
+    public boolean esSuperAdmin() {
+        return this == SUPER_ADMIN;
+    }
+
+    /**
+     * Verifica si el rol es de tipo ADMIN.
      *
      * @return true si el rol es ADMIN, false en caso contrario
      */
@@ -135,11 +116,6 @@ public enum Rol {
 
     /**
      * Verifica si el rol es de tipo PROFESOR.
-     *
-     * Ejemplo de uso en servicio:
-     * if (usuario.getRol().esProfesor()) {
-     *     return cursoService.obtenerCursosDelProfesor(usuario.getId());
-     * }
      *
      * @return true si el rol es PROFESOR, false en caso contrario
      */
@@ -156,29 +132,39 @@ public enum Rol {
         return this == ESTUDIANTE;
     }
 
+    /**
+     * Verifica si el rol tiene permisos administrativos (SUPER_ADMIN o ADMIN).
+     *
+     * @return true si es SUPER_ADMIN o ADMIN, false en caso contrario
+     */
+    public boolean esAdministrativo() {
+        return this == SUPER_ADMIN || this == ADMIN;
+    }
+
+    /**
+     * Verifica si el rol puede eliminar físicamente registros.
+     * Solo SUPER_ADMIN tiene este permiso.
+     *
+     * @return true si puede hacer hard delete, false en caso contrario
+     */
+    public boolean puedeEliminarFisicamente() {
+        return this == SUPER_ADMIN;
+    }
+
+    /**
+     * Verifica si el rol puede desactivar registros (soft delete).
+     * SUPER_ADMIN y ADMIN tienen este permiso.
+     *
+     * @return true si puede hacer soft delete, false en caso contrario
+     */
+    public boolean puedeDesactivar() {
+        return this == SUPER_ADMIN || this == ADMIN;
+    }
+
     // =========================================================================
     // INTEGRACIÓN CON SPRING SECURITY
     // =========================================================================
 
-    /**
-     * Obtiene el nombre del rol con prefijo "ROLE_" para Spring Security.
-     *
-     * Spring Security internamente maneja los roles con el prefijo "ROLE_".
-     * Este método facilita la integración con las anotaciones de seguridad.
-     *
-     * Ejemplo de transformación:
-     * - ADMIN       → "ROLE_ADMIN"
-     * - PROFESOR    → "ROLE_PROFESOR"
-     * - ESTUDIANTE  → "ROLE_ESTUDIANTE"
-     *
-     * Uso en SecurityConfig:
-     * authorities.add(new SimpleGrantedAuthority(rol.getRolParaSpringSecurity()));
-     *
-     * Uso en anotaciones:
-     * @PreAuthorize("hasRole('ADMIN')") // Spring Security busca ROLE_ADMIN internamente
-     *
-     * @return Nombre del rol con prefijo ROLE_ para usar en Spring Security
-     */
     public String getRolParaSpringSecurity() {
         return "ROLE_" + this.name();
     }
@@ -187,18 +173,6 @@ public enum Rol {
     // MÉTODO TOSTRING
     // =========================================================================
 
-    /**
-     * Método toString personalizado.
-     * Devuelve el nombre legible del rol en lugar del nombre de la constante.
-     *
-     * Comportamiento:
-     * - Sin override: Rol.ADMIN.toString() → "ADMIN"
-     * - Con override:  Rol.ADMIN.toString() → "Administrador"
-     *
-     * Útil cuando se imprime el rol en logs o se usa en mensajes.
-     *
-     * @return Nombre legible del rol
-     */
     @Override
     public String toString() {
         return nombreMostrar;

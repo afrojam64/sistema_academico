@@ -1,0 +1,143 @@
+package com.sistema.academico.aplicacion.servicio.implementacion;
+
+import com.sistema.academico.aplicacion.dto.request.InscripcionRequestDTO;
+import com.sistema.academico.aplicacion.dto.response.InscripcionResponseDTO;
+import com.sistema.academico.aplicacion.mapper.InscripcionMapper;
+import com.sistema.academico.aplicacion.servicio.IInscripcionService;
+import com.sistema.academico.dominio.entidad.Curso;
+import com.sistema.academico.dominio.entidad.Estudiante;
+import com.sistema.academico.dominio.entidad.Inscripcion;
+import com.sistema.academico.dominio.enumeracion.EstadoInscripcion;
+import com.sistema.academico.dominio.enumeracion.Rol;
+import com.sistema.academico.infraestructura.excepcion.DuplicadoException;
+import com.sistema.academico.infraestructura.excepcion.PermisosDenegadosException;
+import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
+import com.sistema.academico.infraestructura.excepcion.ValidacionException;
+import com.sistema.academico.infraestructura.repositorio.CursoRepository;
+import com.sistema.academico.infraestructura.repositorio.EstudianteRepository;
+import com.sistema.academico.infraestructura.repositorio.InscripcionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class InscripcionServiceImpl implements IInscripcionService {
+
+    private final InscripcionRepository inscripcionRepository;
+    private final EstudianteRepository estudianteRepository;
+    private final CursoRepository cursoRepository;
+    private final InscripcionMapper inscripcionMapper;
+
+    @Override
+    @Transactional
+    public InscripcionResponseDTO crear(InscripcionRequestDTO request) {
+        // Validar que el estudiante existe
+        Estudiante estudiante = estudianteRepository.findById(request.getEstudianteId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado"));
+
+        // Validar que el curso existe
+        Curso curso = cursoRepository.findById(request.getCursoId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Curso no encontrado"));
+
+        // Validar que el estudiante no esté ya inscrito
+        if (inscripcionRepository.existsByEstudianteAndCurso(estudiante, curso)) {
+            throw new DuplicadoException("El estudiante ya está inscrito en este curso");
+        }
+
+        // Validar que el curso tenga cupos disponibles
+        if (!curso.tieneCuposDisponibles()) {
+            throw new ValidacionException("El curso no tiene cupos disponibles");
+        }
+
+        Inscripcion inscripcion = inscripcionMapper.toEntity(request, estudiante, curso);
+        Inscripcion guardada = inscripcionRepository.save(inscripcion);
+
+        // Incrementar cupo actual del curso
+        curso.incrementarCupo();
+        cursoRepository.save(curso);
+
+        return inscripcionMapper.toResponseDTO(guardada);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InscripcionResponseDTO obtenerPorId(Long id) {
+        Inscripcion inscripcion = inscripcionRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Inscripción no encontrada con ID: " + id));
+
+        return inscripcionMapper.toResponseDTO(inscripcion);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InscripcionResponseDTO> listarTodas() {
+        return inscripcionRepository.findAll().stream()
+                .map(inscripcionMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InscripcionResponseDTO> listarActivas() {
+        return inscripcionRepository.findByEstado(EstadoInscripcion.ACTIVO).stream()
+                .map(inscripcionMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void retirar(Long id) {
+        Inscripcion inscripcion = inscripcionRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Inscripción no encontrada con ID: " + id));
+
+        if (!inscripcion.puedeRetirar()) {
+            throw new ValidacionException("Esta inscripción no puede ser retirada");
+        }
+
+        inscripcionMapper.updateEstado(inscripcion, EstadoInscripcion.RETIRADO);
+        inscripcionRepository.save(inscripcion);
+
+        // Decrementar cupo actual del curso
+        Curso curso = inscripcion.getCurso();
+        curso.decrementarCupo();
+        cursoRepository.save(curso);
+    }
+
+    @Override
+    @Transactional
+    public void completar(Long id, Rol rolUsuarioActual) {
+        if (!rolUsuarioActual.puedeDesactivar()) {
+            throw new PermisosDenegadosException("No tiene permisos para completar inscripciones");
+        }
+
+        Inscripcion inscripcion = inscripcionRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Inscripción no encontrada con ID: " + id));
+
+        inscripcionMapper.updateEstado(inscripcion, EstadoInscripcion.COMPLETADO);
+        inscripcionRepository.save(inscripcion);
+    }
+
+    @Override
+    @Transactional
+    public void eliminar(Long id, Rol rolUsuarioActual) {
+        if (!rolUsuarioActual.puedeEliminarFisicamente()) {
+            throw new PermisosDenegadosException("Solo SUPER_ADMIN puede eliminar inscripciones físicamente");
+        }
+
+        Inscripcion inscripcion = inscripcionRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Inscripción no encontrada con ID: " + id));
+
+        // Decrementar cupo si está activa
+        if (inscripcion.estaActiva()) {
+            Curso curso = inscripcion.getCurso();
+            curso.decrementarCupo();
+            cursoRepository.save(curso);
+        }
+
+        inscripcionRepository.delete(inscripcion);
+    }
+}
