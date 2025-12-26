@@ -7,8 +7,8 @@ import com.sistema.academico.aplicacion.servicio.IDepartamentoService;
 import com.sistema.academico.dominio.entidad.Departamento;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import com.sistema.academico.dominio.enumeracion.Rol;
-import com.sistema.academico.infraestructura.excepcion.DuplicadoException;
-import com.sistema.academico.infraestructura.excepcion.PermisosDenegadosException;
+import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
+import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
 import com.sistema.academico.infraestructura.repositorio.DepartamentoRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +30,12 @@ public class DepartamentoServiceImpl implements IDepartamentoService {
     public DepartamentoResponseDTO crear(DepartamentoRequestDTO request) {
         // Validar que el código no exista
         if (departamentoRepository.existsByCodigo(request.getCodigo())) {
-            throw new DuplicadoException("El código de departamento ya existe");
+            throw new RecursoDuplicadoException("El código de departamento ya existe");
         }
 
         // Validar que el nombre no exista
         if (departamentoRepository.existsByNombre(request.getNombre())) {
-            throw new DuplicadoException("El nombre de departamento ya existe");
+            throw new RecursoDuplicadoException("El nombre de departamento ya existe");
         }
 
         Departamento departamento = departamentoMapper.toEntity(request);
@@ -78,14 +78,14 @@ public class DepartamentoServiceImpl implements IDepartamentoService {
         // Validar código si cambió
         if (request.getCodigo() != null && !request.getCodigo().equals(departamento.getCodigo())) {
             if (departamentoRepository.existsByCodigo(request.getCodigo())) {
-                throw new DuplicadoException("El código de departamento ya existe");
+                throw new RecursoDuplicadoException("El código de departamento ya existe");
             }
         }
 
         // Validar nombre si cambió
         if (request.getNombre() != null && !request.getNombre().equals(departamento.getNombre())) {
             if (departamentoRepository.existsByNombre(request.getNombre())) {
-                throw new DuplicadoException("El nombre de departamento ya existe");
+                throw new RecursoDuplicadoException("El nombre de departamento ya existe");
             }
         }
 
@@ -99,7 +99,7 @@ public class DepartamentoServiceImpl implements IDepartamentoService {
     @Transactional
     public void desactivar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para desactivar departamentos");
+            throw new OperacionNoPermitidaException("No tiene permisos para desactivar departamentos");
         }
 
         Departamento departamento = departamentoRepository.findById(id)
@@ -113,7 +113,7 @@ public class DepartamentoServiceImpl implements IDepartamentoService {
     @Transactional
     public void activar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para activar departamentos");
+            throw new OperacionNoPermitidaException("No tiene permisos para activar departamentos");
         }
 
         Departamento departamento = departamentoRepository.findById(id)
@@ -127,7 +127,7 @@ public class DepartamentoServiceImpl implements IDepartamentoService {
     @Transactional
     public void eliminar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new PermisosDenegadosException("Solo SUPER_ADMIN puede eliminar departamentos físicamente");
+            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar departamentos físicamente");
         }
 
         Departamento departamento = departamentoRepository.findById(id)

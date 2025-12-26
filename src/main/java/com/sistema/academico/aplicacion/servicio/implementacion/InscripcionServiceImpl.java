@@ -9,10 +9,10 @@ import com.sistema.academico.dominio.entidad.Estudiante;
 import com.sistema.academico.dominio.entidad.Inscripcion;
 import com.sistema.academico.dominio.enumeracion.EstadoInscripcion;
 import com.sistema.academico.dominio.enumeracion.Rol;
-import com.sistema.academico.infraestructura.excepcion.DuplicadoException;
-import com.sistema.academico.infraestructura.excepcion.PermisosDenegadosException;
+import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
+import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
-import com.sistema.academico.infraestructura.excepcion.ValidacionException;
+import com.sistema.academico.infraestructura.excepcion.ValidacionNegocioException;
 import com.sistema.academico.infraestructura.repositorio.CursoRepository;
 import com.sistema.academico.infraestructura.repositorio.EstudianteRepository;
 import com.sistema.academico.infraestructura.repositorio.InscripcionRepository;
@@ -45,12 +45,12 @@ public class InscripcionServiceImpl implements IInscripcionService {
 
         // Validar que el estudiante no esté ya inscrito
         if (inscripcionRepository.existsByEstudianteAndCurso(estudiante, curso)) {
-            throw new DuplicadoException("El estudiante ya está inscrito en este curso");
+            throw new RecursoDuplicadoException("El estudiante ya está inscrito en este curso");
         }
 
         // Validar que el curso tenga cupos disponibles
         if (!curso.tieneCuposDisponibles()) {
-            throw new ValidacionException("El curso no tiene cupos disponibles");
+            throw new ValidacionNegocioException("El curso no tiene cupos disponibles");
         }
 
         Inscripcion inscripcion = inscripcionMapper.toEntity(request, estudiante, curso);
@@ -95,7 +95,7 @@ public class InscripcionServiceImpl implements IInscripcionService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Inscripción no encontrada con ID: " + id));
 
         if (!inscripcion.puedeRetirar()) {
-            throw new ValidacionException("Esta inscripción no puede ser retirada");
+            throw new ValidacionNegocioException("Esta inscripción no puede ser retirada");
         }
 
         inscripcionMapper.updateEstado(inscripcion, EstadoInscripcion.RETIRADO);
@@ -111,7 +111,7 @@ public class InscripcionServiceImpl implements IInscripcionService {
     @Transactional
     public void completar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para completar inscripciones");
+            throw new OperacionNoPermitidaException("No tiene permisos para completar inscripciones");
         }
 
         Inscripcion inscripcion = inscripcionRepository.findById(id)
@@ -125,7 +125,7 @@ public class InscripcionServiceImpl implements IInscripcionService {
     @Transactional
     public void eliminar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new PermisosDenegadosException("Solo SUPER_ADMIN puede eliminar inscripciones físicamente");
+            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar inscripciones físicamente");
         }
 
         Inscripcion inscripcion = inscripcionRepository.findById(id)

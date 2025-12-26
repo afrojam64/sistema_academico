@@ -9,8 +9,8 @@ import com.sistema.academico.dominio.entidad.Materia;
 import com.sistema.academico.dominio.entidad.Profesor;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import com.sistema.academico.dominio.enumeracion.Rol;
-import com.sistema.academico.infraestructura.excepcion.DuplicadoException;
-import com.sistema.academico.infraestructura.excepcion.PermisosDenegadosException;
+import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
+import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
 import com.sistema.academico.infraestructura.repositorio.CursoRepository;
 import com.sistema.academico.infraestructura.repositorio.MateriaRepository;
@@ -36,7 +36,7 @@ public class CursoServiceImpl implements ICursoService {
     public CursoResponseDTO crear(CursoRequestDTO request) {
         // Validar que el código no exista
         if (cursoRepository.existsByCodigo(request.getCodigo())) {
-            throw new DuplicadoException("El código de curso ya existe");
+            throw new RecursoDuplicadoException("El código de curso ya existe");
         }
 
         // Validar que la materia existe
@@ -95,7 +95,7 @@ public class CursoServiceImpl implements ICursoService {
         // Validar código si cambió
         if (request.getCodigo() != null && !request.getCodigo().equals(curso.getCodigo())) {
             if (cursoRepository.existsByCodigo(request.getCodigo())) {
-                throw new DuplicadoException("El código de curso ya existe");
+                throw new RecursoDuplicadoException("El código de curso ya existe");
             }
         }
 
@@ -123,7 +123,7 @@ public class CursoServiceImpl implements ICursoService {
     @Transactional
     public void desactivar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para desactivar cursos");
+            throw new OperacionNoPermitidaException("No tiene permisos para desactivar cursos");
         }
 
         Curso curso = cursoRepository.findById(id)
@@ -137,7 +137,7 @@ public class CursoServiceImpl implements ICursoService {
     @Transactional
     public void activar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para activar cursos");
+            throw new OperacionNoPermitidaException("No tiene permisos para activar cursos");
         }
 
         Curso curso = cursoRepository.findById(id)
@@ -151,7 +151,7 @@ public class CursoServiceImpl implements ICursoService {
     @Transactional
     public void eliminar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new PermisosDenegadosException("Solo SUPER_ADMIN puede eliminar cursos físicamente");
+            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar cursos físicamente");
         }
 
         Curso curso = cursoRepository.findById(id)

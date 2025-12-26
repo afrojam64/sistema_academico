@@ -7,9 +7,9 @@ import com.sistema.academico.aplicacion.servicio.ICalificacionService;
 import com.sistema.academico.dominio.entidad.Calificacion;
 import com.sistema.academico.dominio.entidad.Inscripcion;
 import com.sistema.academico.dominio.enumeracion.Rol;
-import com.sistema.academico.infraestructura.excepcion.PermisosDenegadosException;
+import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
-import com.sistema.academico.infraestructura.excepcion.ValidacionException;
+import com.sistema.academico.infraestructura.excepcion.ValidacionNegocioException;
 import com.sistema.academico.infraestructura.repositorio.CalificacionRepository;
 import com.sistema.academico.infraestructura.repositorio.InscripcionRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ public class CalificacionServiceImpl implements ICalificacionService {
 
         // Validar que la inscripción esté activa
         if (!inscripcion.estaActiva()) {
-            throw new ValidacionException("Solo se pueden registrar calificaciones en inscripciones activas");
+            throw new ValidacionNegocioException("Solo se pueden registrar calificaciones en inscripciones activas");
         }
 
         // Validar que la suma de porcentajes no exceda 100%
@@ -48,7 +48,7 @@ public class CalificacionServiceImpl implements ICalificacionService {
                 .sum();
 
         if (sumaActual + request.getPorcentaje() > 100) {
-            throw new ValidacionException(
+            throw new ValidacionNegocioException(
                     "La suma de porcentajes excede 100%. Actual: " + sumaActual + "%"
             );
         }
@@ -95,7 +95,7 @@ public class CalificacionServiceImpl implements ICalificacionService {
 
         // Validar que la inscripción esté activa
         if (!calificacion.getInscripcion().estaActiva()) {
-            throw new ValidacionException("No se pueden actualizar calificaciones de inscripciones no activas");
+            throw new ValidacionNegocioException("No se pueden actualizar calificaciones de inscripciones no activas");
         }
 
         // Validar porcentaje si cambió
@@ -111,7 +111,7 @@ public class CalificacionServiceImpl implements ICalificacionService {
                     .sum();
 
             if (sumaActual + request.getPorcentaje() > 100) {
-                throw new ValidacionException(
+                throw new ValidacionNegocioException(
                         "La suma de porcentajes excede 100%. Actual: " + sumaActual + "%"
                 );
             }
@@ -127,7 +127,7 @@ public class CalificacionServiceImpl implements ICalificacionService {
     @Transactional
     public void eliminar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new PermisosDenegadosException("Solo SUPER_ADMIN puede eliminar calificaciones físicamente");
+            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar calificaciones físicamente");
         }
 
         Calificacion calificacion = calificacionRepository.findById(id)

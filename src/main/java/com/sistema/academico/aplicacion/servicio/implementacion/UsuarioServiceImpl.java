@@ -7,8 +7,8 @@ import com.sistema.academico.aplicacion.servicio.IUsuarioService;
 import com.sistema.academico.dominio.entidad.Usuario;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import com.sistema.academico.dominio.enumeracion.Rol;
-import com.sistema.academico.infraestructura.excepcion.DuplicadoException;
-import com.sistema.academico.infraestructura.excepcion.PermisosDenegadosException;
+import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
+import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
 import com.sistema.academico.infraestructura.repositorio.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public UsuarioResponseDTO crear(UsuarioRequestDTO request) {
         // Validar que el nombre de usuario no exista
         if (usuarioRepository.existsByNombreUsuario(request.getNombreUsuario())) {
-            throw new DuplicadoException("El nombre de usuario ya existe");
+            throw new RecursoDuplicadoException("El nombre de usuario ya existe");
         }
 
         // Convertir DTO a Entity
@@ -79,7 +79,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         if (request.getNombreUsuario() != null &&
                 !request.getNombreUsuario().equals(usuario.getNombreUsuario())) {
             if (usuarioRepository.existsByNombreUsuario(request.getNombreUsuario())) {
-                throw new DuplicadoException("El nombre de usuario ya existe");
+                throw new RecursoDuplicadoException("El nombre de usuario ya existe");
             }
         }
 
@@ -97,7 +97,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public void desactivar(Long id, Rol rolUsuarioActual) {
         // Validar permisos
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para desactivar usuarios");
+            throw new OperacionNoPermitidaException("No tiene permisos para desactivar usuarios");
         }
 
         Usuario usuario = usuarioRepository.findById(id)
@@ -112,7 +112,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public void activar(Long id, Rol rolUsuarioActual) {
         // Validar permisos
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para activar usuarios");
+            throw new OperacionNoPermitidaException("No tiene permisos para activar usuarios");
         }
 
         Usuario usuario = usuarioRepository.findById(id)
@@ -127,7 +127,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public void eliminar(Long id, Rol rolUsuarioActual) {
         // Validar que sea SUPER_ADMIN
         if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new PermisosDenegadosException("Solo SUPER_ADMIN puede eliminar usuarios físicamente");
+            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar usuarios físicamente");
         }
 
         Usuario usuario = usuarioRepository.findById(id)

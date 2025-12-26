@@ -8,8 +8,8 @@ import com.sistema.academico.dominio.entidad.Estudiante;
 import com.sistema.academico.dominio.entidad.Usuario;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import com.sistema.academico.dominio.enumeracion.Rol;
-import com.sistema.academico.infraestructura.excepcion.DuplicadoException;
-import com.sistema.academico.infraestructura.excepcion.PermisosDenegadosException;
+import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
+import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
 import com.sistema.academico.infraestructura.repositorio.EstudianteRepository;
 import com.sistema.academico.infraestructura.repositorio.UsuarioRepository;
@@ -37,12 +37,12 @@ public class EstudianteServiceImpl implements IEstudianteService {
 
         // Validar que el email no exista
         if (estudianteRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicadoException("El email ya está registrado");
+            throw new RecursoDuplicadoException("El email ya está registrado");
         }
 
         // Validar que la matrícula no exista
         if (estudianteRepository.existsByMatricula(request.getMatricula())) {
-            throw new DuplicadoException("La matrícula ya está registrada");
+            throw new RecursoDuplicadoException("La matrícula ya está registrada");
         }
 
         Estudiante estudiante = estudianteMapper.toEntity(request, usuario);
@@ -85,14 +85,14 @@ public class EstudianteServiceImpl implements IEstudianteService {
         // Validar email si cambió
         if (request.getEmail() != null && !request.getEmail().equals(estudiante.getEmail())) {
             if (estudianteRepository.existsByEmail(request.getEmail())) {
-                throw new DuplicadoException("El email ya está registrado");
+                throw new RecursoDuplicadoException("El email ya está registrado");
             }
         }
 
         // Validar matrícula si cambió
         if (request.getMatricula() != null && !request.getMatricula().equals(estudiante.getMatricula())) {
             if (estudianteRepository.existsByMatricula(request.getMatricula())) {
-                throw new DuplicadoException("La matrícula ya está registrada");
+                throw new RecursoDuplicadoException("La matrícula ya está registrada");
             }
         }
 
@@ -106,7 +106,7 @@ public class EstudianteServiceImpl implements IEstudianteService {
     @Transactional
     public void desactivar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para desactivar estudiantes");
+            throw new OperacionNoPermitidaException("No tiene permisos para desactivar estudiantes");
         }
 
         Estudiante estudiante = estudianteRepository.findById(id)
@@ -120,7 +120,7 @@ public class EstudianteServiceImpl implements IEstudianteService {
     @Transactional
     public void activar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para activar estudiantes");
+            throw new OperacionNoPermitidaException("No tiene permisos para activar estudiantes");
         }
 
         Estudiante estudiante = estudianteRepository.findById(id)
@@ -134,7 +134,7 @@ public class EstudianteServiceImpl implements IEstudianteService {
     @Transactional
     public void eliminar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new PermisosDenegadosException("Solo SUPER_ADMIN puede eliminar estudiantes físicamente");
+            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar estudiantes físicamente");
         }
 
         Estudiante estudiante = estudianteRepository.findById(id)

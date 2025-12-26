@@ -8,8 +8,8 @@ import com.sistema.academico.dominio.entidad.Materia;
 import com.sistema.academico.dominio.entidad.Profesor;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import com.sistema.academico.dominio.enumeracion.Rol;
-import com.sistema.academico.infraestructura.excepcion.DuplicadoException;
-import com.sistema.academico.infraestructura.excepcion.PermisosDenegadosException;
+import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
+import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
 import com.sistema.academico.infraestructura.repositorio.MateriaRepository;
 import com.sistema.academico.infraestructura.repositorio.ProfesorRepository;
@@ -33,7 +33,7 @@ public class MateriaServiceImpl implements IMateriaService {
     public MateriaResponseDTO crear(MateriaRequestDTO request) {
         // Validar que el código no exista
         if (materiaRepository.existsByCodigo(request.getCodigo())) {
-            throw new DuplicadoException("El código de materia ya existe");
+            throw new RecursoDuplicadoException("El código de materia ya existe");
         }
 
         // Validar que el profesor existe
@@ -80,7 +80,7 @@ public class MateriaServiceImpl implements IMateriaService {
         // Validar código si cambió
         if (request.getCodigo() != null && !request.getCodigo().equals(materia.getCodigo())) {
             if (materiaRepository.existsByCodigo(request.getCodigo())) {
-                throw new DuplicadoException("El código de materia ya existe");
+                throw new RecursoDuplicadoException("El código de materia ya existe");
             }
         }
 
@@ -101,7 +101,7 @@ public class MateriaServiceImpl implements IMateriaService {
     @Transactional
     public void desactivar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para desactivar materias");
+            throw new OperacionNoPermitidaException("No tiene permisos para desactivar materias");
         }
 
         Materia materia = materiaRepository.findById(id)
@@ -115,7 +115,7 @@ public class MateriaServiceImpl implements IMateriaService {
     @Transactional
     public void activar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para activar materias");
+            throw new OperacionNoPermitidaException("No tiene permisos para activar materias");
         }
 
         Materia materia = materiaRepository.findById(id)
@@ -129,7 +129,7 @@ public class MateriaServiceImpl implements IMateriaService {
     @Transactional
     public void eliminar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new PermisosDenegadosException("Solo SUPER_ADMIN puede eliminar materias físicamente");
+            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar materias físicamente");
         }
 
         Materia materia = materiaRepository.findById(id)

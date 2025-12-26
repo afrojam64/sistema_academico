@@ -9,8 +9,8 @@ import com.sistema.academico.dominio.entidad.Profesor;
 import com.sistema.academico.dominio.entidad.Usuario;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import com.sistema.academico.dominio.enumeracion.Rol;
-import com.sistema.academico.infraestructura.excepcion.DuplicadoException;
-import com.sistema.academico.infraestructura.excepcion.PermisosDenegadosException;
+import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
+import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
 import com.sistema.academico.infraestructura.repositorio.DepartamentoRepository;
 import com.sistema.academico.infraestructura.repositorio.ProfesorRepository;
@@ -44,7 +44,7 @@ public class ProfesorServiceImpl implements IProfesorService {
 
         // Validar que el email no exista
         if (profesorRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicadoException("El email ya está registrado");
+            throw new RecursoDuplicadoException("El email ya está registrado");
         }
 
         Profesor profesor = profesorMapper.toEntity(request, usuario, departamento);
@@ -87,7 +87,7 @@ public class ProfesorServiceImpl implements IProfesorService {
         // Validar email si cambió
         if (request.getEmail() != null && !request.getEmail().equals(profesor.getEmail())) {
             if (profesorRepository.existsByEmail(request.getEmail())) {
-                throw new DuplicadoException("El email ya está registrado");
+                throw new RecursoDuplicadoException("El email ya está registrado");
             }
         }
 
@@ -108,7 +108,7 @@ public class ProfesorServiceImpl implements IProfesorService {
     @Transactional
     public void desactivar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para desactivar profesores");
+            throw new OperacionNoPermitidaException("No tiene permisos para desactivar profesores");
         }
 
         Profesor profesor = profesorRepository.findById(id)
@@ -122,7 +122,7 @@ public class ProfesorServiceImpl implements IProfesorService {
     @Transactional
     public void activar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new PermisosDenegadosException("No tiene permisos para activar profesores");
+            throw new OperacionNoPermitidaException("No tiene permisos para activar profesores");
         }
 
         Profesor profesor = profesorRepository.findById(id)
@@ -136,7 +136,7 @@ public class ProfesorServiceImpl implements IProfesorService {
     @Transactional
     public void eliminar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new PermisosDenegadosException("Solo SUPER_ADMIN puede eliminar profesores físicamente");
+            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar profesores físicamente");
         }
 
         Profesor profesor = profesorRepository.findById(id)
