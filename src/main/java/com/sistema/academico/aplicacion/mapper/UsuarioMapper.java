@@ -35,7 +35,8 @@ public class UsuarioMapper {
         return Usuario.builder()
                 .nombreUsuario(dto.getNombreUsuario())
                 .contrasena(passwordEncoder.encode(dto.getContrasena()))
-                .rol(dto.getRol())  // Ya es un Enum, no necesita valueOf
+                .email(dto.getEmail())  // ← MAPEO DE EMAIL AGREGADO
+                .rol(dto.getRol())
                 .estado(Estado.ACTIVO)
                 .fechaCreacion(LocalDateTime.now())
                 .build();
@@ -54,6 +55,7 @@ public class UsuarioMapper {
         return UsuarioResponseDTO.builder()
                 .id(usuario.getId())
                 .nombreUsuario(usuario.getNombreUsuario())
+                .email(usuario.getEmail())  // ← MAPEO DE EMAIL AGREGADO
                 .rol(transformarRol(usuario.getRol()))
                 .estado(transformarEstado(usuario.getEstado()))
                 .fechaCreacion(usuario.getFechaCreacion().format(FORMATTER))
@@ -72,8 +74,11 @@ public class UsuarioMapper {
         if (dto.getContrasena() != null && !dto.getContrasena().isEmpty()) {
             usuario.setContrasena(passwordEncoder.encode(dto.getContrasena()));
         }
+        if (dto.getEmail() != null) {  // ← ACTUALIZACIÓN DE EMAIL AGREGADA
+            usuario.setEmail(dto.getEmail());
+        }
         if (dto.getRol() != null) {
-            usuario.setRol(dto.getRol());  // Ya es un Enum, no necesita valueOf
+            usuario.setRol(dto.getRol());
         }
     }
 

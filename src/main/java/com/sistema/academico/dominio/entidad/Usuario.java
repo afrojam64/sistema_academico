@@ -3,6 +3,7 @@ package com.sistema.academico.dominio.entidad;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import com.sistema.academico.dominio.enumeracion.Rol;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -129,15 +130,24 @@ public class Usuario {
 
     @NotBlank(message = "La contraseña no puede estar vacía")
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
-    // En producción, la contraseña se almacenará encriptada (BCrypt)
-
     @Column(name = "contrasena", nullable = false, length = 255)
-    // length = 255: Las contraseñas encriptadas con BCrypt ocupan ~60 caracteres
-    // Ponemos 255 por seguridad y flexibilidad
-
     private String contrasena;
-    // Contraseña del usuario (se guardará encriptada, NO en texto plano)
-    // IMPORTANTE: Nunca almacenar contraseñas sin encriptar
+
+    // =========================================================================
+    // EMAIL
+    // =========================================================================
+
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El email debe ser válido")
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    private String email;
+    // Email del usuario
+    // Debe ser único en todo el sistema
+    // Se usa para recuperación de contraseña y notificaciones
+
+    // =========================================================================
+    // ROL Y PERMISOS
+    // =========================================================================
 
     // =========================================================================
     // ROL Y PERMISOS

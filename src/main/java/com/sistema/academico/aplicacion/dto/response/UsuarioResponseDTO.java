@@ -11,6 +11,7 @@ public class UsuarioResponseDTO {
 
     private Long id;
     private String nombreUsuario;
+    private String email;
     private String rol;
     private String estado;
     private String fechaCreacion;
