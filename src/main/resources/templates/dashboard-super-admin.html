@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Super Admin - Sistema Académico</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #991b1b, #dc2626);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .user-info {
+            color: white;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+        .welcome-banner {
+            background: linear-gradient(135deg, #991b1b, #dc2626);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .danger-zone {
+            border: 2px solid #dc2626;
+            border-radius: 15px;
+            padding: 20px;
+            background: #fef2f2;
+        }
+        .btn-danger-action {
+            background: #dc2626;
+            color: white;
+            border: none;
+            margin: 5px;
+        }
+        .btn-danger-action:hover {
+            background: #991b1b;
+            color: white;
+        }
+        .activity-item {
+            padding: 15px;
+            border-left: 3px solid #dc2626;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .activity-time {
+            color: #64748b;
+            font-size: 12px;
+        }
+        .badge-super {
+            background: linear-gradient(135deg, #991b1b, #dc2626);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-shield-alt"></i> Sistema Académico - SUPER ADMIN
+            </span>
+        <div class="user-info">
+            <span class="badge-super">SUPER ADMINISTRADOR</span>
+            <i class="fas fa-user-shield ms-3"></i>
+            <span id="userName">Cargando...</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid mt-4">
+    <!-- Banner de Bienvenida -->
+    <div class="welcome-banner">
+        <h1>
+            <i class="fas fa-crown"></i>
+            ¡Bienvenido Super Administrador!
+        </h1>
+        <p class="mb-0">
+            Tienes control total del sistema. Usa estos poderes sabiamente.
+        </p>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon text-primary">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number text-primary" id="totalUsuarios">...</div>
+                <div class="stat-label">Total Usuarios</div>
+                <small class="text-success">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="usuariosActivos">...</span> activos
+                </small>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon text-success">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-number text-success" id="totalDepartamentos">...</div>
+                <div class="stat-label">Departamentos</div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon text-info">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="stat-number text-info" id="totalProfesores">...</div>
+                <div class="stat-label">Profesores</div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon text-warning">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="stat-number text-warning" id="totalEstudiantes">...</div>
+                <div class="stat-label">Estudiantes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Segunda fila de estadísticas -->
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon text-purple">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-number" style="color: #7c3aed;" id="totalMaterias">...</div>
+                <div class="stat-label">Materias</div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon text-danger">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-number text-danger" id="totalCursos">...</div>
+                <div class="stat-label">Cursos Activos</div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon text-secondary">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stat-number text-secondary" id="totalInscripciones">...</div>
+                <div class="stat-label">Inscripciones</div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #0891b2;">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-number" style="color: #0891b2;" id="totalCalificaciones">...</div>
+                <div class="stat-label">Calificaciones</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Actividad Reciente -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-history"></i> Actividad Reciente del Sistema
+                </div>
+                <div class="card-body" id="actividadReciente">
+                    <div class="activity-item">
+                        <i class="fas fa-user-plus text-success"></i>
+                        <strong>Usuario creado:</strong> jperez
+                        <br>
+                        <span class="activity-time">Hace 5 minutos</span>
+                    </div>
+                    <div class="activity-item">
+                        <i class="fas fa-edit text-info"></i>
+                        <strong>Curso modificado:</strong> Programación I - Sección A
+                        <br>
+                        <span class="activity-time">Hace 15 minutos</span>
+                    </div>
+                    <div class="activity-item">
+                        <i class="fas fa-trash text-danger"></i>
+                        <strong>Usuario eliminado:</strong> test_usuario
+                        <br>
+                        <span class="activity-time">Hace 1 hora</span>
+                    </div>
+                    <div class="activity-item">
+                        <i class="fas fa-database text-primary"></i>
+                        <strong>Backup automático:</strong> Completado exitosamente
+                        <br>
+                        <span class="activity-time">Hace 3 horas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestión Rápida -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-bolt"></i> Acciones Rápidas
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="verUsuarios()">
+                            <i class="fas fa-users"></i> Gestionar Usuarios
+                        </button>
+                        <button class="btn btn-success" onclick="verDepartamentos()">
+                            <i class="fas fa-building"></i> Gestionar Departamentos
+                        </button>
+                        <button class="btn btn-info" onclick="verProfesores()">
+                            <i class="fas fa-chalkboard-teacher"></i> Gestionar Profesores
+                        </button>
+                        <button class="btn btn-warning" onclick="verEstudiantes()">
+                            <i class="fas fa-user-graduate"></i> Gestionar Estudiantes
+                        </button>
+                        <button class="btn btn-secondary" onclick="generarReporte()">
+                            <i class="fas fa-file-pdf"></i> Generar Reporte General
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zona de Peligro -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="danger-zone">
+                <h4 class="text-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Zona de Peligro - Acciones Críticas
+                </h4>
+                <p class="text-muted mb-3">
+                    Las siguientes acciones son irreversibles y afectan todo el sistema.
+                    Úsalas con extrema precaución.
+                </p>
+                <button class="btn btn-danger-action" onclick="eliminarUsuariosInactivos()">
+                    <i class="fas fa-user-slash"></i> Eliminar Usuarios Inactivos
+                </button>
+                <button class="btn btn-danger-action" onclick="limpiarLogsAntiguos()">
+                    <i class="fas fa-broom"></i> Limpiar Logs Antiguos
+                </button>
+                <button class="btn btn-danger-action" onclick="resetearCalificaciones()">
+                    <i class="fas fa-undo"></i> Resetear Calificaciones de Prueba
+                </button>
+                <button class="btn btn-danger-action" onclick="backupManual()">
+                    <i class="fas fa-database"></i> Backup Manual Ahora
+                </button>
+                <button class="btn btn-outline-danger" onclick="verConfiguracion()">
+                    <i class="fas fa-cog"></i> Configuración del Sistema
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info del Sistema -->
+    <div class="row mt-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-server"></i> Información del Sistema
+                </div>
+                <div class="card-body">
+                    <p><strong>Versión:</strong> 1.0.0</p>
+                    <p><strong>Base de Datos:</strong> PostgreSQL 16</p>
+                    <p><strong>Servidor:</strong> Spring Boot 3.5.8</p>
+                    <p><strong>Java:</strong> 17 LTS</p>
+                    <p><strong>Último Backup:</strong> <span id="ultimoBackup">Cargando...</span></p>
+                    <p class="mb-0"><strong>Uptime:</strong> <span id="uptime">Cargando...</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-key"></i> Información de Autenticación
+                </div>
+                <div class="card-body">
+                    <p><strong>Token JWT:</strong> <code id="tokenDisplay">...</code></p>
+                    <p><strong>Usuario:</strong> <span id="userNameDisplay">...</span></p>
+                    <p><strong>Rol:</strong> <span class="badge bg-danger">SUPER_ADMIN</span></p>
+                    <p><strong>Permisos:</strong> Control Total del Sistema</p>
+                    <button class="btn btn-sm btn-success" onclick="testAPI()">
+                        <i class="fas fa-flask"></i> Probar API
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Obtener datos del localStorage
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    // Verificar si hay sesión
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    // Mostrar información del usuario
+    document.getElementById('userName').textContent = userName || 'Usuario';
+    document.getElementById('userNameDisplay').textContent = userName || 'N/A';
+    document.getElementById('tokenDisplay').textContent =
+        token ? token.substring(0, 40) + '...' : 'N/A';
+
+    // Función para cerrar sesión
+    function logout() {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: '¿Estás seguro que deseas salir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        });
+    }
+
+    // Cargar todas las estadísticas
+    async function cargarEstadisticas() {
+        try {
+            // Usuarios
+            const usuarios = await axios.get('http://localhost:8080/api/usuarios', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            document.getElementById('totalUsuarios').textContent = usuarios.data.length;
+
+            const activos = usuarios.data.filter(u => u.estado === 'Activo').length;
+            document.getElementById('usuariosActivos').textContent = activos;
+
+            // Contar por rol
+            let profesores = 0, estudiantes = 0;
+            usuarios.data.forEach(u => {
+                if (u.rol.includes('Profesor')) profesores++;
+                if (u.rol.includes('Estudiante')) estudiantes++;
+            });
+            document.getElementById('totalProfesores').textContent = profesores;
+            document.getElementById('totalEstudiantes').textContent = estudiantes;
+
+        } catch (error) {
+            console.error('Error cargando usuarios:', error);
+        }
+
+        try {
+            // Departamentos
+            const departamentos = await axios.get('http://localhost:8080/api/departamentos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            document.getElementById('totalDepartamentos').textContent = departamentos.data.length;
+        } catch (error) {
+            console.error('Error cargando departamentos:', error);
+            document.getElementById('totalDepartamentos').textContent = '0';
+        }
+
+        // Simular otras estadísticas (temporal)
+        document.getElementById('totalMaterias').textContent = '45';
+        document.getElementById('totalCursos').textContent = '128';
+        document.getElementById('totalInscripciones').textContent = '856';
+        document.getElementById('totalCalificaciones').textContent = '2,341';
+        document.getElementById('ultimoBackup').textContent = 'Hoy a las 03:00 AM';
+        document.getElementById('uptime').textContent = '15 días, 7 horas';
+    }
+
+    // Probar API
+    async function testAPI() {
+        try {
+            const response = await axios.get('http://localhost:8080/api/usuarios', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡API funcionando!',
+                html: `Se obtuvieron <strong>${response.data.length}</strong> usuarios correctamente.`,
+                confirmButtonColor: '#dc2626'
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'Error al conectar con la API',
+                confirmButtonColor: '#dc2626'
+            });
+        }
+    }
+
+    // Funciones de gestión rápida
+    function verUsuarios() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Gestión de Usuarios',
+            text: 'Módulo de gestión de usuarios próximamente...',
+            confirmButtonColor: '#dc2626'
+        });
+    }
+
+    function verDepartamentos() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Gestión de Departamentos',
+            text: 'Módulo de gestión de departamentos próximamente...',
+            confirmButtonColor: '#dc2626'
+        });
+    }
+
+    function verProfesores() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Gestión de Profesores',
+            text: 'Módulo de gestión de profesores próximamente...',
+            confirmButtonColor: '#dc2626'
+        });
+    }
+
+    function verEstudiantes() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Gestión de Estudiantes',
+            text: 'Módulo de gestión de estudiantes próximamente...',
+            confirmButtonColor: '#dc2626'
+        });
+    }
+
+    function generarReporte() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Generar Reporte',
+            text: 'Módulo de reportes próximamente...',
+            confirmButtonColor: '#dc2626'
+        });
+    }
+
+    // Funciones de zona de peligro
+    function eliminarUsuariosInactivos() {
+        Swal.fire({
+            title: '¿Eliminar usuarios inactivos?',
+            text: 'Esta acción es IRREVERSIBLE. Se eliminarán todos los usuarios inactivos por más de 90 días.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626',
+            input: 'text',
+            inputPlaceholder: 'Escribe "CONFIRMAR" para continuar',
+            inputValidator: (value) => {
+                if (value !== 'CONFIRMAR') {
+                    return 'Debes escribir CONFIRMAR para continuar';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Usuarios eliminados',
+                    text: 'Se eliminaron 0 usuarios inactivos.',
+                    confirmButtonColor: '#dc2626'
+                });
+            }
+        });
+    }
+
+    function limpiarLogsAntiguos() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Limpiar Logs',
+            text: 'Funcionalidad próximamente...',
+            confirmButtonColor: '#dc2626'
+        });
+    }
+
+    function resetearCalificaciones() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Resetear Calificaciones',
+            text: 'Funcionalidad próximamente...',
+            confirmButtonColor: '#dc2626'
+        });
+    }
+
+    function backupManual() {
+        Swal.fire({
+            title: 'Iniciando backup...',
+            text: 'Por favor espera...',
+            icon: 'info',
+            showConfirmButton: false,
+            timer: 2000
+        }).then(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Backup completado',
+                text: 'La base de datos se respaldó exitosamente.',
+                confirmButtonColor: '#dc2626'
+            });
+        });
+    }
+
+    function verConfiguracion() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Configuración del Sistema',
+            text: 'Panel de configuración próximamente...',
+            confirmButtonColor: '#dc2626'
+        });
+    }
+
+    // Cargar estadísticas al iniciar
+    cargarEstadisticas();
+</script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 600;
+        }
+        .user-info {
+            color: white;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+        .welcome-banner {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-graduation-cap"></i> Sistema Académico
+            </span>
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">Cargando...</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <!-- Banner de Bienvenida -->
+    <div class="welcome-banner">
+        <h1><i class="fas fa-hand-wave"></i> ¡Bienvenido al Dashboard de Administrador!</h1>
+        <p class="mb-0">Gestiona el sistema académico desde aquí</p>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-primary">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number" id="totalUsuarios">...</div>
+                <div class="stat-label">Total Usuarios</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-success">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="stat-number" id="totalProfesores">...</div>
+                <div class="stat-label">Profesores</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-info">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="stat-number" id="totalEstudiantes">...</div>
+                <div class="stat-label">Estudiantes</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-warning">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-number" id="totalCursos">...</div>
+                <div class="stat-label">Cursos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje de Éxito -->
+    <div class="alert alert-success mt-4" role="alert">
+        <h4 class="alert-heading"><i class="fas fa-check-circle"></i> ¡Login Exitoso!</h4>
+        <p class="mb-0">Has iniciado sesión correctamente. El sistema de autenticación JWT está funcionando perfectamente.</p>
+    </div>
+
+    <!-- Info del Token -->
+    <div class="card mt-3">
+        <div class="card-header bg-primary text-white">
+            <i class="fas fa-key"></i> Información de Autenticación
+        </div>
+        <div class="card-body">
+            <p><strong>Token JWT:</strong> <code id="tokenDisplay">...</code></p>
+            <p><strong>Usuario:</strong> <span id="userNameDisplay">...</span></p>
+            <p><strong>Rol:</strong> <span id="userRoleDisplay">...</span></p>
+            <button class="btn btn-sm btn-primary" onclick="testAPI()">
+                <i class="fas fa-flask"></i> Probar API con Token
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Obtener datos del localStorage
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    // Verificar si hay sesión
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    // Mostrar información del usuario
+    document.getElementById('userName').textContent = userName || 'Usuario';
+    document.getElementById('userNameDisplay').textContent = userName || 'N/A';
+    document.getElementById('userRoleDisplay').textContent = userRole || 'N/A';
+    document.getElementById('tokenDisplay').textContent = token ? token.substring(0, 50) + '...' : 'N/A';
+
+    // Función para cerrar sesión
+    function logout() {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: '¿Estás seguro que deseas salir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#1e3a8a'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        });
+    }
+
+    // Función para probar la API con el token
+    async function testAPI() {
+        try {
+            const response = await axios.get('http://localhost:8080/api/usuarios', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡API funcionando!',
+                html: `Se obtuvieron <strong>${response.data.length}</strong> usuarios correctamente.`,
+                confirmButtonColor: '#1e3a8a'
+            });
+
+            // Actualizar estadísticas
+            document.getElementById('totalUsuarios').textContent = response.data.length;
+
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'Error al conectar con la API',
+                confirmButtonColor: '#1e3a8a'
+            });
+        }
+    }
+
+    // Cargar estadísticas al iniciar
+    async function cargarEstadisticas() {
+        try {
+            const response = await axios.get('http://localhost:8080/api/usuarios', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            document.getElementById('totalUsuarios').textContent = response.data.length;
+
+            // Contar profesores y estudiantes
+            let profesores = 0;
+            let estudiantes = 0;
+
+            response.data.forEach(usuario => {
+                if (usuario.rol.includes('Profesor')) profesores++;
+                if (usuario.rol.includes('Estudiante')) estudiantes++;
+            });
+
+            document.getElementById('totalProfesores').textContent = profesores;
+            document.getElementById('totalEstudiantes').textContent = estudiantes;
+            document.getElementById('totalCursos').textContent = '...';
+
+        } catch (error) {
+            console.error('Error cargando estadísticas:', error);
+        }
+    }
+
+    // Cargar estadísticas al iniciar
+    cargarEstadisticas();
+</script>
+</body>
+</html>

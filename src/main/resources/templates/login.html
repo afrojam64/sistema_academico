@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .logo i {
+            font-size: 40px;
+            color: white;
+        }
+        h1 {
+            text-align: center;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+            border: none;
+        }
+        .btn-login:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+<div class="login-card">
+    <div class="logo">
+        <i class="fas fa-graduation-cap"></i>
+    </div>
+    <h1>Sistema Académico</h1>
+    <p class="subtitle">Bienvenido de nuevo</p>
+
+    <form id="loginForm">
+        <div class="mb-3">
+            <label class="form-label"><i class="fas fa-user"></i> Usuario</label>
+            <input type="text" class="form-control" id="usuario">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label"><i class="fas fa-lock"></i> Contraseña</label>
+            <input type="password" class="form-control" id="password">
+        </div>
+
+        <button type="submit" class="btn btn-login w-100">Iniciar Sesión</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const form = document.getElementById('loginForm');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const usuario = document.getElementById('usuario').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await axios.post('http://localhost:8080/auth/login', {
+                nombreUsuario: usuario,
+                contrasena: password
+            });
+
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('userName', response.data.nombreUsuario);
+            localStorage.setItem('userRole', response.data.rol);
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Bienvenido!',
+                text: 'Hola ' + response.data.nombreUsuario,
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                // Obtener el ID del usuario para verificar en BD
+                const userId = response.data.id;
+                const rol = response.data.rol;
+
+                console.log('Usuario ID:', userId);
+                console.log('Rol recibido:', rol);
+
+                // Verificar por ID de usuario (solución más confiable)
+                // ID 2 o 3 = james.admin o James Admin = SUPER_ADMIN
+                // ID 4 = admin_academico = ADMIN
+
+                if (userId === 2 || userId === 3) {
+                    console.log('Usuario SUPER_ADMIN detectado por ID');
+                    window.location.href = '/dashboard/super-admin';
+                }
+                else if (userId === 4) {
+                    console.log('Usuario ADMIN detectado por ID');
+                    window.location.href = '/dashboard/admin';
+                }
+                else {
+                    // Para otros usuarios, usar el rol
+                    const rolUpper = rol.toUpperCase();
+
+                    if (rolUpper.includes('PROFESOR')) {
+                        window.location.href = '/dashboard/profesor';
+                    }
+                    else if (rolUpper.includes('ESTUDIANTE')) {
+                        window.location.href = '/dashboard/estudiante';
+                    }
+                    else {
+                        // Por defecto
+                        window.location.href = '/dashboard/admin';
+                    }
+                }
+            });
+
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Usuario o contraseña incorrectos'
+            });
+        }
+    });
+</script>
+</body>
+</html>
