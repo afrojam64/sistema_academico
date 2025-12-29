@@ -2,17 +2,21 @@ package com.sistema.academico.infraestructura.controlador;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 /**
- * Controller para servir las vistas HTML (Thymeleaf).
- *
- * Maneja las rutas de navegación del frontend.
+ * Controlador para servir vistas HTML del sistema
+ * Maneja la navegación entre páginas
  */
 @Controller
 public class ViewController {
 
+    // ========================================
+    // PÁGINAS PÚBLICAS
+    // ========================================
+
     /**
-     * Página de Login
+     * Página de login
      * Ruta: http://localhost:8080/
      * Ruta: http://localhost:8080/login
      */
@@ -21,14 +25,9 @@ public class ViewController {
         return "login";
     }
 
-    /**
-     * Dashboard Super Administrador
-     * Ruta: http://localhost:8080/dashboard/super-admin
-     */
-    @GetMapping("/dashboard/super-admin")
-    public String dashboardSuperAdmin() {
-        return "dashboard-super-admin";
-    }
+    // ========================================
+    // DASHBOARDS POR ROL
+    // ========================================
 
     /**
      * Dashboard Administrador
@@ -36,7 +35,16 @@ public class ViewController {
      */
     @GetMapping("/dashboard/admin")
     public String dashboardAdmin() {
-        return "dashboard-admin";
+        return "dashboards/admin";
+    }
+
+    /**
+     * Dashboard Super Administrador
+     * Ruta: http://localhost:8080/dashboard/super-admin
+     */
+    @GetMapping("/dashboard/super-admin")
+    public String dashboardSuperAdmin() {
+        return "dashboards/super-admin";
     }
 
     /**
@@ -45,7 +53,7 @@ public class ViewController {
      */
     @GetMapping("/dashboard/profesor")
     public String dashboardProfesor() {
-        return "dashboard-profesor";
+        return "dashboards/profesor";
     }
 
     /**
@@ -54,42 +62,228 @@ public class ViewController {
      */
     @GetMapping("/dashboard/estudiante")
     public String dashboardEstudiante() {
-        return "dashboard-estudiante";
+        return "dashboards/estudiante";
+    }
+
+    // ========================================
+    // MÓDULO: USUARIOS
+    // ========================================
+
+    /**
+     * Listar todos los usuarios
+     * Ruta: http://localhost:8080/usuarios
+     */
+    @GetMapping("/usuarios")
+    public String listarUsuarios() {
+        return "usuarios/lista";
     }
 
     /**
-     * Dashboard genérico (fallback)
-     * Ruta: http://localhost:8080/dashboard
+     * Formulario para crear nuevo usuario
+     * Ruta: http://localhost:8080/usuarios/nuevo
      */
-    @GetMapping("/dashboard")
-    public String dashboard() {
-        return "dashboard";
+    @GetMapping("/usuarios/nuevo")
+    public String crearUsuario() {
+        return "usuarios/crear";
     }
 
     /**
-     * Página de Error 404
-     * Ruta: http://localhost:8080/404
+     * Formulario para editar usuario
+     * Ruta: http://localhost:8080/usuarios/editar/{id}
      */
-    @GetMapping("/404")
-    public String notFound() {
-        return "error-404";
+    @GetMapping("/usuarios/editar/{id}")
+    public String editarUsuario(@PathVariable Long id) {
+        return "usuarios/editar";
     }
 
     /**
-     * Página de Error 403 - Sin permisos
-     * Ruta: http://localhost:8080/403
+     * Ver detalles de un usuario
+     * Ruta: http://localhost:8080/usuarios/ver/{id}
      */
-    @GetMapping("/403")
-    public String forbidden() {
-        return "error-403";
+    @GetMapping("/usuarios/ver/{id}")
+    public String verUsuario(@PathVariable Long id) {
+        return "usuarios/ver";
+    }
+
+    // ========================================
+    // MÓDULO: PROFESORES
+    // ========================================
+
+    /**
+     * Listar todos los profesores
+     * Ruta: http://localhost:8080/profesores
+     */
+    @GetMapping("/profesores")
+    public String listarProfesores() {
+        return "profesores/lista";
     }
 
     /**
-     * Página de Error 500 - Error del servidor
-     * Ruta: http://localhost:8080/500
+     * Formulario para crear nuevo profesor
+     * Ruta: http://localhost:8080/profesores/nuevo
      */
-    @GetMapping("/500")
-    public String serverError() {
-        return "error-500";
+    @GetMapping("/profesores/nuevo")
+    public String crearProfesor() {
+        return "profesores/crear";
+    }
+
+    /**
+     * Formulario para editar profesor
+     * Ruta: http://localhost:8080/profesores/editar/{id}
+     */
+    @GetMapping("/profesores/editar/{id}")
+    public String editarProfesor(@PathVariable Long id) {
+        return "profesores/editar";
+    }
+
+    /**
+     * Ver detalles de un profesor
+     * Ruta: http://localhost:8080/profesores/ver/{id}
+     */
+    @GetMapping("/profesores/ver/{id}")
+    public String verProfesor(@PathVariable Long id) {
+        return "profesores/ver";
+    }
+
+    // ========================================
+    // MÓDULO: ESTUDIANTES
+    // ========================================
+
+    /**
+     * Listar todos los estudiantes
+     * Ruta: http://localhost:8080/estudiantes
+     */
+    @GetMapping("/estudiantes")
+    public String listarEstudiantes() {
+        return "estudiantes/lista";
+    }
+
+    /**
+     * Formulario para crear nuevo estudiante
+     * Ruta: http://localhost:8080/estudiantes/nuevo
+     */
+    @GetMapping("/estudiantes/nuevo")
+    public String crearEstudiante() {
+        return "estudiantes/crear";
+    }
+
+    /**
+     * Formulario para editar estudiante
+     * Ruta: http://localhost:8080/estudiantes/editar/{id}
+     */
+    @GetMapping("/estudiantes/editar/{id}")
+    public String editarEstudiante(@PathVariable Long id) {
+        return "estudiantes/editar";
+    }
+
+    /**
+     * Ver detalles de un estudiante
+     * Ruta: http://localhost:8080/estudiantes/ver/{id}
+     */
+    @GetMapping("/estudiantes/ver/{id}")
+    public String verEstudiante(@PathVariable Long id) {
+        return "estudiantes/ver";
+    }
+
+    // ========================================
+    // MÓDULO: CURSOS
+    // ========================================
+
+    /**
+     * Listar todos los cursos
+     * Ruta: http://localhost:8080/cursos
+     */
+    @GetMapping("/cursos")
+    public String listarCursos() {
+        return "cursos/lista";
+    }
+
+    /**
+     * Formulario para crear nuevo curso
+     * Ruta: http://localhost:8080/cursos/nuevo
+     */
+    @GetMapping("/cursos/nuevo")
+    public String crearCurso() {
+        return "cursos/crear";
+    }
+
+    /**
+     * Formulario para editar curso
+     * Ruta: http://localhost:8080/cursos/editar/{id}
+     */
+    @GetMapping("/cursos/editar/{id}")
+    public String editarCurso(@PathVariable Long id) {
+        return "cursos/editar";
+    }
+
+    /**
+     * Ver detalles de un curso
+     * Ruta: http://localhost:8080/cursos/ver/{id}
+     */
+    @GetMapping("/cursos/ver/{id}")
+    public String verCurso(@PathVariable Long id) {
+        return "cursos/ver";
+    }
+
+    // ========================================
+    // MÓDULO: CALIFICACIONES
+    // ========================================
+
+    /**
+     * Listar todas las calificaciones
+     * Ruta: http://localhost:8080/calificaciones
+     */
+    @GetMapping("/calificaciones")
+    public String listarCalificaciones() {
+        return "calificaciones/lista";
+    }
+
+    /**
+     * Formulario para registrar calificación
+     * Ruta: http://localhost:8080/calificaciones/registrar
+     */
+    @GetMapping("/calificaciones/registrar")
+    public String registrarCalificacion() {
+        return "calificaciones/registrar";
+    }
+
+    /**
+     * Ver calificaciones de un estudiante
+     * Ruta: http://localhost:8080/calificaciones/estudiante/{id}
+     */
+    @GetMapping("/calificaciones/estudiante/{id}")
+    public String verCalificacionesEstudiante(@PathVariable Long id) {
+        return "calificaciones/ver";
+    }
+
+    // ========================================
+    // MÓDULO: INSCRIPCIONES
+    // ========================================
+
+    /**
+     * Listar todas las inscripciones
+     * Ruta: http://localhost:8080/inscripciones
+     */
+    @GetMapping("/inscripciones")
+    public String listarInscripciones() {
+        return "inscripciones/lista";
+    }
+
+    /**
+     * Formulario para crear inscripción
+     * Ruta: http://localhost:8080/inscripciones/nuevo
+     */
+    @GetMapping("/inscripciones/nuevo")
+    public String crearInscripcion() {
+        return "inscripciones/crear";
+    }
+
+    /**
+     * Ver detalles de una inscripción
+     * Ruta: http://localhost:8080/inscripciones/ver/{id}
+     */
+    @GetMapping("/inscripciones/ver/{id}")
+    public String verInscripcion(@PathVariable Long id) {
+        return "inscripciones/ver";
     }
 }

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Sistema Académico</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .page-header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .page-title {
+            color: #1e3a8a;
+            font-weight: 700;
+            margin: 0;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .badge-role {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-super-admin {
+            background: linear-gradient(135deg, #991b1b, #dc2626);
+            color: white;
+        }
+        .badge-admin {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+        }
+        .badge-profesor {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+        }
+        .badge-estudiante {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+        }
+        .badge-activo {
+            background: #dcfce7;
+            color: #059669;
+        }
+        .badge-inactivo {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .btn-action {
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        .filter-section {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        table.dataTable thead th {
+            background: #1e3a8a;
+            color: white;
+            font-weight: 600;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #3b82f6 !important;
+            color: white !important;
+            border-color: #3b82f6 !important;
+        }
+
+        /* Ajustar anchos de columnas */
+        #tablaUsuarios th:nth-child(1) { width: 50px; }  /* ID */
+        #tablaUsuarios th:nth-child(2) { width: 120px; } /* Usuario */
+        #tablaUsuarios th:nth-child(3) { width: 150px; } /* Nombre Completo */
+        #tablaUsuarios th:nth-child(4) { width: 100px; } /* Cédula */
+        #tablaUsuarios th:nth-child(5) { width: 120px; } /* Teléfono */
+        #tablaUsuarios th:nth-child(6) { width: 180px; } /* Email */
+        #tablaUsuarios th:nth-child(7) { width: 120px; } /* Rol */
+        #tablaUsuarios th:nth-child(8) { width: 100px; } /* Estado */
+        #tablaUsuarios th:nth-child(9) { width: 150px; } /* Acciones */
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <a href="/dashboard/admin" class="navbar-brand">
+            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+        </a>
+        <div class="text-white">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-users"></i> Gestión de Usuarios
+                </h1>
+                <p class="text-muted mb-0">Administra todos los usuarios del sistema</p>
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="nuevoUsuario()">
+                <i class="fas fa-plus"></i> Nuevo Usuario
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body filter-section">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-filter"></i> Filtrar por Rol
+                    </label>
+                    <select class="form-select" id="filtroRol">
+                        <option value="">Todos los roles</option>
+                        <option value="SUPER_ADMIN">Super Administrador</option>
+                        <option value="ADMIN">Administrador</option>
+                        <option value="PROFESOR">Profesor</option>
+                        <option value="ESTUDIANTE">Estudiante</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-toggle-on"></i> Filtrar por Estado
+                    </label>
+                    <select class="form-select" id="filtroEstado">
+                        <option value="">Todos los estados</option>
+                        <option value="ACTIVO">Activo</option>
+                        <option value="INACTIVO">Inactivo</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-search"></i> Búsqueda rápida
+                    </label>
+                    <input type="text" class="form-control" id="busquedaRapida"
+                           placeholder="Buscar por nombre o email...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Usuarios -->
+    <div class="card">
+        <div class="card-body">
+            <table id="tablaUsuarios" class="table table-striped table-hover" style="width:100%">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Nombre Completo</th>
+                    <th>Cédula</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Los datos se cargan dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Verificar sesión
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    // Variable global para la tabla
+    let tablaUsuarios;
+
+    // Cargar usuarios al iniciar
+    $(document).ready(function() {
+        cargarUsuarios();
+    });
+
+    // Función para cargar usuarios desde la API
+    async function cargarUsuarios() {
+        try {
+            const response = await axios.get('http://localhost:8080/api/usuarios', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const usuarios = response.data;
+            mostrarUsuarios(usuarios);
+
+        } catch (error) {
+            console.error('Error cargando usuarios:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar los usuarios',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    }
+
+    // Función para mostrar usuarios en la tabla
+    function mostrarUsuarios(usuarios) {
+        // Destruir tabla existente si ya existe
+        if (tablaUsuarios) {
+            tablaUsuarios.destroy();
+        }
+
+        // Limpiar tbody
+        $('#tablaUsuarios tbody').empty();
+
+        // Agregar filas
+        usuarios.forEach(usuario => {
+            const rol = getRolBadge(usuario.rol);
+            const estado = getEstadoBadge(usuario.estado);
+            const nombreCompleto = `${usuario.nombre} ${usuario.apellido}`;
+            const telefono = usuario.telefono || 'N/A';
+
+            const fila = `
+        <tr>
+            <td>${usuario.id}</td>
+            <td><strong>${usuario.nombreUsuario}</strong></td>
+            <td>${nombreCompleto}</td>
+            <td>${usuario.cedula}</td>
+            <td>${telefono}</td>
+            <td>${usuario.email}</td>
+            <td>${rol}</td>
+            <td>${estado}</td>
+            <td>
+                <button class="btn btn-sm btn-info btn-action"
+                        onclick="verUsuario(${usuario.id})"
+                        title="Ver detalles">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-warning btn-action"
+                        onclick="editarUsuario(${usuario.id})"
+                        title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                ${usuario.estado.toUpperCase() === 'ACTIVO' ? `
+                    <button class="btn btn-sm btn-danger btn-action"
+                            onclick="eliminarUsuario(${usuario.id}, '${nombreCompleto}')"
+                            title="Desactivar">
+                        <i class="fas fa-ban"></i>
+                    </button>
+                ` : `
+                    <button class="btn btn-sm btn-success btn-action"
+                            onclick="activarUsuario(${usuario.id}, '${nombreCompleto}')"
+                            title="Activar">
+                        <i class="fas fa-check"></i>
+                    </button>
+                `}
+            </td>
+        </tr>
+    `;
+            $('#tablaUsuarios tbody').append(fila);
+        });
+
+        // Inicializar DataTable
+        tablaUsuarios = $('#tablaUsuarios').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            },
+            pageLength: 10,
+            responsive: true
+        });
+
+        // Aplicar filtros
+        aplicarFiltros();
+    }
+
+    // Función para aplicar filtros
+    function aplicarFiltros() {
+        $('#filtroRol, #filtroEstado, #busquedaRapida').on('keyup change', function() {
+            const rol = $('#filtroRol').val();
+            const estado = $('#filtroEstado').val();
+            const busqueda = $('#busquedaRapida').val();
+
+            // Limpiar filtros
+            tablaUsuarios.columns().search('');
+
+            // Filtro de rol (buscar EXACTO en columna 6)
+            if (rol) {
+                // Usar expresión regular para búsqueda exacta
+                tablaUsuarios.column(6).search('^' + rol + '$', true, false);
+            }
+
+            // Filtro de estado (buscar EXACTO en columna 7)
+            if (estado) {
+                // Usar expresión regular para búsqueda exacta
+                tablaUsuarios.column(7).search('^' + estado + '$', true, false);
+            }
+
+            // Búsqueda general (en todas las columnas)
+            if (busqueda) {
+                tablaUsuarios.search(busqueda);
+            }
+
+            tablaUsuarios.draw();
+        });
+    }
+
+    // Función para obtener badge de rol
+    function getRolBadge(rol) {
+        // Normalizar el rol a mayúsculas
+        const rolUpper = rol.toUpperCase();
+
+        const roles = {
+            'SUPER_ADMIN': '<span class="badge badge-role badge-super-admin">SUPER ADMIN</span>',
+            'ADMIN': '<span class="badge badge-role badge-admin">ADMIN</span>',
+            'ADMINISTRADOR': '<span class="badge badge-role badge-admin">ADMIN</span>',
+            'PROFESOR': '<span class="badge badge-role badge-profesor">PROFESOR</span>',
+            'ESTUDIANTE': '<span class="badge badge-role badge-estudiante">ESTUDIANTE</span>'
+        };
+
+        return roles[rolUpper] || `<span class="badge bg-secondary">${rol}</span>`;
+    }
+
+    // Función para obtener badge de estado
+    function getEstadoBadge(estado) {
+        // Normalizar el estado a mayúsculas
+        const estadoUpper = estado.toUpperCase();
+
+        if (estadoUpper === 'ACTIVO') {
+            return '<span class="badge badge-role badge-activo">ACTIVO</span>';
+        } else {
+            return '<span class="badge badge-role badge-inactivo">INACTIVO</span>';
+        }
+    }
+
+    // Función para formatear fecha
+    function formatearFecha(fecha) {
+        // Si la fecha ya viene formateada desde el backend, devolverla tal cual
+        if (!fecha || fecha === null || fecha === 'null') {
+            return 'N/A';
+        }
+
+        // Si la fecha ya es un string formateado (contiene "/"), devolverla directamente
+        if (typeof fecha === 'string' && fecha.includes('/')) {
+            return fecha;
+        }
+
+        // Si es formato ISO, intentar parsear
+        try {
+            const date = new Date(fecha);
+            if (isNaN(date.getTime())) {
+                return fecha; // Devolver tal cual si no se puede parsear
+            }
+
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            return fecha; // En caso de error, devolver tal cual
+        }
+    }// Función para formatear fecha
+    function formatearFecha(fecha) {
+        // Si la fecha ya viene formateada desde el backend, devolverla tal cual
+        if (!fecha || fecha === null || fecha === 'null') {
+            return 'N/A';
+        }
+
+        // Si la fecha ya es un string formateado (contiene "/"), devolverla directamente
+        if (typeof fecha === 'string' && fecha.includes('/')) {
+            return fecha;
+        }
+
+        // Si es formato ISO, intentar parsear
+        try {
+            const date = new Date(fecha);
+            if (isNaN(date.getTime())) {
+                return fecha; // Devolver tal cual si no se puede parsear
+            }
+
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            return fecha; // En caso de error, devolver tal cual
+        }
+    }
+
+    // Función para crear nuevo usuario
+    function nuevoUsuario() {
+        window.location.href = '/usuarios/nuevo';
+    }
+
+    // Función para ver usuario
+    function verUsuario(id) {
+        window.location.href = `/usuarios/ver/${id}`;
+    }
+
+    // Función para editar usuario
+    function editarUsuario(id) {
+        window.location.href = `/usuarios/editar/${id}`;
+    }
+
+    // Función para eliminar usuario
+    async function eliminarUsuario(id, nombre) {
+        const userRole = localStorage.getItem('userRole');
+
+        // Verificar si es SUPER_ADMIN
+        if (userRole === 'SUPER_ADMIN') {
+            // Mostrar opciones: Desactivar o Eliminar físicamente
+            const { value: accion } = await Swal.fire({
+                title: '¿Qué deseas hacer?',
+                html: `Usuario: <strong>${nombre}</strong>`,
+                icon: 'question',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: '<i class="fas fa-ban"></i> Desactivar',
+                denyButtonText: '<i class="fas fa-trash"></i> Eliminar Físicamente',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#f59e0b',
+                denyButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280'
+            });
+
+            if (accion === true) {
+                // Desactivar
+                await desactivarUsuario(id, nombre);
+            } else if (accion === false) {
+                // Eliminar físicamente
+                await eliminarFisicamente(id, nombre);
+            }
+        } else {
+            // Solo puede desactivar
+            await desactivarUsuario(id, nombre);
+        }
+    }
+
+    // Función para desactivar (soft delete)
+    async function desactivarUsuario(id, nombre) {
+        const result = await Swal.fire({
+            title: '¿Desactivar usuario?',
+            html: `¿Estás seguro de desactivar a <strong>${nombre}</strong>?<br><br>
+               <span class="text-warning">El usuario no podrá iniciar sesión pero sus datos se conservarán.</span>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, desactivar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#6b7280'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.put(`http://localhost:8080/api/usuarios/${id}/desactivar`, {}, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Usuario desactivado',
+                    text: 'El usuario se desactivó correctamente',
+                    confirmButtonColor: '#3b82f6'
+                });
+
+                cargarUsuarios();
+
+            } catch (error) {
+                console.error('Error desactivando usuario:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudo desactivar el usuario',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+    }
+
+    // Función para eliminar físicamente (solo SUPER_ADMIN)
+    async function eliminarFisicamente(id, nombre) {
+        const result = await Swal.fire({
+            title: '⚠️ ELIMINAR FÍSICAMENTE',
+            html: `¿Estás seguro de eliminar PERMANENTEMENTE a <strong>${nombre}</strong>?<br><br>
+               <span class="text-danger"><strong>ADVERTENCIA:</strong> Esta acción NO se puede deshacer.<br>
+               Se perderán TODOS los datos asociados.</span>`,
+            icon: 'error',
+            input: 'text',
+            inputPlaceholder: 'Escribe "ELIMINAR" para confirmar',
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar Permanentemente',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            preConfirm: (texto) => {
+                if (texto !== 'ELIMINAR') {
+                    Swal.showValidationMessage('Debes escribir "ELIMINAR" para confirmar');
+                    return false;
+                }
+                return true;
+            }
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete(`http://localhost:8080/api/usuarios/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Usuario eliminado',
+                    text: 'El usuario se eliminó permanentemente',
+                    confirmButtonColor: '#3b82f6'
+                });
+
+                cargarUsuarios();
+
+            } catch (error) {
+                console.error('Error eliminando usuario:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudo eliminar el usuario',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+    }
+
+    // Función para activar usuario
+    async function activarUsuario(id, nombre) {
+        const result = await Swal.fire({
+            title: '¿Activar usuario?',
+            html: `¿Estás seguro de activar a <strong>${nombre}</strong>?<br><br>
+               <span class="text-success">El usuario podrá iniciar sesión nuevamente.</span>`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, activar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6b7280'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.put(`http://localhost:8080/api/usuarios/${id}/activar`, {}, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Usuario activado',
+                    text: 'El usuario se activó correctamente',
+                    confirmButtonColor: '#3b82f6'
+                });
+
+                cargarUsuarios();
+
+            } catch (error) {
+                console.error('Error activando usuario:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudo activar el usuario',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+    }
+
+    // Función logout
+    function logout() {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: '¿Estás seguro que deseas salir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#3b82f6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        });
+    }
+</script>
+</body>
+</html>

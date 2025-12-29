@@ -130,6 +130,9 @@
             <p><strong>Token JWT:</strong> <code id="tokenDisplay">...</code></p>
             <p><strong>Usuario:</strong> <span id="userNameDisplay">...</span></p>
             <p><strong>Rol:</strong> <span id="userRoleDisplay">...</span></p>
+            <button class="btn btn-outline-primary" onclick="gestionarUsuarios()">
+                <i class="fas fa-users-cog"></i> Gestionar Usuarios
+            </button>
             <button class="btn btn-sm btn-primary" onclick="testAPI()">
                 <i class="fas fa-flask"></i> Probar API con Token
             </button>
@@ -234,6 +237,10 @@
 
     // Cargar estadísticas al iniciar
     cargarEstadisticas();
+    // Función para ir a gestión de usuarios
+    function gestionarUsuarios() {
+        window.location.href = '/usuarios';
+    }
 </script>
 </body>
 </html>

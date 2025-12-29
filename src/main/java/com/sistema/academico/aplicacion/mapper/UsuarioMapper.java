@@ -3,29 +3,21 @@ package com.sistema.academico.aplicacion.mapper;
 import com.sistema.academico.aplicacion.dto.request.UsuarioRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.UsuarioResponseDTO;
 import com.sistema.academico.dominio.entidad.Usuario;
-import com.sistema.academico.dominio.enumeracion.Estado;
-import com.sistema.academico.dominio.enumeracion.Rol;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Mapper para convertir entre Usuario y sus DTOs
+ */
 @Component
 public class UsuarioMapper {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-    private final PasswordEncoder passwordEncoder;
-
-    public UsuarioMapper(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     /**
-     * Convierte UsuarioRequestDTO a Entidad Usuario
-     * @param dto DTO con datos de entrada
-     * @return Entidad Usuario
+     * Convierte UsuarioRequestDTO a Usuario
      */
     public Usuario toEntity(UsuarioRequestDTO dto) {
         if (dto == null) {
@@ -34,61 +26,78 @@ public class UsuarioMapper {
 
         return Usuario.builder()
                 .nombreUsuario(dto.getNombreUsuario())
-                .contrasena(passwordEncoder.encode(dto.getContrasena()))
-                .email(dto.getEmail())  // ← MAPEO DE EMAIL AGREGADO
+                .contrasena(dto.getContrasena())
+                .email(dto.getEmail())
                 .rol(dto.getRol())
-                .estado(Estado.ACTIVO)
-                .fechaCreacion(LocalDateTime.now())
+                .nombre(dto.getNombre())
+                .apellido(dto.getApellido())
+                .cedula(dto.getCedula())
+                .telefono(dto.getTelefono())
+                .fechaNacimiento(dto.getFechaNacimiento())
+                .direccion(dto.getDireccion())
                 .build();
     }
 
     /**
-     * Convierte Entidad Usuario a UsuarioResponseDTO
-     * @param usuario Entidad Usuario
-     * @return DTO de respuesta
+     * Convierte Usuario a UsuarioResponseDTO
      */
-    public UsuarioResponseDTO toResponseDTO(Usuario usuario) {
-        if (usuario == null) {
+    public UsuarioResponseDTO toDTO(Usuario entity) {
+        if (entity == null) {
             return null;
         }
 
         return UsuarioResponseDTO.builder()
-                .id(usuario.getId())
-                .nombreUsuario(usuario.getNombreUsuario())
-                .email(usuario.getEmail())  // ← MAPEO DE EMAIL AGREGADO
-                .rol(transformarRol(usuario.getRol()))
-                .estado(transformarEstado(usuario.getEstado()))
-                .fechaCreacion(usuario.getFechaCreacion().format(FORMATTER))
+                .id(entity.getId())
+                .nombreUsuario(entity.getNombreUsuario())
+                .email(entity.getEmail())
+                .rol(formatRol(entity.getRol()))
+                .estado(formatEstado(entity.getEstado()))
+                .nombre(entity.getNombre())
+                .apellido(entity.getApellido())
+                .cedula(entity.getCedula())
+                .telefono(entity.getTelefono())
+                .fechaNacimiento(entity.getFechaNacimiento() != null ?
+                        entity.getFechaNacimiento().format(DATE_FORMATTER) : null)
+                .direccion(entity.getDireccion())
+                .fechaCreacion(entity.getFechaCreacion() != null ?
+                        entity.getFechaCreacion().format(DATETIME_FORMATTER) : null)
+                .fechaActualizacion(entity.getFechaActualizacion() != null ?
+                        entity.getFechaActualizacion().format(DATETIME_FORMATTER) : null)
                 .build();
     }
 
     /**
      * Actualiza una entidad Usuario existente con datos del DTO
-     * @param usuario Entidad existente
-     * @param dto DTO con datos nuevos
+     * NO actualiza la contraseña (se maneja por separado)
      */
-    public void updateEntityFromDTO(Usuario usuario, UsuarioRequestDTO dto) {
-        if (dto.getNombreUsuario() != null) {
-            usuario.setNombreUsuario(dto.getNombreUsuario());
+    public void updateEntity(UsuarioRequestDTO dto, Usuario entity) {
+        if (dto == null || entity == null) {
+            return;
         }
-        if (dto.getContrasena() != null && !dto.getContrasena().isEmpty()) {
-            usuario.setContrasena(passwordEncoder.encode(dto.getContrasena()));
-        }
-        if (dto.getEmail() != null) {  // ← ACTUALIZACIÓN DE EMAIL AGREGADA
-            usuario.setEmail(dto.getEmail());
-        }
-        if (dto.getRol() != null) {
-            usuario.setRol(dto.getRol());
-        }
+
+        entity.setNombreUsuario(dto.getNombreUsuario());
+        entity.setEmail(dto.getEmail());
+        entity.setRol(dto.getRol());
+        entity.setNombre(dto.getNombre());
+        entity.setApellido(dto.getApellido());
+        entity.setCedula(dto.getCedula());
+        entity.setTelefono(dto.getTelefono());
+        entity.setFechaNacimiento(dto.getFechaNacimiento());
+        entity.setDireccion(dto.getDireccion());
+        // NO actualizar contraseña aquí
     }
 
     /**
-     * Transforma el enum Rol a texto legible
-     * @param rol Enum Rol
-     * @return Texto legible
+     * Formatea el rol para mostrar
      */
-    private String transformarRol(Rol rol) {
+    private String formatRol(com.sistema.academico.dominio.enumeracion.Rol rol) {
+        if (rol == null) {
+            return null;
+        }
+
         switch (rol) {
+            case SUPER_ADMIN:
+                return "SUPER_ADMIN";
             case ADMIN:
                 return "Administrador";
             case PROFESOR:
@@ -101,11 +110,14 @@ public class UsuarioMapper {
     }
 
     /**
-     * Transforma el enum Estado a texto legible
-     * @param estado Enum Estado
-     * @return Texto legible
+     * Formatea el estado para mostrar
      */
-    private String transformarEstado(Estado estado) {
-        return estado == Estado.ACTIVO ? "Activo" : "Inactivo";
+    private String formatEstado(com.sistema.academico.dominio.enumeracion.Estado estado) {
+        if (estado == null) {
+            return null;
+        }
+
+        return estado == com.sistema.academico.dominio.enumeracion.Estado.ACTIVO ?
+                "Activo" : "Inactivo";
     }
 }

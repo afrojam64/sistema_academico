@@ -45,7 +45,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         Usuario guardado = usuarioRepository.save(usuario);
 
         // Convertir Entity a DTO Response
-        return usuarioMapper.toResponseDTO(guardado);
+        return usuarioMapper.toDTO(guardado);
     }
 
     @Override
@@ -54,14 +54,14 @@ public class UsuarioServiceImpl implements IUsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + id));
 
-        return usuarioMapper.toResponseDTO(usuario);
+        return usuarioMapper.toDTO(usuario);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> listarTodos() {
         return usuarioRepository.findAll().stream()
-                .map(usuarioMapper::toResponseDTO)
+                .map(usuarioMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -69,7 +69,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> listarActivos() {
         return usuarioRepository.findActivos().stream()
-                .map(usuarioMapper::toResponseDTO)
+                .map(usuarioMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -89,12 +89,12 @@ public class UsuarioServiceImpl implements IUsuarioService {
         }
 
         // Actualizar campos
-        usuarioMapper.updateEntityFromDTO(usuario, request);
+        usuarioMapper.updateEntity(request, usuario);
 
         // Guardar
         Usuario actualizado = usuarioRepository.save(usuario);
 
-        return usuarioMapper.toResponseDTO(actualizado);
+        return usuarioMapper.toDTO(actualizado);
     }
 
     @Override

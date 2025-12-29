@@ -95,7 +95,7 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/fonts/**", "/favicon.ico").permitAll()
 
                         // Páginas HTML (Thymeleaf)
-                        .requestMatchers("/", "/login", "/dashboard/**", "/404", "/403", "/500").permitAll()
+                        .requestMatchers("/", "/login", "/dashboard/**", "/usuarios/**", "/profesores/**", "/estudiantes/**", "/cursos/**", "/calificaciones/**", "/inscripciones/**", "/404", "/403", "/500").permitAll()
 
                         // API de autenticación
                         .requestMatchers("/auth/**").permitAll()

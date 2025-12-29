@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Usuario - Sistema Académico</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .page-header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .page-title {
+            color: #1e3a8a;
+            font-weight: 700;
+            margin: 0;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        .form-control, .form-select {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .is-invalid {
+            border-color: #dc2626 !important;
+        }
+        .invalid-feedback {
+            display: block;
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+        .btn-secondary {
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 8px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+        .password-strength-bar {
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .strength-weak { background: #dc2626; width: 33%; }
+        .strength-medium { background: #f59e0b; width: 66%; }
+        .strength-strong { background: #10b981; width: 100%; }
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .info-box i {
+            color: #3b82f6;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <a href="/usuarios" class="navbar-brand">
+            <i class="fas fa-arrow-left"></i> Volver a Lista de Usuarios
+        </a>
+        <div class="text-white">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-user-plus"></i> Crear Nuevo Usuario
+        </h1>
+        <p class="text-muted mb-0">Completa todos los campos para crear un nuevo usuario en el sistema</p>
+    </div>
+
+    <!-- Formulario -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-4">
+                    <!-- Info Box -->
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Importante:</strong> Todos los campos marcados con asterisco (*) son obligatorios.
+                        La contraseña debe tener al menos 6 caracteres.
+                    </div>
+
+                    <form id="formCrearUsuario">
+                        <div class="row">
+                            <!-- Usuario -->
+                            <div class="col-md-6 mb-3">
+                                <label for="nombreUsuario" class="form-label required">Nombre de Usuario</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="nombreUsuario"
+                                       name="nombreUsuario"
+                                       placeholder="Ej: juan.perez"
+                                       minlength="4"
+                                       maxlength="50"
+                                       required>
+                                <div class="invalid-feedback" id="errorNombreUsuario"></div>
+                                <small class="text-muted">Mínimo 4 caracteres, máximo 50</small>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label required">Email</label>
+                                <input type="email"
+                                       class="form-control"
+                                       id="email"
+                                       name="email"
+                                       placeholder="usuario@ejemplo.com"
+                                       required>
+                                <div class="invalid-feedback" id="errorEmail"></div>
+                            </div>
+
+                            <!-- NUEVOS CAMPOS DE DATOS PERSONALES -->
+
+                            <!-- Nombre -->
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label required">Nombre</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="nombre"
+                                       name="nombre"
+                                       placeholder="Ej: Juan"
+                                       minlength="2"
+                                       maxlength="100"
+                                       required>
+                                <div class="invalid-feedback" id="errorNombre"></div>
+                            </div>
+
+                            <!-- Apellido -->
+                            <div class="col-md-6 mb-3">
+                                <label for="apellido" class="form-label required">Apellido</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="apellido"
+                                       name="apellido"
+                                       placeholder="Ej: Pérez"
+                                       minlength="2"
+                                       maxlength="100"
+                                       required>
+                                <div class="invalid-feedback" id="errorApellido"></div>
+                            </div>
+
+                            <!-- Cédula -->
+                            <div class="col-md-6 mb-3">
+                                <label for="cedula" class="form-label required">Cédula</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="cedula"
+                                       name="cedula"
+                                       placeholder="Ej: 1234567890"
+                                       minlength="5"
+                                       maxlength="20"
+                                       required>
+                                <div class="invalid-feedback" id="errorCedula"></div>
+                            </div>
+
+                            <!-- Teléfono -->
+                            <div class="col-md-6 mb-3">
+                                <label for="telefono" class="form-label">Teléfono</label>
+                                <input type="tel"
+                                       class="form-control"
+                                       id="telefono"
+                                       name="telefono"
+                                       placeholder="Ej: +593987654321"
+                                       maxlength="20">
+                                <div class="invalid-feedback" id="errorTelefono"></div>
+                            </div>
+
+                            <!-- Fecha de Nacimiento -->
+                            <div class="col-md-6 mb-3">
+                                <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="fechaNacimiento"
+                                       name="fechaNacimiento">
+                                <div class="invalid-feedback" id="errorFechaNacimiento"></div>
+                            </div>
+
+                            <!-- Dirección -->
+                            <div class="col-md-6 mb-3">
+                                <label for="direccion" class="form-label">Dirección</label>
+                                <textarea class="form-control"
+                                          id="direccion"
+                                          name="direccion"
+                                          rows="2"
+                                          placeholder="Ej: Av. Principal 123, Quito"
+                                          maxlength="500"></textarea>
+                                <div class="invalid-feedback" id="errorDireccion"></div>
+                            </div>
+
+                            <!-- Contraseña -->
+                            <div class="col-md-6 mb-3">
+                                <label for="contrasena" class="form-label required">Contraseña</label>
+                                <div class="input-group">
+                                    <input type="password"
+                                           class="form-control"
+                                           id="contrasena"
+                                           name="contrasena"
+                                           placeholder="Mínimo 6 caracteres"
+                                           minlength="6"
+                                           required>
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            onclick="togglePassword('contrasena')">
+                                        <i class="fas fa-eye" id="iconContrasena"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength">
+                                    <div class="password-strength-bar" id="strengthBar"></div>
+                                </div>
+                                <div class="invalid-feedback" id="errorContrasena"></div>
+                                <small class="text-muted" id="strengthText">Ingresa una contraseña</small>
+                            </div>
+
+                            <!-- Confirmar Contraseña -->
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmarContrasena" class="form-label required">Confirmar Contraseña</label>
+                                <div class="input-group">
+                                    <input type="password"
+                                           class="form-control"
+                                           id="confirmarContrasena"
+                                           name="confirmarContrasena"
+                                           placeholder="Repite la contraseña"
+                                           minlength="6"
+                                           required>
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            onclick="togglePassword('confirmarContrasena')">
+                                        <i class="fas fa-eye" id="iconConfirmarContrasena"></i>
+                                    </button>
+                                </div>
+                                <div class="invalid-feedback" id="errorConfirmarContrasena"></div>
+                            </div>
+
+                            <!-- Rol -->
+                            <div class="col-md-12 mb-4">
+                                <label for="rol" class="form-label required">Rol del Usuario</label>
+                                <select class="form-select" id="rol" name="rol" required>
+                                    <option value="">Seleccione un rol...</option>
+                                    <option value="SUPER_ADMIN">Super Administrador</option>
+                                    <option value="ADMIN">Administrador</option>
+                                    <option value="PROFESOR">Profesor</option>
+                                    <option value="ESTUDIANTE">Estudiante</option>
+                                </select>
+                                <div class="invalid-feedback" id="errorRol"></div>
+                                <small class="text-muted">Selecciona el nivel de acceso del usuario</small>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" onclick="cancelar()">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btnGuardar">
+                                <i class="fas fa-save"></i> Crear Usuario
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Verificar sesión
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    // Validación en tiempo real
+    const form = document.getElementById('formCrearUsuario');
+    const contrasenaInput = document.getElementById('contrasena');
+    const confirmarContrasenaInput = document.getElementById('confirmarContrasena');
+
+    // Indicador de fortaleza de contraseña
+    contrasenaInput.addEventListener('input', function() {
+        const password = this.value;
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+
+        if (password.length === 0) {
+            strengthBar.className = 'password-strength-bar';
+            strengthBar.style.width = '0%';
+            strengthText.textContent = 'Ingresa una contraseña';
+            return;
+        }
+
+        let strength = 0;
+        if (password.length >= 6) strength++;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        if (strength <= 2) {
+            strengthBar.className = 'password-strength-bar strength-weak';
+            strengthText.textContent = 'Contraseña débil';
+            strengthText.style.color = '#dc2626';
+        } else if (strength <= 4) {
+            strengthBar.className = 'password-strength-bar strength-medium';
+            strengthText.textContent = 'Contraseña media';
+            strengthText.style.color = '#f59e0b';
+        } else {
+            strengthBar.className = 'password-strength-bar strength-strong';
+            strengthText.textContent = 'Contraseña fuerte';
+            strengthText.style.color = '#10b981';
+        }
+    });
+
+    // Validar que las contraseñas coincidan
+    confirmarContrasenaInput.addEventListener('input', function() {
+        if (this.value !== contrasenaInput.value && this.value.length > 0) {
+            this.classList.add('is-invalid');
+            document.getElementById('errorConfirmarContrasena').textContent = 'Las contraseñas no coinciden';
+        } else {
+            this.classList.remove('is-invalid');
+            document.getElementById('errorConfirmarContrasena').textContent = '';
+        }
+    });
+
+    // Mostrar/ocultar contraseña
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById('icon' + fieldId.charAt(0).toUpperCase() + fieldId.slice(1));
+
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Enviar formulario
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Limpiar errores previos
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+
+        // Obtener datos del formulario
+        const nombreUsuario = document.getElementById('nombreUsuario').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const nombre = document.getElementById('nombre').value.trim();
+        const apellido = document.getElementById('apellido').value.trim();
+        const cedula = document.getElementById('cedula').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
+        const fechaNacimiento = document.getElementById('fechaNacimiento').value;
+        const direccion = document.getElementById('direccion').value.trim();
+        const contrasena = document.getElementById('contrasena').value;
+        const confirmarContrasena = document.getElementById('confirmarContrasena').value;
+        const rol = document.getElementById('rol').value;
+
+        // Validaciones
+        let valid = true;
+
+        if (nombreUsuario.length < 4) {
+            document.getElementById('nombreUsuario').classList.add('is-invalid');
+            document.getElementById('errorNombreUsuario').textContent = 'El nombre de usuario debe tener al menos 4 caracteres';
+            valid = false;
+        }
+
+        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            document.getElementById('email').classList.add('is-invalid');
+            document.getElementById('errorEmail').textContent = 'Ingresa un email válido';
+            valid = false;
+        }
+
+        if (contrasena.length < 6) {
+            document.getElementById('contrasena').classList.add('is-invalid');
+            document.getElementById('errorContrasena').textContent = 'La contraseña debe tener al menos 6 caracteres';
+            valid = false;
+        }
+
+        if (contrasena !== confirmarContrasena) {
+            document.getElementById('confirmarContrasena').classList.add('is-invalid');
+            document.getElementById('errorConfirmarContrasena').textContent = 'Las contraseñas no coinciden';
+            valid = false;
+        }
+
+        if (!rol) {
+            document.getElementById('rol').classList.add('is-invalid');
+            document.getElementById('errorRol').textContent = 'Selecciona un rol';
+            valid = false;
+        }
+
+        if (!valid) {
+            return;
+        }
+
+        // Deshabilitar botón
+        const btnGuardar = document.getElementById('btnGuardar');
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+
+        try {
+            const response = await axios.post('http://localhost:8080/api/usuarios', {
+                nombreUsuario: nombreUsuario,
+                email: email,
+                nombre: nombre,
+                apellido: apellido,
+                cedula: cedula,
+                telefono: telefono || null,
+                fechaNacimiento: fechaNacimiento || null,
+                direccion: direccion || null,
+                contrasena: contrasena,
+                rol: rol
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            await Swal.fire({
+                icon: 'success',
+                title: '¡Usuario creado!',
+                text: 'El usuario se creó correctamente',
+                confirmButtonColor: '#3b82f6'
+            });
+
+            window.location.href = '/usuarios';
+
+        } catch (error) {
+            console.error('Error creando usuario:', error);
+
+            let errorMessage = 'No se pudo crear el usuario';
+
+            if (error.response && error.response.data) {
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                } else if (error.response.data.errors) {
+                    errorMessage = Object.values(error.response.data.errors).join(', ');
+                }
+            }
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+                confirmButtonColor: '#3b82f6'
+            });
+
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<i class="fas fa-save"></i> Crear Usuario';
+        }
+    });
+
+    // Función cancelar
+    function cancelar() {
+        Swal.fire({
+            title: '¿Cancelar?',
+            text: '¿Estás seguro? Los cambios no guardados se perderán',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'No',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/usuarios';
+            }
+        });
+    }
+
+    // Función logout
+    function logout() {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: '¿Estás seguro que deseas salir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#3b82f6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        });
+    }
+</script>
+</body>
+</html>
