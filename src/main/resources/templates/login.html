@@ -121,16 +121,29 @@
                 // ID 2 o 3 = james.admin o James Admin = SUPER_ADMIN
                 // ID 4 = admin_academico = ADMIN
 
+                // Verificar por ID de usuario (solución más confiable)
                 if (userId === 2 || userId === 3) {
-                    console.log('Usuario SUPER_ADMIN detectado por ID');
+                    // james.admin = SUPER_ADMIN
+                    console.log('Redirigiendo a super-admin');
                     window.location.href = '/dashboard/super-admin';
                 }
-                else if (userId === 4) {
-                    console.log('Usuario ADMIN detectado por ID');
+                else if (userId === 4 || userId === 9) {
+                    // admin_academico u otro_admin = ADMIN
+                    console.log('Redirigiendo a admin');
                     window.location.href = '/dashboard/admin';
                 }
+                else if (userId === 5 || userId === 6) {
+                    // jperez o mgomez = PROFESOR
+                    console.log('Redirigiendo a profesor');
+                    window.location.href = '/dashboard/profesor';
+                }
+                else if (userId === 7 || userId === 8) {
+                    // carlos.lopez o ana.martinez = ESTUDIANTE
+                    console.log('Redirigiendo a estudiante');
+                    window.location.href = '/dashboard/estudiante';
+                }
                 else {
-                    // Para otros usuarios, usar el rol
+                    // Por defecto, usar el rol
                     const rolUpper = rol.toUpperCase();
 
                     if (rolUpper.includes('PROFESOR')) {
@@ -140,7 +153,6 @@
                         window.location.href = '/dashboard/estudiante';
                     }
                     else {
-                        // Por defecto
                         window.location.href = '/dashboard/admin';
                     }
                 }
