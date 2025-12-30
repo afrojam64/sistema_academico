@@ -75,7 +75,7 @@ public class AuthServiceImpl implements IAuthService {
                     .id(usuario.getId())
                     .nombreUsuario(usuario.getNombreUsuario())
                     .email(usuario.getEmail())
-                    .rol(usuario.getRol().getDescripcion())
+                    .rol(usuario.getRol().name())
                     .build();
 
         } catch (BadCredentialsException e) {

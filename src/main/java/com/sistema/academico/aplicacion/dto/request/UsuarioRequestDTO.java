@@ -20,8 +20,8 @@ public class UsuarioRequestDTO {
     @Size(min = 4, max = 50, message = "El nombre de usuario debe tener entre 4 y 50 caracteres")
     private String nombreUsuario;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    //@NotBlank(message = "La contraseña es obligatoria")
+    //@Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String contrasena;
 
     @NotBlank(message = "El email es obligatorio")

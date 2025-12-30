@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Usuario - Sistema Académico</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .user-info {
+            color: white;
+        }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .form-header {
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .form-header h2 {
+            color: #1e3a8a;
+            margin: 0;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-section-title {
+            color: #1e3a8a;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .required-field::after {
+            content: " *";
+            color: #dc2626;
+        }
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1e40af, #2563eb);
+        }
+        .btn-secondary {
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .invalid-feedback {
+            display: block;
+        }
+        .is-invalid {
+            border-color: #dc2626 !important;
+        }
+        .is-valid {
+            border-color: #10b981 !important;
+        }
+        .badge-rol {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .password-section {
+            background: #f0f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px dashed #3b82f6;
+            margin-top: 20px;
+        }
+        .password-toggle {
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 38px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3 mb-0">Cargando datos del usuario...</p>
+    </div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="volverLista()">
+                <i class="fas fa-arrow-left"></i> Volver a Lista
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-user-edit"></i> Editar Usuario
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-container">
+        <!-- Encabezado -->
+        <div class="form-header">
+            <h2>
+                <i class="fas fa-user-edit"></i>
+                Editar Usuario
+                <span id="usuarioNombre" class="text-muted" style="font-size: 18px;"></span>
+            </h2>
+            <p class="text-muted mb-0">
+                Modifica la información del usuario. Los campos marcados con <span class="text-danger">*</span> son obligatorios.
+            </p>
+        </div>
+
+        <!-- Formulario -->
+        <form id="formEditarUsuario">
+            <!-- ID oculto -->
+            <input type="hidden" id="usuarioId">
+
+            <!-- SECCIÓN 1: Información de Cuenta -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-user-shield"></i> Información de Cuenta
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nombreUsuario" class="form-label required-field">Nombre de Usuario</label>
+                        <input type="text" class="form-control" id="nombreUsuario"
+                               placeholder="Ej: juan.perez" disabled>
+                        <div class="form-text">El nombre de usuario no se puede modificar</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label required-field">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="email"
+                               placeholder="correo@ejemplo.com">
+                        <div class="invalid-feedback">Ingresa un correo válido</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="rol" class="form-label required-field">Rol</label>
+                        <select class="form-select" id="rol">
+                            <option value="">Selecciona un rol</option>
+                            <option value="SUPER_ADMIN">Super Administrador</option>
+                            <option value="ADMIN">Administrador</option>
+                            <option value="PROFESOR">Profesor</option>
+                            <option value="ESTUDIANTE">Estudiante</option>
+                        </select>
+                        <div class="invalid-feedback">Selecciona un rol</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="estado" class="form-label required-field">Estado</label>
+                        <select class="form-select" id="estado">
+                            <option value="ACTIVO">Activo</option>
+                            <option value="INACTIVO">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: Información Personal -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-id-card"></i> Información Personal
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre" class="form-label required-field">Nombre</label>
+                        <input type="text" class="form-control" id="nombre"
+                               placeholder="Ej: Juan">
+                        <div class="invalid-feedback">Ingresa el nombre</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="apellido" class="form-label required-field">Apellido</label>
+                        <input type="text" class="form-control" id="apellido"
+                               placeholder="Ej: Pérez García">
+                        <div class="invalid-feedback">Ingresa el apellido</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="cedula" class="form-label required-field">Cédula</label>
+                        <input type="text" class="form-control" id="cedula"
+                               placeholder="Ej: 1234567890">
+                        <div class="invalid-feedback">Ingresa una cédula válida</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="telefono"
+                               placeholder="Ej: +593 99 123 4567">
+                        <div class="invalid-feedback">Ingresa un teléfono válido</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                        <input type="date" class="form-control" id="fechaNacimiento">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="direccion"
+                               placeholder="Ej: Av. Principal 123">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 3: Cambiar Contraseña (Opcional) -->
+            <div class="form-section">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="checkCambiarPassword">
+                    <label class="form-check-label" for="checkCambiarPassword">
+                        <strong>Cambiar contraseña</strong>
+                    </label>
+                </div>
+
+                <div class="password-section" id="passwordSection" style="display: none;">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Si cambias la contraseña, asegúrate de que tenga:
+                        <ul class="mb-0 mt-2">
+                            <li>Mínimo 8 caracteres</li>
+                            <li>Al menos una letra mayúscula</li>
+                            <li>Al menos un número</li>
+                            <li>Al menos un carácter especial (!@#$%^&*)</li>
+                        </ul>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3 position-relative">
+                            <label for="nuevaPassword" class="form-label required-field">Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="nuevaPassword"
+                                   placeholder="Ingresa nueva contraseña">
+                            <i class="fas fa-eye password-toggle" id="toggleNuevaPassword"></i>
+                            <div class="invalid-feedback">La contraseña no cumple los requisitos</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3 position-relative">
+                            <label for="confirmarPassword" class="form-label required-field">Confirmar Contraseña</label>
+                            <input type="password" class="form-control" id="confirmarPassword"
+                                   placeholder="Confirma la contraseña">
+                            <i class="fas fa-eye password-toggle" id="toggleConfirmarPassword"></i>
+                            <div class="invalid-feedback">Las contraseñas no coinciden</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" class="btn btn-secondary" onclick="volverLista()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Obtener datos de sesión
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    // Verificar autenticación
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    // Mostrar nombre de usuario en navbar
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    // Obtener ID del usuario desde la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const usuarioId = window.location.pathname.split('/').pop();
+
+    // Cargar datos del usuario al iniciar
+    window.addEventListener('DOMContentLoaded', cargarUsuario);
+
+    // ========================================
+    // FUNCIONES PRINCIPALES
+    // ========================================
+
+    async function cargarUsuario() {
+        if (!usuarioId || usuarioId === 'editar') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se especificó el ID del usuario',
+                confirmButtonColor: '#3b82f6'
+            }).then(() => {
+                window.location.href = '/usuarios';
+            });
+            return;
+        }
+
+        // Mostrar loading
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
+        try {
+            const response = await axios.get(`http://localhost:8080/api/usuarios/${usuarioId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const usuario = response.data;
+
+            // Llenar el formulario con los datos
+            document.getElementById('usuarioId').value = usuario.id;
+            document.getElementById('nombreUsuario').value = usuario.nombreUsuario;
+            document.getElementById('email').value = usuario.email;
+            document.getElementById('rol').value = usuario.rol;
+            document.getElementById('estado').value = usuario.estado;
+            document.getElementById('nombre').value = usuario.nombre || '';
+            document.getElementById('apellido').value = usuario.apellido || '';
+            document.getElementById('cedula').value = usuario.cedula || '';
+            document.getElementById('telefono').value = usuario.telefono || '';
+            document.getElementById('direccion').value = usuario.direccion || '';
+
+            // Fecha de nacimiento
+            if (usuario.fechaNacimiento) {
+                const fecha = new Date(usuario.fechaNacimiento);
+                document.getElementById('fechaNacimiento').value = fecha.toISOString().split('T')[0];
+            }
+
+            // Actualizar título
+            document.getElementById('usuarioNombre').textContent =
+                `(${usuario.nombreUsuario} - ${usuario.nombre} ${usuario.apellido})`;
+
+            // Ocultar loading
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+        } catch (error) {
+            console.error('Error cargando usuario:', error);
+
+            // Ocultar loading
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'No se pudo cargar el usuario',
+                confirmButtonColor: '#3b82f6'
+            }).then(() => {
+                window.location.href = '/usuarios';
+            });
+        }
+    }
+
+    // ========================================
+    // VALIDACIONES
+    // ========================================
+
+    function validarEmail(email) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
+    function validarPassword(password) {
+        // Mínimo 8 caracteres, una mayúscula, un número, un carácter especial
+        const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+        return regex.test(password);
+    }
+
+    function validarFormulario() {
+        let valido = true;
+
+        // Email
+        const email = document.getElementById('email');
+        if (!email.value || !validarEmail(email.value)) {
+            email.classList.add('is-invalid');
+            valido = false;
+        } else {
+            email.classList.remove('is-invalid');
+            email.classList.add('is-valid');
+        }
+
+        // Rol
+        const rol = document.getElementById('rol');
+        if (!rol.value) {
+            rol.classList.add('is-invalid');
+            valido = false;
+        } else {
+            rol.classList.remove('is-invalid');
+            rol.classList.add('is-valid');
+        }
+
+        // Nombre
+        const nombre = document.getElementById('nombre');
+        if (!nombre.value.trim()) {
+            nombre.classList.add('is-invalid');
+            valido = false;
+        } else {
+            nombre.classList.remove('is-invalid');
+            nombre.classList.add('is-valid');
+        }
+
+        // Apellido
+        const apellido = document.getElementById('apellido');
+        if (!apellido.value.trim()) {
+            apellido.classList.add('is-invalid');
+            valido = false;
+        } else {
+            apellido.classList.remove('is-invalid');
+            apellido.classList.add('is-valid');
+        }
+
+        // Cédula
+        const cedula = document.getElementById('cedula');
+        if (!cedula.value.trim()) {
+            cedula.classList.add('is-invalid');
+            valido = false;
+        } else {
+            cedula.classList.remove('is-invalid');
+            cedula.classList.add('is-valid');
+        }
+
+        // Si está marcado "Cambiar contraseña", validar contraseñas
+        if (document.getElementById('checkCambiarPassword').checked) {
+            const nuevaPassword = document.getElementById('nuevaPassword');
+            const confirmarPassword = document.getElementById('confirmarPassword');
+
+            if (!nuevaPassword.value || !validarPassword(nuevaPassword.value)) {
+                nuevaPassword.classList.add('is-invalid');
+                valido = false;
+            } else {
+                nuevaPassword.classList.remove('is-invalid');
+                nuevaPassword.classList.add('is-valid');
+            }
+
+            if (nuevaPassword.value !== confirmarPassword.value) {
+                confirmarPassword.classList.add('is-invalid');
+                valido = false;
+            } else {
+                confirmarPassword.classList.remove('is-invalid');
+                confirmarPassword.classList.add('is-valid');
+            }
+        }
+
+        return valido;
+    }
+
+    // ========================================
+    // ENVÍO DEL FORMULARIO
+    // ========================================
+
+    document.getElementById('formEditarUsuario').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!validarFormulario()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Validación',
+                text: 'Por favor completa todos los campos obligatorios correctamente',
+                confirmButtonColor: '#3b82f6'
+            });
+            return;
+        }
+
+        // Construir objeto con datos actualizados
+        const datosActualizados = {
+            nombreUsuario: document.getElementById('nombreUsuario').value,
+            email: document.getElementById('email').value,
+            rol: document.getElementById('rol').value,
+            estado: document.getElementById('estado').value,
+            nombre: document.getElementById('nombre').value,
+            apellido: document.getElementById('apellido').value,
+            cedula: document.getElementById('cedula').value,
+            telefono: document.getElementById('telefono').value || null,
+            direccion: document.getElementById('direccion').value || null,
+            fechaNacimiento: document.getElementById('fechaNacimiento').value || null
+        };
+
+        // Si se marca "Cambiar contraseña", agregar la nueva contraseña
+        // Si NO se marca, enviar string vacío para que el backend la ignore
+        if (document.getElementById('checkCambiarPassword').checked) {
+            datosActualizados.contrasena = document.getElementById('nuevaPassword').value;
+        } else {
+            datosActualizados.contrasena = '';  // String vacío = NO cambiar
+        }
+
+// Si se marca "Cambiar contraseña", agregar la nueva contraseña
+        if (document.getElementById('checkCambiarPassword').checked) {
+            datosActualizados.contrasena = document.getElementById('nuevaPassword').value;
+        }
+
+        // Si se marca "Cambiar contraseña", agregar la nueva contraseña
+        if (document.getElementById('checkCambiarPassword').checked) {
+            datosActualizados.contrasena = document.getElementById('nuevaPassword').value;
+        }
+
+        try {
+            await axios.put(
+                `http://localhost:8080/api/usuarios/${usuarioId}`,
+                datosActualizados,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Usuario actualizado!',
+                text: 'Los cambios se guardaron correctamente',
+                confirmButtonColor: '#3b82f6'
+            }).then(() => {
+                window.location.href = '/usuarios';
+            });
+
+        } catch (error) {
+            console.error('Error actualizando usuario:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'No se pudo actualizar el usuario',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    });
+
+    // ========================================
+    // FUNCIONALIDADES ADICIONALES
+    // ========================================
+
+    // Mostrar/ocultar sección de cambiar contraseña
+    document.getElementById('checkCambiarPassword').addEventListener('change', (e) => {
+        const passwordSection = document.getElementById('passwordSection');
+        if (e.target.checked) {
+            passwordSection.style.display = 'block';
+        } else {
+            passwordSection.style.display = 'none';
+            // Limpiar campos de contraseña
+            document.getElementById('nuevaPassword').value = '';
+            document.getElementById('confirmarPassword').value = '';
+            document.getElementById('nuevaPassword').classList.remove('is-invalid', 'is-valid');
+            document.getElementById('confirmarPassword').classList.remove('is-invalid', 'is-valid');
+        }
+    });
+
+    // Toggle mostrar/ocultar contraseñas
+    document.getElementById('toggleNuevaPassword').addEventListener('click', () => {
+        const passwordInput = document.getElementById('nuevaPassword');
+        const icon = document.getElementById('toggleNuevaPassword');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+
+    document.getElementById('toggleConfirmarPassword').addEventListener('click', () => {
+        const passwordInput = document.getElementById('confirmarPassword');
+        const icon = document.getElementById('toggleConfirmarPassword');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+
+    // ========================================
+    // NAVEGACIÓN
+    // ========================================
+
+    function volverLista() {
+        window.location.href = '/usuarios';
+    }
+
+    function logout() {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: '¿Estás seguro que deseas salir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#3b82f6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

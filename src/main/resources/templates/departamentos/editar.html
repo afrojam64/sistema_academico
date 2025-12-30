@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Departamento - Sistema Académico</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .user-info {
+            color: white;
+        }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .form-header {
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .form-header h2 {
+            color: #059669;
+            margin: 0;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+        .form-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        }
+        .form-control.is-invalid {
+            border-color: #dc2626;
+        }
+        .form-control.is-valid {
+            border-color: #10b981;
+        }
+        .invalid-feedback {
+            display: block;
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .char-counter {
+            font-size: 12px;
+            color: #6b7280;
+            text-align: right;
+            margin-top: 5px;
+        }
+        .btn-guardar {
+            background: linear-gradient(135deg, #059669, #10b981);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 8px;
+        }
+        .btn-guardar:hover {
+            background: linear-gradient(135deg, #047857, #059669);
+            color: white;
+        }
+        .btn-cancelar {
+            background: #6b7280;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 8px;
+        }
+        .btn-cancelar:hover {
+            background: #4b5563;
+            color: white;
+        }
+        .form-section {
+            background: #f9fafb;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #e5e7eb;
+        }
+        .section-title {
+            color: #059669;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3 mb-0">Cargando datos del departamento...</p>
+    </div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="volver()">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-building"></i> Editar Departamento
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-container">
+        <!-- Encabezado -->
+        <div class="form-header">
+            <h2>
+                <i class="fas fa-edit"></i>
+                Editar Departamento
+                <small class="text-muted" id="departamentoNombre" style="font-size: 16px;"></small>
+            </h2>
+            <p class="text-muted mb-0">Modifica los datos del departamento</p>
+        </div>
+
+        <!-- Formulario -->
+        <form id="formEditarDepartamento" novalidate>
+
+            <!-- ID oculto -->
+            <input type="hidden" id="departamentoId">
+
+            <!-- Sección: Información Básica -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Información Básica
+                </div>
+
+                <!-- Código -->
+                <div class="mb-4">
+                    <label for="codigo" class="form-label required">Código del Departamento</label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="codigo"
+                            placeholder="Ej: ING, MAT, FIS"
+                            maxlength="10"
+                            required
+                    >
+                    <div class="invalid-feedback" id="codigoError"></div>
+                    <div class="char-counter">
+                        <span id="codigoCount">0</span>/10 caracteres
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Código único de 2-10 caracteres (se recomienda usar mayúsculas)
+                    </small>
+                </div>
+
+                <!-- Nombre -->
+                <div class="mb-4">
+                    <label for="nombre" class="form-label required">Nombre del Departamento</label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="nombre"
+                            placeholder="Ej: Ingeniería de Sistemas"
+                            maxlength="100"
+                            required
+                    >
+                    <div class="invalid-feedback" id="nombreError"></div>
+                    <div class="char-counter">
+                        <span id="nombreCount">0</span>/100 caracteres
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción (Opcional)</label>
+                    <textarea
+                            class="form-control"
+                            id="descripcion"
+                            rows="4"
+                            placeholder="Descripción detallada del departamento..."
+                            maxlength="500"
+                    ></textarea>
+                    <div class="char-counter">
+                        <span id="descripcionCount">0</span>/500 caracteres
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Información adicional sobre el departamento (opcional)
+                    </small>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="d-flex gap-3 justify-content-end">
+                <button type="button" class="btn btn-cancelar" onclick="volver()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-guardar">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Axios -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // ========================================
+    // VARIABLES GLOBALES
+    // ========================================
+
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    // Verificar autenticación
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    // Mostrar nombre de usuario
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    // Obtener ID del departamento desde la URL
+    const departamentoId = window.location.pathname.split('/').pop();
+
+    // Variable para datos originales
+    let datosOriginales = {};
+
+    // Variable para controlar guardado
+    let guardandoFormulario = false;
+
+    // ========================================
+    // CARGAR DATOS DEL DEPARTAMENTO
+    // ========================================
+
+    window.addEventListener('DOMContentLoaded', cargarDepartamento);
+
+    async function cargarDepartamento() {
+        if (!departamentoId || departamentoId === 'editar') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se especificó el ID del departamento',
+                confirmButtonColor: '#10b981'
+            }).then(() => {
+                window.location.href = '/departamentos';
+            });
+            return;
+        }
+
+        // Mostrar loading
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/api/departamentos/${departamentoId}`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            const departamento = response.data;
+            datosOriginales = { ...departamento };
+
+            // Llenar el formulario
+            document.getElementById('departamentoId').value = departamento.id;
+            document.getElementById('codigo').value = departamento.codigo || '';
+            document.getElementById('nombre').value = departamento.nombre || '';
+            document.getElementById('descripcion').value = departamento.descripcion || '';
+
+            // Actualizar contadores
+            document.getElementById('codigoCount').textContent = (departamento.codigo || '').length;
+            document.getElementById('nombreCount').textContent = (departamento.nombre || '').length;
+            document.getElementById('descripcionCount').textContent = (departamento.descripcion || '').length;
+
+            // Actualizar título
+            document.getElementById('departamentoNombre').textContent =
+                `(${departamento.codigo} - ${departamento.nombre})`;
+
+            // Ocultar loading
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+        } catch (error) {
+            console.error('Error cargando departamento:', error);
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'No se pudo cargar el departamento',
+                confirmButtonColor: '#10b981'
+            }).then(() => {
+                window.location.href = '/departamentos';
+            });
+        }
+    }
+
+    // ========================================
+    // CONTADORES DE CARACTERES
+    // ========================================
+
+    document.getElementById('codigo').addEventListener('input', function() {
+        document.getElementById('codigoCount').textContent = this.value.length;
+        this.value = this.value.toUpperCase();
+        if (this.value.length >= 2) this.classList.remove('is-invalid');
+    });
+
+    document.getElementById('nombre').addEventListener('input', function() {
+        document.getElementById('nombreCount').textContent = this.value.length;
+        if (this.value.length >= 3) this.classList.remove('is-invalid');
+    });
+
+    document.getElementById('descripcion').addEventListener('input', function() {
+        document.getElementById('descripcionCount').textContent = this.value.length;
+    });
+
+    // ========================================
+    // VALIDACIONES
+    // ========================================
+
+    function validarCodigo() {
+        const codigo = document.getElementById('codigo');
+        const codigoError = document.getElementById('codigoError');
+        const valor = codigo.value.trim();
+
+        if (!valor) {
+            codigo.classList.add('is-invalid');
+            codigoError.textContent = 'El código es obligatorio';
+            return false;
+        }
+        if (valor.length < 2 || valor.length > 10) {
+            codigo.classList.add('is-invalid');
+            codigoError.textContent = 'El código debe tener entre 2 y 10 caracteres';
+            return false;
+        }
+        if (!/^[A-Z0-9]+$/.test(valor)) {
+            codigo.classList.add('is-invalid');
+            codigoError.textContent = 'Solo letras mayúsculas y números';
+            return false;
+        }
+
+        codigo.classList.remove('is-invalid');
+        codigo.classList.add('is-valid');
+        return true;
+    }
+
+    function validarNombre() {
+        const nombre = document.getElementById('nombre');
+        const nombreError = document.getElementById('nombreError');
+        const valor = nombre.value.trim();
+
+        if (!valor) {
+            nombre.classList.add('is-invalid');
+            nombreError.textContent = 'El nombre es obligatorio';
+            return false;
+        }
+        if (valor.length < 3 || valor.length > 100) {
+            nombre.classList.add('is-invalid');
+            nombreError.textContent = 'El nombre debe tener entre 3 y 100 caracteres';
+            return false;
+        }
+
+        nombre.classList.remove('is-invalid');
+        nombre.classList.add('is-valid');
+        return true;
+    }
+
+    function hayCambios() {
+        return document.getElementById('codigo').value.trim() !== datosOriginales.codigo ||
+            document.getElementById('nombre').value.trim() !== datosOriginales.nombre ||
+            document.getElementById('descripcion').value.trim() !== (datosOriginales.descripcion || '');
+    }
+
+    // ========================================
+    // ENVÍO DEL FORMULARIO
+    // ========================================
+
+    document.getElementById('formEditarDepartamento').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (!validarCodigo() || !validarNombre()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Validación',
+                text: 'Por favor, completa todos los campos correctamente',
+                confirmButtonColor: '#10b981'
+            });
+            return;
+        }
+
+        if (!hayCambios()) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Sin cambios',
+                text: 'No se detectaron cambios',
+                confirmButtonColor: '#10b981'
+            });
+            return;
+        }
+
+        const departamentoActualizado = {
+            codigo: document.getElementById('codigo').value.trim(),
+            nombre: document.getElementById('nombre').value.trim(),
+            descripcion: document.getElementById('descripcion').value.trim() || null
+        };
+
+        const result = await Swal.fire({
+            title: '¿Guardar cambios?',
+            html: `
+                <div style="text-align: left; margin: 20px;">
+                    <p><strong>Código:</strong> ${departamentoActualizado.codigo}</p>
+                    <p><strong>Nombre:</strong> ${departamentoActualizado.nombre}</p>
+                    <p><strong>Descripción:</strong> ${departamentoActualizado.descripcion || '<i>Sin descripción</i>'}</p>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#10b981'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                Swal.fire({
+                    title: 'Guardando cambios...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                await axios.put(
+                    `http://localhost:8080/api/departamentos/${departamentoId}`,
+                    departamentoActualizado,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Cambios guardados!',
+                    text: 'El departamento se actualizó correctamente',
+                    confirmButtonColor: '#10b981'
+                }).then(() => {
+                    guardandoFormulario = true;
+                    window.location.href = '/departamentos';
+                });
+
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudo actualizar',
+                    confirmButtonColor: '#10b981'
+                });
+            }
+        }
+    });
+
+    // ========================================
+    // NAVEGACIÓN
+    // ========================================
+
+    function volver() {
+        if (hayCambios()) {
+            Swal.fire({
+                title: '¿Descartar cambios?',
+                text: 'Hay cambios sin guardar',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, salir',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#dc2626'
+            }).then((result) => {
+                if (result.isConfirmed) window.location.href = '/departamentos';
+            });
+        } else {
+            window.location.href = '/departamentos';
+        }
+    }
+
+    function logout() {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, salir',
+            confirmButtonColor: '#10b981'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        });
+    }
+
+    window.addEventListener('beforeunload', function(e) {
+        if (guardandoFormulario) return;
+        if (hayCambios()) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+</script>
+
+</body>
+</html>

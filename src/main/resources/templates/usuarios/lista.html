@@ -108,9 +108,9 @@
 <!-- Navbar -->
 <nav class="navbar navbar-dark">
     <div class="container-fluid">
-        <a href="/dashboard/admin" class="navbar-brand">
+        <button class="btn btn-outline-light" onclick="volverDashboard()">
             <i class="fas fa-arrow-left"></i> Volver al Dashboard
-        </a>
+        </button>
         <div class="text-white">
             <i class="fas fa-user-circle"></i>
             <span id="userName">Admin</span>
@@ -207,6 +207,28 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    // Función para volver al dashboard según el rol
+    function volverDashboard() {
+        const userRole = localStorage.getItem('userRole');
+
+        switch(userRole) {
+            case 'SUPER_ADMIN':
+                window.location.href = '/dashboard/super-admin';
+                break;
+            case 'ADMIN':
+                window.location.href = '/dashboard/admin';
+                break;
+            case 'PROFESOR':
+                window.location.href = '/dashboard/profesor';
+                break;
+            case 'ESTUDIANTE':
+                window.location.href = '/dashboard/estudiante';
+                break;
+            default:
+                window.location.href = '/dashboard/admin';
+                break;
+        }
+    }
     // Verificar sesión
     const token = localStorage.getItem('token');
     const userName = localStorage.getItem('userName');
@@ -501,9 +523,16 @@
 
         if (result.isConfirmed) {
             try {
-                await axios.put(`http://localhost:8080/api/usuarios/${id}/desactivar`, {}, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // Obtener rol del usuario actual (ahora viene como SUPER_ADMIN, ADMIN, etc.)
+                const userRole = localStorage.getItem('userRole');
+
+                console.log('Desactivando usuario. Rol actual:', userRole);
+
+                await axios.patch(
+                    `http://localhost:8080/api/usuarios/${id}/desactivar?rolUsuario=${userRole}`,
+                    {},
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
 
                 Swal.fire({
                     icon: 'success',
@@ -552,9 +581,15 @@
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`http://localhost:8080/api/usuarios/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // Obtener rol del usuario actual (ahora viene como SUPER_ADMIN, ADMIN, etc.)
+                const userRole = localStorage.getItem('userRole');
+
+                console.log('Eliminando usuario físicamente. Rol actual:', userRole);
+
+                await axios.delete(
+                    `http://localhost:8080/api/usuarios/${id}?rolUsuario=${userRole}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
 
                 Swal.fire({
                     icon: 'success',
@@ -593,9 +628,16 @@
 
         if (result.isConfirmed) {
             try {
-                await axios.put(`http://localhost:8080/api/usuarios/${id}/activar`, {}, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // Obtener rol del usuario actual (ahora viene como SUPER_ADMIN, ADMIN, etc.)
+                const userRole = localStorage.getItem('userRole');
+
+                console.log('Activando usuario. Rol actual:', userRole);
+
+                await axios.patch(
+                    `http://localhost:8080/api/usuarios/${id}/activar?rolUsuario=${userRole}`,
+                    {},
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
 
                 Swal.fire({
                     icon: 'success',

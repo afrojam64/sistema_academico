@@ -106,6 +106,46 @@ public class ViewController {
     }
 
     // ========================================
+    // MÓDULO: DEPARTAMENTOS
+    // ========================================
+
+    /**
+     * Listar todos los departamentos
+     * Ruta: http://localhost:8080/departamentos
+     */
+    @GetMapping("/departamentos")
+    public String listarDepartamentos() {
+        return "departamentos/lista";
+    }
+
+    /**
+     * Formulario para crear nuevo departamento
+     * Ruta: http://localhost:8080/departamentos/nuevo
+     */
+    @GetMapping("/departamentos/nuevo")
+    public String crearDepartamento() {
+        return "departamentos/crear";
+    }
+
+    /**
+     * Formulario para editar departamento
+     * Ruta: http://localhost:8080/departamentos/editar/{id}
+     */
+    @GetMapping("/departamentos/editar/{id}")
+    public String editarDepartamento(@PathVariable Long id) {
+        return "departamentos/editar";
+    }
+
+    /**
+     * Ver detalles de un departamento
+     * Ruta: http://localhost:8080/departamentos/ver/{id}
+     */
+    @GetMapping("/departamentos/ver/{id}")
+    public String verDepartamento(@PathVariable Long id) {
+        return "departamentos/ver";
+    }
+
+    // ========================================
     // MÓDULO: PROFESORES
     // ========================================
 

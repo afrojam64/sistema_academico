@@ -99,10 +99,14 @@
                 contrasena: password
             });
 
+            // Guardar datos en localStorage
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('userName', response.data.nombreUsuario);
-            localStorage.setItem('userRole', response.data.rol);
+            localStorage.setItem('userRole', response.data.rol);  // Ahora guardará: SUPER_ADMIN, ADMIN, etc.
+            localStorage.setItem('userId', response.data.id);
+            localStorage.setItem('userEmail', response.data.email);
 
+            // Mostrar mensaje de éxito
             Swal.fire({
                 icon: 'success',
                 title: '¡Bienvenido!',
@@ -110,51 +114,42 @@
                 timer: 1500,
                 showConfirmButton: false
             }).then(() => {
-                // Obtener el ID del usuario para verificar en BD
-                const userId = response.data.id;
+                // Obtener el rol para redireccionar
                 const rol = response.data.rol;
 
-                console.log('Usuario ID:', userId);
-                console.log('Rol recibido:', rol);
+                // Normalizar el rol recibido (ahora viene como SUPER_ADMIN, ADMIN, etc.)
+                const rolNormalizado = rol.toUpperCase().trim();
 
-                // Verificar por ID de usuario (solución más confiable)
-                // ID 2 o 3 = james.admin o James Admin = SUPER_ADMIN
-                // ID 4 = admin_academico = ADMIN
+                console.log('Usuario:', response.data.nombreUsuario);
+                console.log('Rol recibido:', rolNormalizado);
 
-                // Verificar por ID de usuario (solución más confiable)
-                if (userId === 2 || userId === 3) {
-                    // james.admin = SUPER_ADMIN
-                    console.log('Redirigiendo a super-admin');
-                    window.location.href = '/dashboard/super-admin';
-                }
-                else if (userId === 4 || userId === 9) {
-                    // admin_academico u otro_admin = ADMIN
-                    console.log('Redirigiendo a admin');
-                    window.location.href = '/dashboard/admin';
-                }
-                else if (userId === 5 || userId === 6) {
-                    // jperez o mgomez = PROFESOR
-                    console.log('Redirigiendo a profesor');
-                    window.location.href = '/dashboard/profesor';
-                }
-                else if (userId === 7 || userId === 8) {
-                    // carlos.lopez o ana.martinez = ESTUDIANTE
-                    console.log('Redirigiendo a estudiante');
-                    window.location.href = '/dashboard/estudiante';
-                }
-                else {
-                    // Por defecto, usar el rol
-                    const rolUpper = rol.toUpperCase();
+                // Redireccionar según el rol
+                switch(rolNormalizado) {
+                    case 'SUPER_ADMIN':
+                        console.log('→ Redirigiendo a dashboard SUPER_ADMIN');
+                        window.location.href = '/dashboard/super-admin';
+                        break;
 
-                    if (rolUpper.includes('PROFESOR')) {
-                        window.location.href = '/dashboard/profesor';
-                    }
-                    else if (rolUpper.includes('ESTUDIANTE')) {
-                        window.location.href = '/dashboard/estudiante';
-                    }
-                    else {
+                    case 'ADMIN':
+                        console.log('→ Redirigiendo a dashboard ADMIN');
                         window.location.href = '/dashboard/admin';
-                    }
+                        break;
+
+                    case 'PROFESOR':
+                        console.log('→ Redirigiendo a dashboard PROFESOR');
+                        window.location.href = '/dashboard/profesor';
+                        break;
+
+                    case 'ESTUDIANTE':
+                        console.log('→ Redirigiendo a dashboard ESTUDIANTE');
+                        window.location.href = '/dashboard/estudiante';
+                        break;
+
+                    default:
+                        console.warn('⚠️ Rol no reconocido:', rolNormalizado);
+                        console.log('→ Redirigiendo a dashboard por defecto');
+                        window.location.href = '/dashboard/admin';
+                        break;
                 }
             });
 

@@ -22,6 +22,7 @@ public class DepartamentoMapper {
         return Departamento.builder()
                 .nombre(dto.getNombre())
                 .codigo(dto.getCodigo())
+                .descripcion(dto.getDescripcion())
                 .estado(Estado.ACTIVO)
                 .build();
     }
@@ -40,6 +41,7 @@ public class DepartamentoMapper {
                 .id(departamento.getId())
                 .nombre(departamento.getNombre())
                 .codigo(departamento.getCodigo())
+                .descripcion(departamento.getDescripcion())
                 .estado(departamento.getEstado().name())
                 .build();
     }
@@ -55,6 +57,9 @@ public class DepartamentoMapper {
         }
         if (dto.getCodigo() != null) {
             departamento.setCodigo(dto.getCodigo());
+        }
+        if (dto.getDescripcion() != null) {
+            departamento.setDescripcion(dto.getDescripcion());
         }
     }
 }

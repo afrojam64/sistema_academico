@@ -12,6 +12,7 @@ import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaExcep
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
 import com.sistema.academico.infraestructura.repositorio.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +25,21 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public UsuarioResponseDTO crear(UsuarioRequestDTO request) {
+        // Validar contraseña obligatoria al crear
+        if (request.getContrasena() == null || request.getContrasena().trim().isEmpty()) {
+            throw new IllegalArgumentException("La contraseña es obligatoria al crear un usuario");
+        }
+
+        // Validar longitud de contraseña
+        if (request.getContrasena().length() < 6) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
+        }
+
         // Validar que el nombre de usuario no exista
         if (usuarioRepository.existsByNombreUsuario(request.getNombreUsuario())) {
             throw new RecursoDuplicadoException("El nombre de usuario ya existe");
@@ -40,6 +52,9 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         // Convertir DTO a Entity
         Usuario usuario = usuarioMapper.toEntity(request);
+
+        // Encriptar la contraseña
+        usuario.setContrasena(passwordEncoder.encode(request.getContrasena()));
 
         // Guardar
         Usuario guardado = usuarioRepository.save(usuario);
@@ -88,8 +103,24 @@ public class UsuarioServiceImpl implements IUsuarioService {
             }
         }
 
-        // Actualizar campos
+        // Validar email si cambió
+        if (request.getEmail() != null &&
+                !request.getEmail().equals(usuario.getEmail())) {
+            if (usuarioRepository.existsByEmail(request.getEmail())) {
+                throw new RecursoDuplicadoException("El email ya está registrado");
+            }
+        }
+
+        // Guardar contraseña anterior temporalmente
+        String contrasenaAnterior = usuario.getContrasena();
+
+        // Actualizar campos usando el mapper
         usuarioMapper.updateEntity(request, usuario);
+
+        // Si la contraseña es null o vacía, restaurar la anterior (NO cambiarla)
+        if (request.getContrasena() == null || request.getContrasena().trim().isEmpty()) {
+            usuario.setContrasena(contrasenaAnterior);
+        }
 
         // Guardar
         Usuario actualizado = usuarioRepository.save(usuario);

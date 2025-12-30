@@ -16,126 +16,340 @@
         }
         .navbar-brand {
             color: white !important;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 22px;
         }
         .user-info {
             color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .stat-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-        .stat-number {
-            font-size: 32px;
-            font-weight: 700;
-            color: #1e3a8a;
-        }
-        .stat-label {
-            color: #64748b;
-            font-size: 14px;
+        .badge-role {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.3);
         }
         .welcome-banner {
             background: linear-gradient(135deg, #1e3a8a, #3b82f6);
             color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+        }
+        .welcome-banner h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .welcome-banner p {
+            font-size: 18px;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        /* SECCIÓN 1: ESTADÍSTICAS */
+        .stats-section {
+            margin-bottom: 40px;
+        }
+        .stats-section h3 {
+            color: #1e3a8a;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .stat-card {
+            background: white;
             padding: 30px;
             border-radius: 15px;
-            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            margin-bottom: 20px;
         }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+        .stat-icon {
+            font-size: 45px;
+            margin-bottom: 15px;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #64748b;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        /* SECCIÓN 2: MÓDULOS */
+        .modules-section {
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #e5e7eb;
+        }
+        .section-header i {
+            font-size: 32px;
+            color: #1e3a8a;
+        }
+        .section-header h4 {
+            margin: 0;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 24px;
+        }
+        .module-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #e5e7eb;
+            height: 100%;
+            margin-bottom: 20px;
+        }
+        .module-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+        .module-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+        .module-card h5 {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        .module-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* COLORES */
+        .color-usuarios { color: #3b82f6; }
+        .color-departamentos { color: #059669; }
+        .color-materias { color: #0891b2; }
+        .color-profesores { color: #f59e0b; }
+        .color-estudiantes { color: #8b5cf6; }
+        .color-cursos { color: #dc2626; }
+        .color-inscripciones { color: #10b981; }
+        .color-calificaciones { color: #06b6d4; }
     </style>
 </head>
 <body>
+
 <!-- Navbar -->
 <nav class="navbar navbar-dark">
     <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">
-                <i class="fas fa-graduation-cap"></i> Sistema Académico
-            </span>
+        <span class="navbar-brand">
+            <i class="fas fa-graduation-cap"></i> Sistema Académico
+        </span>
         <div class="user-info">
-            <i class="fas fa-user-circle"></i>
+            <span class="badge-role">
+                <i class="fas fa-user-tie"></i> ADMIN
+            </span>
             <span id="userName">Cargando...</span>
-            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+            <button class="btn btn-sm btn-light" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i> Salir
             </button>
         </div>
     </div>
 </nav>
 
-<div class="container mt-4">
-    <!-- Banner de Bienvenida -->
+<div class="container-fluid mt-4">
+    <!-- Banner Bienvenida -->
     <div class="welcome-banner">
-        <h1><i class="fas fa-hand-wave"></i> ¡Bienvenido al Dashboard de Administrador!</h1>
-        <p class="mb-0">Gestiona el sistema académico desde aquí</p>
+        <h1>
+            <i class="fas fa-hand-wave"></i>
+            ¡Bienvenido, <span id="welcomeName">Admin</span>!
+        </h1>
+        <p>Gestiona el sistema académico de forma eficiente</p>
     </div>
 
-    <!-- Estadísticas -->
-    <div class="row">
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon text-primary">
-                    <i class="fas fa-users"></i>
+    <!-- ============================================ -->
+    <!-- SECCIÓN 1: ESTADÍSTICAS GENERALES -->
+    <!-- ============================================ -->
+    <div class="stats-section">
+        <h3>
+            <i class="fas fa-chart-line"></i>
+            Estadísticas Generales
+        </h3>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon color-usuarios">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number color-usuarios" id="totalUsuarios">...</div>
+                    <div class="stat-label">Total Usuarios</div>
                 </div>
-                <div class="stat-number" id="totalUsuarios">...</div>
-                <div class="stat-label">Total Usuarios</div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon text-success">
-                    <i class="fas fa-chalkboard-teacher"></i>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon color-departamentos">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-number color-departamentos" id="totalDepartamentos">...</div>
+                    <div class="stat-label">Departamentos</div>
                 </div>
-                <div class="stat-number" id="totalProfesores">...</div>
-                <div class="stat-label">Profesores</div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon text-info">
-                    <i class="fas fa-user-graduate"></i>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon color-materias">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-number color-materias" id="totalMaterias">...</div>
+                    <div class="stat-label">Materias</div>
                 </div>
-                <div class="stat-number" id="totalEstudiantes">...</div>
-                <div class="stat-label">Estudiantes</div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon text-warning">
-                    <i class="fas fa-book"></i>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon color-cursos">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-number color-cursos" id="totalCursos">...</div>
+                    <div class="stat-label">Cursos Activos</div>
                 </div>
-                <div class="stat-number" id="totalCursos">...</div>
-                <div class="stat-label">Cursos</div>
             </div>
         </div>
     </div>
 
-    <!-- Mensaje de Éxito -->
-    <div class="alert alert-success mt-4" role="alert">
-        <h4 class="alert-heading"><i class="fas fa-check-circle"></i> ¡Login Exitoso!</h4>
-        <p class="mb-0">Has iniciado sesión correctamente. El sistema de autenticación JWT está funcionando perfectamente.</p>
+    <!-- ============================================ -->
+    <!-- SECCIÓN 2: GESTIÓN DE USUARIOS -->
+    <!-- ============================================ -->
+    <div class="modules-section">
+        <div class="section-header">
+            <i class="fas fa-users-cog"></i>
+            <h4>Gestión de Usuarios</h4>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="module-card" onclick="gestionarUsuarios()">
+                    <div class="module-icon color-usuarios">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h5 class="color-usuarios">Usuarios</h5>
+                    <p>Crear, editar y activar/desactivar usuarios</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Info del Token -->
-    <div class="card mt-3">
-        <div class="card-header bg-primary text-white">
-            <i class="fas fa-key"></i> Información de Autenticación
+    <!-- ============================================ -->
+    <!-- SECCIÓN 3: GESTIÓN ACADÉMICA COMPLETA -->
+    <!-- ============================================ -->
+    <div class="modules-section mb-5">
+        <div class="section-header">
+            <i class="fas fa-graduation-cap"></i>
+            <h4>Gestión Académica</h4>
         </div>
-        <div class="card-body">
-            <p><strong>Token JWT:</strong> <code id="tokenDisplay">...</code></p>
-            <p><strong>Usuario:</strong> <span id="userNameDisplay">...</span></p>
-            <p><strong>Rol:</strong> <span id="userRoleDisplay">...</span></p>
-            <button class="btn btn-outline-primary" onclick="gestionarUsuarios()">
-                <i class="fas fa-users-cog"></i> Gestionar Usuarios
-            </button>
-            <button class="btn btn-sm btn-primary" onclick="testAPI()">
-                <i class="fas fa-flask"></i> Probar API con Token
-            </button>
+        <div class="row">
+            <!-- Departamentos -->
+            <div class="col-md-4">
+                <div class="module-card" onclick="verDepartamentos()">
+                    <div class="module-icon color-departamentos">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h5 class="color-departamentos">Departamentos</h5>
+                    <p>Administrar departamentos académicos del sistema</p>
+                </div>
+            </div>
+
+            <!-- Materias -->
+            <div class="col-md-4">
+                <div class="module-card" onclick="verMaterias()">
+                    <div class="module-icon color-materias">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h5 class="color-materias">Materias</h5>
+                    <p>Gestionar materias y asignaturas académicas</p>
+                </div>
+            </div>
+
+            <!-- Profesores -->
+            <div class="col-md-4">
+                <div class="module-card" onclick="verProfesores()">
+                    <div class="module-icon color-profesores">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h5 class="color-profesores">Profesores</h5>
+                    <p>Administrar profesores y asignaciones</p>
+                </div>
+            </div>
+
+            <!-- Estudiantes -->
+            <div class="col-md-4">
+                <div class="module-card" onclick="verEstudiantes()">
+                    <div class="module-icon color-estudiantes">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h5 class="color-estudiantes">Estudiantes</h5>
+                    <p>Gestionar estudiantes registrados en el sistema</p>
+                </div>
+            </div>
+
+            <!-- Cursos -->
+            <div class="col-md-4">
+                <div class="module-card" onclick="verCursos()">
+                    <div class="module-icon color-cursos">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h5 class="color-cursos">Cursos</h5>
+                    <p>Administrar cursos y horarios académicos</p>
+                </div>
+            </div>
+
+            <!-- Inscripciones -->
+            <div class="col-md-4">
+                <div class="module-card" onclick="verInscripciones()">
+                    <div class="module-icon color-inscripciones">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h5 class="color-inscripciones">Inscripciones</h5>
+                    <p>Gestionar inscripciones de estudiantes a cursos</p>
+                </div>
+            </div>
+
+            <!-- Calificaciones -->
+            <div class="col-md-4">
+                <div class="module-card" onclick="verCalificaciones()">
+                    <div class="module-icon color-calificaciones">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h5 class="color-calificaciones">Calificaciones</h5>
+                    <p>Administrar calificaciones y notas de estudiantes</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -143,23 +357,114 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Obtener datos del localStorage
     const token = localStorage.getItem('token');
     const userName = localStorage.getItem('userName');
     const userRole = localStorage.getItem('userRole');
 
-    // Verificar si hay sesión
-    if (!token) {
-        window.location.href = '/login';
+    if (!token) window.location.href = '/login';
+
+    document.getElementById('userName').textContent = userName || 'Admin';
+    document.getElementById('welcomeName').textContent = userName || 'Admin';
+
+    // ========================================
+    // CARGAR ESTADÍSTICAS
+    // ========================================
+    async function cargarEstadisticas() {
+        try {
+            // Usuarios
+            const usuarios = await axios.get('http://localhost:8080/api/usuarios', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            document.getElementById('totalUsuarios').textContent = usuarios.data.length;
+
+            // Departamentos
+            const departamentos = await axios.get('http://localhost:8080/api/departamentos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            document.getElementById('totalDepartamentos').textContent = departamentos.data.length;
+
+            // Materias (placeholder)
+            document.getElementById('totalMaterias').textContent = '0';
+
+            // Cursos (placeholder)
+            document.getElementById('totalCursos').textContent = '0';
+
+        } catch (error) {
+            console.error('Error cargando estadísticas:', error);
+            document.getElementById('totalUsuarios').textContent = '0';
+            document.getElementById('totalDepartamentos').textContent = '0';
+            document.getElementById('totalMaterias').textContent = '0';
+            document.getElementById('totalCursos').textContent = '0';
+        }
     }
 
-    // Mostrar información del usuario
-    document.getElementById('userName').textContent = userName || 'Usuario';
-    document.getElementById('userNameDisplay').textContent = userName || 'N/A';
-    document.getElementById('userRoleDisplay').textContent = userRole || 'N/A';
-    document.getElementById('tokenDisplay').textContent = token ? token.substring(0, 50) + '...' : 'N/A';
+    cargarEstadisticas();
 
-    // Función para cerrar sesión
+    // ========================================
+    // NAVEGACIÓN
+    // ========================================
+    function gestionarUsuarios() {
+        window.location.href = '/usuarios';
+    }
+
+    function verDepartamentos() {
+        window.location.href = '/departamentos';
+    }
+
+    function verMaterias() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Próximamente',
+            text: 'Módulo de Materias en desarrollo',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+
+    function verProfesores() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Próximamente',
+            text: 'Módulo de Profesores en desarrollo',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+
+    function verEstudiantes() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Próximamente',
+            text: 'Módulo de Estudiantes en desarrollo',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+
+    function verCursos() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Próximamente',
+            text: 'Módulo de Cursos en desarrollo',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+
+    function verInscripciones() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Próximamente',
+            text: 'Módulo de Inscripciones en desarrollo',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+
+    function verCalificaciones() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Próximamente',
+            text: 'Módulo de Calificaciones en desarrollo',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+
     function logout() {
         Swal.fire({
             title: '¿Cerrar sesión?',
@@ -168,7 +473,7 @@
             showCancelButton: true,
             confirmButtonText: 'Sí, salir',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#1e3a8a'
+            confirmButtonColor: '#3b82f6'
         }).then((result) => {
             if (result.isConfirmed) {
                 localStorage.clear();
@@ -176,71 +481,7 @@
             }
         });
     }
-
-    // Función para probar la API con el token
-    async function testAPI() {
-        try {
-            const response = await axios.get('http://localhost:8080/api/usuarios', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            Swal.fire({
-                icon: 'success',
-                title: '¡API funcionando!',
-                html: `Se obtuvieron <strong>${response.data.length}</strong> usuarios correctamente.`,
-                confirmButtonColor: '#1e3a8a'
-            });
-
-            // Actualizar estadísticas
-            document.getElementById('totalUsuarios').textContent = response.data.length;
-
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.response?.data?.message || 'Error al conectar con la API',
-                confirmButtonColor: '#1e3a8a'
-            });
-        }
-    }
-
-    // Cargar estadísticas al iniciar
-    async function cargarEstadisticas() {
-        try {
-            const response = await axios.get('http://localhost:8080/api/usuarios', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            document.getElementById('totalUsuarios').textContent = response.data.length;
-
-            // Contar profesores y estudiantes
-            let profesores = 0;
-            let estudiantes = 0;
-
-            response.data.forEach(usuario => {
-                if (usuario.rol.includes('Profesor')) profesores++;
-                if (usuario.rol.includes('Estudiante')) estudiantes++;
-            });
-
-            document.getElementById('totalProfesores').textContent = profesores;
-            document.getElementById('totalEstudiantes').textContent = estudiantes;
-            document.getElementById('totalCursos').textContent = '...';
-
-        } catch (error) {
-            console.error('Error cargando estadísticas:', error);
-        }
-    }
-
-    // Cargar estadísticas al iniciar
-    cargarEstadisticas();
-    // Función para ir a gestión de usuarios
-    function gestionarUsuarios() {
-        window.location.href = '/usuarios';
-    }
 </script>
+
 </body>
 </html>
