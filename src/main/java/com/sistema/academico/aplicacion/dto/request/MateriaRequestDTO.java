@@ -26,6 +26,6 @@ public class MateriaRequestDTO {
     @Max(value = 10, message = "No puede tener más de 10 créditos")
     private Integer creditos;
 
-    @NotNull(message = "El profesor es obligatorio")
-    private Long profesorId;
+    @NotNull(message = "El departamento es obligatorio")
+    private Long departamentoId;
 }

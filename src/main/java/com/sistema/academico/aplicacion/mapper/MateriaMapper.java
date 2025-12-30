@@ -2,8 +2,8 @@ package com.sistema.academico.aplicacion.mapper;
 
 import com.sistema.academico.aplicacion.dto.request.MateriaRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.MateriaResponseDTO;
+import com.sistema.academico.dominio.entidad.Departamento;
 import com.sistema.academico.dominio.entidad.Materia;
-import com.sistema.academico.dominio.entidad.Profesor;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import org.springframework.stereotype.Component;
 
@@ -13,10 +13,10 @@ public class MateriaMapper {
     /**
      * Convierte MateriaRequestDTO a Entidad Materia
      * @param dto DTO con datos de entrada
-     * @param profesor Profesor responsable de la materia
+     * @param departamento Departamento al que pertenece la materia
      * @return Entidad Materia
      */
-    public Materia toEntity(MateriaRequestDTO dto, Profesor profesor) {
+    public Materia toEntity(MateriaRequestDTO dto, Departamento departamento) {
         if (dto == null) {
             return null;
         }
@@ -26,7 +26,7 @@ public class MateriaMapper {
                 .codigo(dto.getCodigo())
                 .descripcion(dto.getDescripcion())
                 .creditos(dto.getCreditos())
-                .profesor(profesor)
+                .departamento(departamento)
                 .estado(Estado.ACTIVO)
                 .build();
     }
@@ -47,7 +47,9 @@ public class MateriaMapper {
                 .codigo(materia.getCodigo())
                 .descripcion(materia.getDescripcion())
                 .creditos(materia.getCreditos())
-                .profesor(materia.getProfesor().getNombre() + " " + materia.getProfesor().getApellido())
+                .departamentoId(materia.getDepartamento().getId())
+                .departamentoNombre(materia.getDepartamento().getNombre())
+                .departamentoCodigo(materia.getDepartamento().getCodigo())
                 .estado(materia.getEstado().name())
                 .build();
     }
@@ -56,9 +58,9 @@ public class MateriaMapper {
      * Actualiza una entidad Materia existente con datos del DTO
      * @param materia Entidad existente
      * @param dto DTO con datos nuevos
-     * @param profesor Profesor nuevo (opcional)
+     * @param departamento Departamento nuevo (opcional)
      */
-    public void updateEntityFromDTO(Materia materia, MateriaRequestDTO dto, Profesor profesor) {
+    public void updateEntityFromDTO(Materia materia, MateriaRequestDTO dto, Departamento departamento) {
         if (dto.getNombre() != null) {
             materia.setNombre(dto.getNombre());
         }
@@ -71,8 +73,8 @@ public class MateriaMapper {
         if (dto.getCreditos() != null) {
             materia.setCreditos(dto.getCreditos());
         }
-        if (profesor != null) {
-            materia.setProfesor(profesor);
+        if (departamento != null) {
+            materia.setDepartamento(departamento);
         }
     }
 }

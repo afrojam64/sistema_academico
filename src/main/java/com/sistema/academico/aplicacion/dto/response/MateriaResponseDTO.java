@@ -14,6 +14,8 @@ public class MateriaResponseDTO {
     private String codigo;
     private String descripcion;
     private Integer creditos;
-    private String profesor;
+    private Long departamentoId;
+    private String departamentoNombre;
+    private String departamentoCodigo;
     private String estado;
 }

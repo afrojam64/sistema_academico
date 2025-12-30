@@ -39,10 +39,10 @@ public class Materia {
     @Column(name = "creditos", nullable = false)
     private Integer creditos;
 
-    @NotNull(message = "El profesor responsable es obligatorio")
+    @NotNull(message = "El departamento es obligatorio")
     @ManyToOne
-    @JoinColumn(name = "profesor_id", nullable = false)
-    private Profesor profesor;
+    @JoinColumn(name = "departamento_id", nullable = false)
+    private Departamento departamento;
 
     @NotNull
     @Enumerated(EnumType.STRING)

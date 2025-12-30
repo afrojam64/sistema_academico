@@ -4,15 +4,14 @@ import com.sistema.academico.aplicacion.dto.request.MateriaRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.MateriaResponseDTO;
 import com.sistema.academico.aplicacion.mapper.MateriaMapper;
 import com.sistema.academico.aplicacion.servicio.IMateriaService;
+import com.sistema.academico.dominio.entidad.Departamento;
 import com.sistema.academico.dominio.entidad.Materia;
-import com.sistema.academico.dominio.entidad.Profesor;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import com.sistema.academico.dominio.enumeracion.Rol;
-import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
-import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
+import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
+import com.sistema.academico.infraestructura.repositorio.DepartamentoRepository;
 import com.sistema.academico.infraestructura.repositorio.MateriaRepository;
-import com.sistema.academico.infraestructura.repositorio.ProfesorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 public class MateriaServiceImpl implements IMateriaService {
 
     private final MateriaRepository materiaRepository;
-    private final ProfesorRepository profesorRepository;
+    private final DepartamentoRepository departamentoRepository;
     private final MateriaMapper materiaMapper;
 
     @Override
@@ -33,25 +32,31 @@ public class MateriaServiceImpl implements IMateriaService {
     public MateriaResponseDTO crear(MateriaRequestDTO request) {
         // Validar que el código no exista
         if (materiaRepository.existsByCodigo(request.getCodigo())) {
-            throw new RecursoDuplicadoException("El código de materia ya existe");
+            throw new IllegalArgumentException("Ya existe una materia con el código: " + request.getCodigo());
         }
 
-        // Validar que el profesor existe
-        Profesor profesor = profesorRepository.findById(request.getProfesorId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado"));
+        // Buscar el departamento
+        Departamento departamento = departamentoRepository.findById(request.getDepartamentoId())
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No se encontró el departamento con ID: " + request.getDepartamentoId()));
 
-        Materia materia = materiaMapper.toEntity(request, profesor);
-        Materia guardada = materiaRepository.save(materia);
+        // Validar que el departamento esté activo
+        if (!departamento.estaActivo()) {
+            throw new OperacionNoPermitidaException("El departamento debe estar activo para crear materias");
+        }
 
-        return materiaMapper.toResponseDTO(guardada);
+        // Crear la materia
+        Materia materia = materiaMapper.toEntity(request, departamento);
+        Materia materiaGuardada = materiaRepository.save(materia);
+
+        return materiaMapper.toResponseDTO(materiaGuardada);
     }
 
     @Override
     @Transactional(readOnly = true)
     public MateriaResponseDTO obtenerPorId(Long id) {
         Materia materia = materiaRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Materia no encontrada con ID: " + id));
-
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la materia con ID: " + id));
         return materiaMapper.toResponseDTO(materia);
     }
 
@@ -66,7 +71,7 @@ public class MateriaServiceImpl implements IMateriaService {
     @Override
     @Transactional(readOnly = true)
     public List<MateriaResponseDTO> listarActivas() {
-        return materiaRepository.findActivas().stream()
+        return materiaRepository.findByEstado(Estado.ACTIVO).stream()
                 .map(materiaMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -75,37 +80,44 @@ public class MateriaServiceImpl implements IMateriaService {
     @Transactional
     public MateriaResponseDTO actualizar(Long id, MateriaRequestDTO request) {
         Materia materia = materiaRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Materia no encontrada con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la materia con ID: " + id));
 
-        // Validar código si cambió
-        if (request.getCodigo() != null && !request.getCodigo().equals(materia.getCodigo())) {
-            if (materiaRepository.existsByCodigo(request.getCodigo())) {
-                throw new RecursoDuplicadoException("El código de materia ya existe");
+        // Validar código único si cambió
+        if (!materia.getCodigo().equals(request.getCodigo()) &&
+                materiaRepository.existsByCodigo(request.getCodigo())) {
+            throw new IllegalArgumentException("Ya existe una materia con el código: " + request.getCodigo());
+        }
+
+        // Buscar departamento si cambió
+        Departamento departamento = null;
+        if (!materia.getDepartamento().getId().equals(request.getDepartamentoId())) {
+            departamento = departamentoRepository.findById(request.getDepartamentoId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException(
+                            "No se encontró el departamento con ID: " + request.getDepartamentoId()));
+
+            if (!departamento.estaActivo()) {
+                throw new OperacionNoPermitidaException("El departamento debe estar activo");
             }
         }
 
-        // Obtener profesor si cambió
-        Profesor profesor = null;
-        if (request.getProfesorId() != null) {
-            profesor = profesorRepository.findById(request.getProfesorId())
-                    .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado"));
-        }
+        // Actualizar
+        materiaMapper.updateEntityFromDTO(materia, request, departamento);
+        Materia materiaActualizada = materiaRepository.save(materia);
 
-        materiaMapper.updateEntityFromDTO(materia, request, profesor);
-        Materia actualizada = materiaRepository.save(materia);
-
-        return materiaMapper.toResponseDTO(actualizada);
+        return materiaMapper.toResponseDTO(materiaActualizada);
     }
 
     @Override
     @Transactional
-    public void desactivar(Long id, Rol rolUsuarioActual) {
-        if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new OperacionNoPermitidaException("No tiene permisos para desactivar materias");
-        }
+    public void desactivar(Long id, Rol rolUsuario) {
+        validarPermisos(rolUsuario);
 
         Materia materia = materiaRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Materia no encontrada con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la materia con ID: " + id));
+
+        if (!materia.estaActiva()) {
+            throw new OperacionNoPermitidaException("La materia ya está inactiva");
+        }
 
         materia.setEstado(Estado.INACTIVO);
         materiaRepository.save(materia);
@@ -113,13 +125,15 @@ public class MateriaServiceImpl implements IMateriaService {
 
     @Override
     @Transactional
-    public void activar(Long id, Rol rolUsuarioActual) {
-        if (!rolUsuarioActual.puedeDesactivar()) {
-            throw new OperacionNoPermitidaException("No tiene permisos para activar materias");
-        }
+    public void activar(Long id, Rol rolUsuario) {
+        validarPermisos(rolUsuario);
 
         Materia materia = materiaRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Materia no encontrada con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la materia con ID: " + id));
+
+        if (materia.estaActiva()) {
+            throw new OperacionNoPermitidaException("La materia ya está activa");
+        }
 
         materia.setEstado(Estado.ACTIVO);
         materiaRepository.save(materia);
@@ -127,14 +141,22 @@ public class MateriaServiceImpl implements IMateriaService {
 
     @Override
     @Transactional
-    public void eliminar(Long id, Rol rolUsuarioActual) {
-        if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar materias físicamente");
+    public void eliminar(Long id, Rol rolUsuario) {
+        if (rolUsuario != Rol.SUPER_ADMIN) {
+            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar materias");
         }
 
         Materia materia = materiaRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Materia no encontrada con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la materia con ID: " + id));
 
+        // Aquí podrías validar si tiene cursos asociados antes de eliminar
         materiaRepository.delete(materia);
+    }
+
+    private void validarPermisos(Rol rolUsuario) {
+        if (rolUsuario != Rol.SUPER_ADMIN && rolUsuario != Rol.ADMIN) {
+            throw new OperacionNoPermitidaException(
+                    "No tienes permisos para realizar esta operación. Requiere rol ADMIN o SUPER_ADMIN");
+        }
     }
 }
