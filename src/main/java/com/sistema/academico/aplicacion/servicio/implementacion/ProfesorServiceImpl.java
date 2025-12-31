@@ -16,6 +16,7 @@ import com.sistema.academico.infraestructura.repositorio.DepartamentoRepository;
 import com.sistema.academico.infraestructura.repositorio.ProfesorRepository;
 import com.sistema.academico.infraestructura.repositorio.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,34 +31,83 @@ public class ProfesorServiceImpl implements IProfesorService {
     private final UsuarioRepository usuarioRepository;
     private final DepartamentoRepository departamentoRepository;
     private final ProfesorMapper profesorMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public ProfesorResponseDTO crear(ProfesorRequestDTO request) {
-        // Validar que el usuario existe
-        Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+        // Validar que el email no exista en usuarios
+        if (usuarioRepository.existsByEmail(request.getEmail())) {
+            throw new RecursoDuplicadoException("Ya existe un usuario con ese email");
+        }
 
-        // Validar que el departamento existe
+        // Validar que la cédula no exista en usuarios
+        if (usuarioRepository.existsByCedula(request.getCedula())) {
+            throw new RecursoDuplicadoException("Ya existe un usuario con esa cédula");
+        }
+
+        // Validar que el departamento existe y está activo
         Departamento departamento = departamentoRepository.findById(request.getDepartamentoId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Departamento no encontrado"));
 
-        // Validar que el email no exista
-        if (profesorRepository.existsByEmail(request.getEmail())) {
-            throw new RecursoDuplicadoException("El email ya está registrado");
+        if (!departamento.estaActivo()) {
+            throw new OperacionNoPermitidaException("El departamento debe estar activo");
         }
 
-        Profesor profesor = profesorMapper.toEntity(request, usuario, departamento);
-        Profesor guardado = profesorRepository.save(profesor);
+        // 1. GENERAR NOMBRE DE USUARIO ÚNICO
+        String nombreUsuario = generarNombreUsuario(request.getNombre(), request.getApellido());
 
-        return profesorMapper.toResponseDTO(guardado);
+        // 2. CREAR USUARIO AUTOMÁTICAMENTE
+        Usuario usuario = Usuario.builder()
+                .nombreUsuario(nombreUsuario)
+                .nombre(request.getNombre())
+                .apellido(request.getApellido())
+                .email(request.getEmail())
+                .cedula(request.getCedula())  // Cédula del formulario
+                .telefono(request.getTelefono())
+                .contrasena(passwordEncoder.encode("Temporal123"))  // Contraseña temporal
+                .rol(Rol.PROFESOR)
+                .estado(Estado.ACTIVO)
+                .build();
+
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        // 3. CREAR PROFESOR VINCULADO AL USUARIO
+        Profesor profesor = profesorMapper.toEntity(request, usuarioGuardado, departamento);
+        Profesor profesorGuardado = profesorRepository.save(profesor);
+
+        return profesorMapper.toResponseDTO(profesorGuardado);
+    }
+
+    /**
+     * Genera un nombre de usuario único basado en nombre y apellido
+     * Formato: primera letra del nombre + apellido sin espacios
+     * Si ya existe, agrega número incremental
+     */
+    private String generarNombreUsuario(String nombre, String apellido) {
+        // Limpiar y generar base
+        String base = (nombre.substring(0, 1) + apellido)
+                .toLowerCase()
+                .replaceAll("[^a-z0-9]", "");  // Solo letras y números
+
+        String nombreUsuario = base;
+        int contador = 1;
+
+        // Si ya existe, agregar número
+        while (usuarioRepository.existsByNombreUsuario(nombreUsuario)) {
+            nombreUsuario = base + contador;
+            contador++;
+        }
+
+        return nombreUsuario;
     }
 
     @Override
     @Transactional(readOnly = true)
     public ProfesorResponseDTO obtenerPorId(Long id) {
         Profesor profesor = profesorRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Profesor no encontrado con ID: " + id));
 
         return profesorMapper.toResponseDTO(profesor);
     }
@@ -82,12 +132,22 @@ public class ProfesorServiceImpl implements IProfesorService {
     @Transactional
     public ProfesorResponseDTO actualizar(Long id, ProfesorRequestDTO request) {
         Profesor profesor = profesorRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Profesor no encontrado con ID: " + id));
+
+        Usuario usuario = profesor.getUsuario();
 
         // Validar email si cambió
-        if (request.getEmail() != null && !request.getEmail().equals(profesor.getEmail())) {
-            if (profesorRepository.existsByEmail(request.getEmail())) {
-                throw new RecursoDuplicadoException("El email ya está registrado");
+        if (!usuario.getEmail().equals(request.getEmail())) {
+            if (usuarioRepository.existsByEmail(request.getEmail())) {
+                throw new RecursoDuplicadoException("Ya existe un usuario con ese email");
+            }
+        }
+
+        // Validar cédula si cambió
+        if (!usuario.getCedula().equals(request.getCedula())) {
+            if (usuarioRepository.existsByCedula(request.getCedula())) {
+                throw new RecursoDuplicadoException("Ya existe un usuario con esa cédula");
             }
         }
 
@@ -98,7 +158,13 @@ public class ProfesorServiceImpl implements IProfesorService {
                     .orElseThrow(() -> new RecursoNoEncontradoException("Departamento no encontrado"));
         }
 
+        // Actualizar profesor Y usuario
         profesorMapper.updateEntityFromDTO(profesor, request, departamento);
+
+        // Guardar usuario actualizado
+        usuarioRepository.save(usuario);
+
+        // Guardar profesor actualizado
         Profesor actualizado = profesorRepository.save(profesor);
 
         return profesorMapper.toResponseDTO(actualizado);
@@ -112,7 +178,8 @@ public class ProfesorServiceImpl implements IProfesorService {
         }
 
         Profesor profesor = profesorRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Profesor no encontrado con ID: " + id));
 
         profesor.setEstado(Estado.INACTIVO);
         profesorRepository.save(profesor);
@@ -126,7 +193,8 @@ public class ProfesorServiceImpl implements IProfesorService {
         }
 
         Profesor profesor = profesorRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Profesor no encontrado con ID: " + id));
 
         profesor.setEstado(Estado.ACTIVO);
         profesorRepository.save(profesor);
@@ -136,12 +204,15 @@ public class ProfesorServiceImpl implements IProfesorService {
     @Transactional
     public void eliminar(Long id, Rol rolUsuarioActual) {
         if (!rolUsuarioActual.puedeEliminarFisicamente()) {
-            throw new OperacionNoPermitidaException("Solo SUPER_ADMIN puede eliminar profesores físicamente");
+            throw new OperacionNoPermitidaException(
+                    "Solo SUPER_ADMIN puede eliminar profesores físicamente");
         }
 
         Profesor profesor = profesorRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Profesor no encontrado con ID: " + id));
 
+        // Eliminar profesor (el usuario se mantiene)
         profesorRepository.delete(profesor);
     }
 }

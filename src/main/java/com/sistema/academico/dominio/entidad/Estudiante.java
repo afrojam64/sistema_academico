@@ -25,32 +25,19 @@ public class Estudiante {
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
 
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 2, max = 100)
-    @Column(name = "nombre", nullable = false, length = 100)
-    private String nombre;
-
-    @NotBlank(message = "El apellido es obligatorio")
-    @Size(min = 2, max = 100)
-    @Column(name = "apellido", nullable = false, length = 100)
-    private String apellido;
-
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "Email inválido")
-    @Column(name = "email", nullable = false, unique = true, length = 150)
-    private String email;
-
+    @NotBlank(message = "El código de estudiante es obligatorio")
     @Size(max = 20)
-    @Column(name = "telefono", length = 20)
-    private String telefono;
+    @Column(name = "codigo_estudiante", nullable = false, unique = true, length = 20)
+    private String codigoEstudiante;
 
-    @NotBlank(message = "La matrícula es obligatoria")
-    @Size(min = 6, max = 20)
-    @Column(name = "matricula", nullable = false, unique = true, length = 20)
-    private String matricula;
+    @Size(max = 100)
+    @Column(name = "carrera", length = 100)
+    private String carrera;
 
-    @NotNull(message = "La fecha de ingreso es obligatoria")
-    @Column(name = "fecha_ingreso", nullable = false)
+    @Column(name = "semestre")
+    private Integer semestre;
+
+    @Column(name = "fecha_ingreso")
     private LocalDate fechaIngreso;
 
     @NotNull
@@ -72,7 +59,13 @@ public class Estudiante {
         return this.estado != null && this.estado.esActivo();
     }
 
+    /**
+     * Obtiene el nombre completo del estudiante desde el usuario asociado
+     */
     public String getNombreCompleto() {
-        return this.nombre + " " + this.apellido;
+        if (this.usuario != null) {
+            return this.usuario.getNombre() + " " + this.usuario.getApellido();
+        }
+        return "";
     }
 }

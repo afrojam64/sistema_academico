@@ -56,7 +56,7 @@ public class CursoMapper {
                 .nombre(curso.getNombre())
                 .codigo(curso.getCodigo())
                 .materia(curso.getMateria().getNombre())
-                .profesor(curso.getProfesor().getNombre() + " " + curso.getProfesor().getApellido())
+                .profesor(curso.getProfesor().getNombreCompleto())  // ✅ CORREGIDO
                 .cupoMaximo(curso.getCupoMaximo())
                 .cupoActual(curso.getCupoActual())
                 .cuposDisponibles(curso.getCupoMaximo() - curso.getCupoActual())

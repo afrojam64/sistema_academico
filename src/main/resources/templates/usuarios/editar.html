@@ -204,6 +204,11 @@
                             <option value="ESTUDIANTE">Estudiante</option>
                         </select>
                         <div class="invalid-feedback">Selecciona un rol</div>
+                        <div id="mensajeRolBloqueado" style="display: none;" class="alert alert-warning mt-2 mb-0">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>No se puede cambiar el rol de <span id="rolActual"></span>.</strong><br>
+                            <small>Para gestionar datos académicos usa el módulo de <span id="moduloSugerido"></span>.</small>
+                        </div>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -397,6 +402,20 @@
             // Ocultar loading
             document.getElementById('loadingOverlay').style.display = 'none';
 
+            // ✅ NUEVO: Bloquear cambio de rol si es PROFESOR o ESTUDIANTE
+            if (usuario.rol === 'PROFESOR' || usuario.rol === 'ESTUDIANTE') {
+                const rolSelect = document.getElementById('rol');
+                rolSelect.disabled = true;
+                rolSelect.style.backgroundColor = '#f3f4f6';
+                rolSelect.style.cursor = 'not-allowed';
+
+                // Mostrar mensaje
+                document.getElementById('mensajeRolBloqueado').style.display = 'block';
+                document.getElementById('rolActual').textContent = usuario.rol;
+                document.getElementById('moduloSugerido').textContent =
+                    usuario.rol === 'PROFESOR' ? 'Profesores' : 'Estudiantes';
+            }
+
         } catch (error) {
             console.error('Error cargando usuario:', error);
 
@@ -525,10 +544,12 @@
         }
 
         // Construir objeto con datos actualizados
+        // Obtener rol aunque esté deshabilitado
+        const rolSelect = document.getElementById('rol');
         const datosActualizados = {
             nombreUsuario: document.getElementById('nombreUsuario').value,
             email: document.getElementById('email').value,
-            rol: document.getElementById('rol').value,
+            rol: rolSelect.value,  // Funciona aunque esté deshabilitado
             estado: document.getElementById('estado').value,
             nombre: document.getElementById('nombre').value,
             apellido: document.getElementById('apellido').value,

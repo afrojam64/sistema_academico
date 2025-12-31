@@ -4,15 +4,16 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import java.time.LocalDate;
 
+/**
+ * DTO para crear un nuevo profesor
+ * NO requiere usuarioId porque se crea automáticamente
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ProfesorRequestDTO {
-
-    @NotNull(message = "El ID del usuario es obligatorio")
-    private Long usuarioId;
 
     @NotBlank(message = "El nombre es obligatorio")
     @Size(min = 2, max = 100)
@@ -25,6 +26,10 @@ public class ProfesorRequestDTO {
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "Email inválido")
     private String email;
+
+    @NotBlank(message = "La cédula es obligatoria")
+    @Size(min = 5, max = 20)
+    private String cedula;
 
     @Size(max = 20)
     private String telefono;

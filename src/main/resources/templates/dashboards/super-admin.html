@@ -241,6 +241,24 @@
                     <div class="stat-label">Cursos Activos</div>
                 </div>
             </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon color-cursos">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-number color-cursos" id="totalEstudiantes">...</div>
+                    <div class="stat-label">Total Estudiantes</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon color-cursos">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-number color-cursos" id="totalProfesores">...</div>
+                    <div class="stat-label">Total Profesores</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -383,6 +401,18 @@
             });
             document.getElementById('totalDepartamentos').textContent = departamentos.data.length;
 
+            // Profesores
+            const profesores = await  axios.get('http://localhost:8080/api/profesores', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            document.getElementById('totalProfesores').textContent = profesores.data.length;
+
+            // Estudiantes
+            const estudiantes = await axios.get('http://localhost:8080/api/estudiantes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            document.getElementById('totalEstudiantes').textContent = estudiantes.data.length;
+
             // Materias (placeholder)
             document.getElementById('totalMaterias').textContent = '0';
 
@@ -420,12 +450,7 @@
     }
 
     function verEstudiantes() {
-        Swal.fire({
-            icon: 'info',
-            title: 'Próximamente',
-            text: 'Módulo de Estudiantes en desarrollo',
-            confirmButtonColor: '#10b981'
-        });
+        window.location.href = '/estudiantes';
     }
 
     function verCursos() {

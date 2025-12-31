@@ -48,7 +48,7 @@ public class InscripcionMapper {
 
         return InscripcionResponseDTO.builder()
                 .id(inscripcion.getId())
-                .estudiante(inscripcion.getEstudiante().getNombre() + " " + inscripcion.getEstudiante().getApellido())
+                .estudiante(inscripcion.getEstudiante().getNombreCompleto())
                 .curso(inscripcion.getCurso().getCodigo() + " - " + inscripcion.getCurso().getNombre())
                 .fechaInscripcion(inscripcion.getFechaInscripcion() != null ? inscripcion.getFechaInscripcion().format(FORMATTER) : "")
                 .estado(inscripcion.getEstado().name())

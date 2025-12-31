@@ -297,6 +297,7 @@
                                 <div class="invalid-feedback" id="errorConfirmarContrasena"></div>
                             </div>
 
+
                             <!-- Rol -->
                             <div class="col-md-12 mb-4">
                                 <label for="rol" class="form-label required">Rol del Usuario</label>
@@ -304,11 +305,31 @@
                                     <option value="">Seleccione un rol...</option>
                                     <option value="SUPER_ADMIN">Super Administrador</option>
                                     <option value="ADMIN">Administrador</option>
-                                    <option value="PROFESOR">Profesor</option>
-                                    <option value="ESTUDIANTE">Estudiante</option>
                                 </select>
                                 <div class="invalid-feedback" id="errorRol"></div>
-                                <small class="text-muted">Selecciona el nivel de acceso del usuario</small>
+                                <small class="text-muted">Selecciona el nivel de acceso administrativo</small>
+
+                                <!-- Mensaje informativo para Profesores y Estudiantes -->
+                                <div class="alert alert-info mt-3 mb-0">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-info-circle me-2 mt-1"></i>
+                                        <div class="flex-grow-1">
+                                            <strong>¿Necesitas crear un Profesor o Estudiante?</strong>
+                                            <p class="mb-2 mt-1 small">Para crear usuarios con perfiles académicos completos, usa los módulos específicos:</p>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <a href="/profesores/nuevo" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-chalkboard-teacher"></i> Crear Profesor
+                                                </a>
+                                                <a href="/estudiantes/nuevo" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-user-graduate"></i> Crear Estudiante
+                                                </a>
+                                            </div>
+                                            <small class="text-muted d-block mt-2">
+                                                <i class="fas fa-check-circle"></i> Estos módulos crearán automáticamente el usuario y su perfil académico completo
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

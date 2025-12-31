@@ -19,7 +19,7 @@ public class ProfesorMapper {
     /**
      * Convierte ProfesorRequestDTO a Entidad Profesor
      * @param dto DTO con datos de entrada
-     * @param usuario Usuario asociado al profesor
+     * @param usuario Usuario asociado al profesor (ya creado)
      * @param departamento Departamento asociado al profesor
      * @return Entidad Profesor
      */
@@ -29,20 +29,19 @@ public class ProfesorMapper {
         }
 
         return Profesor.builder()
-                .nombre(dto.getNombre())
-                .apellido(dto.getApellido())
-                .email(dto.getEmail())
+                .usuario(usuario)
                 .telefono(dto.getTelefono())
                 .especialidad(dto.getEspecialidad())
-                .usuario(usuario)
                 .departamento(departamento)
                 .estado(Estado.ACTIVO)
-                .fechaContratacion(dto.getFechaContratacion() != null ? dto.getFechaContratacion() : LocalDate.now())
+                .fechaContratacion(dto.getFechaContratacion() != null ?
+                        dto.getFechaContratacion() : LocalDate.now())
                 .build();
     }
 
     /**
      * Convierte Entidad Profesor a ProfesorResponseDTO
+     * Obtiene nombre, apellido y email del usuario asociado
      * @param profesor Entidad Profesor
      * @return DTO de respuesta
      */
@@ -51,17 +50,22 @@ public class ProfesorMapper {
             return null;
         }
 
+        Usuario usuario = profesor.getUsuario();
+
         return ProfesorResponseDTO.builder()
                 .id(profesor.getId())
-                .nombre(profesor.getNombre())
-                .apellido(profesor.getApellido())
-                .nombreCompleto(profesor.getNombre() + " " + profesor.getApellido())
-                .email(profesor.getEmail())
+                .usuarioId(usuario.getId())
+                .nombreUsuario(usuario.getNombreUsuario())
+                .nombre(usuario.getNombre())
+                .apellido(usuario.getApellido())
+                .nombreCompleto(usuario.getNombre() + " " + usuario.getApellido())
+                .email(usuario.getEmail())
+                .cedula(usuario.getCedula())  // ← NUEVO: Obtiene cédula del usuario
                 .telefono(profesor.getTelefono())
                 .especialidad(profesor.getEspecialidad())
-                .departamentoId(profesor.getDepartamento().getId())           // ← NUEVO
-                .departamentoNombre(profesor.getDepartamento().getNombre())   // ← RENOMBRADO
-                .departamentoCodigo(profesor.getDepartamento().getCodigo())   // ← NUEVO
+                .departamentoId(profesor.getDepartamento().getId())
+                .departamentoNombre(profesor.getDepartamento().getNombre())
+                .departamentoCodigo(profesor.getDepartamento().getCodigo())
                 .fechaContratacion(profesor.getFechaContratacion() != null ?
                         profesor.getFechaContratacion().format(FORMATTER) : "")
                 .estado(profesor.getEstado().name())
@@ -75,15 +79,6 @@ public class ProfesorMapper {
      * @param departamento Departamento nuevo (opcional)
      */
     public void updateEntityFromDTO(Profesor profesor, ProfesorRequestDTO dto, Departamento departamento) {
-        if (dto.getNombre() != null) {
-            profesor.setNombre(dto.getNombre());
-        }
-        if (dto.getApellido() != null) {
-            profesor.setApellido(dto.getApellido());
-        }
-        if (dto.getEmail() != null) {
-            profesor.setEmail(dto.getEmail());
-        }
         if (dto.getTelefono() != null) {
             profesor.setTelefono(dto.getTelefono());
         }
@@ -95,6 +90,21 @@ public class ProfesorMapper {
         }
         if (departamento != null) {
             profesor.setDepartamento(departamento);
+        }
+
+        // Actualizar datos del usuario (nombre, apellido, email, cedula)
+        Usuario usuario = profesor.getUsuario();
+        if (dto.getNombre() != null) {
+            usuario.setNombre(dto.getNombre());
+        }
+        if (dto.getApellido() != null) {
+            usuario.setApellido(dto.getApellido());
+        }
+        if (dto.getEmail() != null) {
+            usuario.setEmail(dto.getEmail());
+        }
+        if (dto.getCedula() != null) {  // ← NUEVO: Actualiza cédula del usuario
+            usuario.setCedula(dto.getCedula());
         }
     }
 }

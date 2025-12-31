@@ -15,73 +15,78 @@ public class EstudianteMapper {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    /**
-     * Convierte EstudianteRequestDTO a Entidad Estudiante
-     * @param dto DTO con datos de entrada
-     * @param usuario Usuario asociado al estudiante
-     * @return Entidad Estudiante
-     */
     public Estudiante toEntity(EstudianteRequestDTO dto, Usuario usuario) {
         if (dto == null) {
             return null;
         }
 
         return Estudiante.builder()
-                .nombre(dto.getNombre())
-                .apellido(dto.getApellido())
-                .email(dto.getEmail())
-                .telefono(dto.getTelefono())
-                .matricula(dto.getMatricula())
                 .usuario(usuario)
+                .codigoEstudiante(dto.getCodigoEstudiante())
+                .carrera(dto.getCarrera())
+                .semestre(dto.getSemestre())
                 .estado(Estado.ACTIVO)
-                .fechaIngreso(dto.getFechaIngreso() != null ? dto.getFechaIngreso() : LocalDate.now())
+                .fechaIngreso(dto.getFechaIngreso() != null ?
+                        dto.getFechaIngreso() : LocalDate.now())
                 .build();
     }
 
-    /**
-     * Convierte Entidad Estudiante a EstudianteResponseDTO
-     * @param estudiante Entidad Estudiante
-     * @return DTO de respuesta
-     */
     public EstudianteResponseDTO toResponseDTO(Estudiante estudiante) {
         if (estudiante == null) {
             return null;
         }
 
+        Usuario usuario = estudiante.getUsuario();
+
         return EstudianteResponseDTO.builder()
                 .id(estudiante.getId())
-                .nombreCompleto(estudiante.getNombre() + " " + estudiante.getApellido())
-                .email(estudiante.getEmail())
-                .telefono(estudiante.getTelefono())
-                .matricula(estudiante.getMatricula())
-                .fechaIngreso(estudiante.getFechaIngreso() != null ? estudiante.getFechaIngreso().format(FORMATTER) : "")
+                .usuarioId(usuario.getId())
+                .nombreUsuario(usuario.getNombreUsuario())
+                .nombre(usuario.getNombre())
+                .apellido(usuario.getApellido())
+                .nombreCompleto(usuario.getNombre() + " " + usuario.getApellido())
+                .email(usuario.getEmail())
+                .cedula(usuario.getCedula())
+                .telefono(usuario.getTelefono())
+                .codigoEstudiante(estudiante.getCodigoEstudiante())
+                .carrera(estudiante.getCarrera())
+                .semestre(estudiante.getSemestre())
+                .fechaIngreso(estudiante.getFechaIngreso() != null ?
+                        estudiante.getFechaIngreso().format(FORMATTER) : "")
                 .estado(estudiante.getEstado().name())
                 .build();
     }
 
-    /**
-     * Actualiza una entidad Estudiante existente con datos del DTO
-     * @param estudiante Entidad existente
-     * @param dto DTO con datos nuevos
-     */
     public void updateEntityFromDTO(Estudiante estudiante, EstudianteRequestDTO dto) {
-        if (dto.getNombre() != null) {
-            estudiante.setNombre(dto.getNombre());
+        if (dto.getCodigoEstudiante() != null) {
+            estudiante.setCodigoEstudiante(dto.getCodigoEstudiante());
         }
-        if (dto.getApellido() != null) {
-            estudiante.setApellido(dto.getApellido());
+        if (dto.getCarrera() != null) {
+            estudiante.setCarrera(dto.getCarrera());
         }
-        if (dto.getEmail() != null) {
-            estudiante.setEmail(dto.getEmail());
-        }
-        if (dto.getTelefono() != null) {
-            estudiante.setTelefono(dto.getTelefono());
-        }
-        if (dto.getMatricula() != null) {
-            estudiante.setMatricula(dto.getMatricula());
+        if (dto.getSemestre() != null) {
+            estudiante.setSemestre(dto.getSemestre());
         }
         if (dto.getFechaIngreso() != null) {
             estudiante.setFechaIngreso(dto.getFechaIngreso());
+        }
+
+        // Actualizar datos del usuario
+        Usuario usuario = estudiante.getUsuario();
+        if (dto.getNombre() != null) {
+            usuario.setNombre(dto.getNombre());
+        }
+        if (dto.getApellido() != null) {
+            usuario.setApellido(dto.getApellido());
+        }
+        if (dto.getEmail() != null) {
+            usuario.setEmail(dto.getEmail());
+        }
+        if (dto.getCedula() != null) {
+            usuario.setCedula(dto.getCedula());
+        }
+        if (dto.getTelefono() != null) {
+            usuario.setTelefono(dto.getTelefono());
         }
     }
 }

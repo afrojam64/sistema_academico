@@ -25,21 +25,6 @@ public class Profesor {
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
 
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 2, max = 100)
-    @Column(name = "nombre", nullable = false, length = 100)
-    private String nombre;
-
-    @NotBlank(message = "El apellido es obligatorio")
-    @Size(min = 2, max = 100)
-    @Column(name = "apellido", nullable = false, length = 100)
-    private String apellido;
-
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "Email inválido")
-    @Column(name = "email", nullable = false, unique = true, length = 150)
-    private String email;
-
     @Size(max = 20)
     @Column(name = "telefono", length = 20)
     private String telefono;
@@ -75,7 +60,13 @@ public class Profesor {
         return this.estado != null && this.estado.esActivo();
     }
 
+    /**
+     * Obtiene el nombre completo del profesor desde el usuario asociado
+     */
     public String getNombreCompleto() {
-        return this.nombre + " " + this.apellido;
+        if (this.usuario != null) {
+            return this.usuario.getNombre() + " " + this.usuario.getApellido();
+        }
+        return "";
     }
 }
