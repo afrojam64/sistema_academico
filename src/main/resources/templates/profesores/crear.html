@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Profesor - Sistema Académico</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #f59e0b, #fb923c);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .user-info {
+            color: white;
+        }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .form-header {
+            border-bottom: 3px solid #f59e0b;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f59e0b, #fb923c);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .char-counter {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner-border text-warning" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Guardando...</span>
+        </div>
+        <p class="mt-3 mb-0">Creando profesor...</p>
+    </div>
+</div>
+
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="volverLista()">
+                <i class="fas fa-arrow-left"></i> Volver a Lista
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-plus-circle"></i> Crear Nuevo Profesor
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h2><i class="fas fa-chalkboard-teacher"></i> Información del Profesor</h2>
+            <p class="text-muted mb-0">Completa los campos para crear un nuevo profesor</p>
+        </div>
+
+        <form id="formCrearProfesor">
+            <!-- USUARIO -->
+            <div class="mb-4">
+                <label for="usuarioId" class="form-label fw-bold">
+                    Usuario Asociado <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="usuarioId" required>
+                    <option value="">Selecciona un usuario</option>
+                </select>
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>
+                    Solo se muestran usuarios con rol PROFESOR que no estén asignados a otro profesor
+                </div>
+                <div class="invalid-feedback">
+                    Debes seleccionar un usuario.
+                </div>
+            </div>
+
+            <!-- NOMBRE -->
+            <div class="mb-4">
+                <label for="nombre" class="form-label fw-bold">
+                    Nombre <span class="text-danger">*</span>
+                </label>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="nombre"
+                        placeholder="Ej: Juan Carlos"
+                        maxlength="100"
+                        required>
+                <div class="char-counter">
+                    <span id="nombreCounter">0/100</span> caracteres
+                </div>
+                <div class="invalid-feedback">
+                    El nombre es obligatorio (2-100 caracteres).
+                </div>
+            </div>
+
+            <!-- APELLIDO -->
+            <div class="mb-4">
+                <label for="apellido" class="form-label fw-bold">
+                    Apellido <span class="text-danger">*</span>
+                </label>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="apellido"
+                        placeholder="Ej: Pérez González"
+                        maxlength="100"
+                        required>
+                <div class="char-counter">
+                    <span id="apellidoCounter">0/100</span> caracteres
+                </div>
+                <div class="invalid-feedback">
+                    El apellido es obligatorio (2-100 caracteres).
+                </div>
+            </div>
+
+            <!-- EMAIL -->
+            <div class="mb-4">
+                <label for="email" class="form-label fw-bold">
+                    Email <span class="text-danger">*</span>
+                </label>
+                <input
+                        type="email"
+                        class="form-control"
+                        id="email"
+                        placeholder="Ej: juan.perez@universidad.edu"
+                        maxlength="150"
+                        required>
+                <div class="invalid-feedback">
+                    Ingresa un email válido.
+                </div>
+            </div>
+
+            <!-- TELÉFONO -->
+            <div class="mb-4">
+                <label for="telefono" class="form-label fw-bold">
+                    Teléfono <span class="text-muted">(Opcional)</span>
+                </label>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="telefono"
+                        placeholder="Ej: 3001234567"
+                        maxlength="20">
+                <div class="char-counter">
+                    <span id="telefonoCounter">0/20</span> caracteres
+                </div>
+            </div>
+
+            <!-- ESPECIALIDAD -->
+            <div class="mb-4">
+                <label for="especialidad" class="form-label fw-bold">
+                    Especialidad <span class="text-muted">(Opcional)</span>
+                </label>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="especialidad"
+                        placeholder="Ej: Bases de Datos, Ingeniería de Software"
+                        maxlength="200">
+                <div class="char-counter">
+                    <span id="especialidadCounter">0/200</span> caracteres
+                </div>
+            </div>
+
+            <!-- DEPARTAMENTO -->
+            <div class="mb-4">
+                <label for="departamentoId" class="form-label fw-bold">
+                    Departamento <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="departamentoId" required>
+                    <option value="">Selecciona un departamento</option>
+                </select>
+                <div class="invalid-feedback">
+                    Debes seleccionar un departamento.
+                </div>
+            </div>
+
+            <!-- FECHA DE CONTRATACIÓN -->
+            <div class="mb-4">
+                <label for="fechaContratacion" class="form-label fw-bold">
+                    Fecha de Contratación <span class="text-muted">(Opcional)</span>
+                </label>
+                <input
+                        type="date"
+                        class="form-control"
+                        id="fechaContratacion">
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>
+                    Si no se especifica, se usará la fecha actual
+                </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="d-flex gap-2 justify-content-end mt-4">
+                <button type="button" class="btn btn-secondary" onclick="cancelar()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Crear Profesor
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!token) window.location.href = '/login';
+
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    let formModificado = false;
+    let guardandoFormulario = false;
+
+    // ========================================
+    // CARGAR USUARIOS Y DEPARTAMENTOS
+    // ========================================
+    async function cargarDatos() {
+        console.log('Iniciando carga de datos...');
+
+        try {
+            // Cargar usuarios con rol PROFESOR
+            console.log('Cargando usuarios...');
+            const usuariosResponse = await axios.get('http://localhost:8080/api/usuarios', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            console.log('Usuarios recibidos:', usuariosResponse.data);
+
+            const selectUsuario = document.getElementById('usuarioId');
+            const usuariosProfesores = usuariosResponse.data.filter(u =>
+                u.rol === 'PROFESOR' && u.estado === 'ACTIVO'
+            );
+
+            console.log('Usuarios PROFESOR activos:', usuariosProfesores.length);
+
+            if (usuariosProfesores.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sin usuarios disponibles',
+                    text: 'No hay usuarios con rol PROFESOR disponibles. Por favor crea uno primero.',
+                    confirmButtonColor: '#f59e0b'
+                });
+            }
+
+            usuariosProfesores.forEach(usuario => {
+                const option = document.createElement('option');
+                option.value = usuario.id;
+                option.textContent = `${usuario.nombreUsuario} - ${usuario.nombre} ${usuario.apellido}`;
+                selectUsuario.appendChild(option);
+            });
+
+            // Cargar departamentos activos
+            console.log('Cargando departamentos...');
+            const deptosResponse = await axios.get('http://localhost:8080/api/departamentos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            console.log('Departamentos recibidos:', deptosResponse.data);
+
+            const selectDepto = document.getElementById('departamentoId');
+            const deptosActivos = deptosResponse.data.filter(d => d.estado === 'ACTIVO');
+
+            console.log('Departamentos activos:', deptosActivos.length);
+
+            deptosActivos.forEach(depto => {
+                const option = document.createElement('option');
+                option.value = depto.id;
+                option.textContent = `${depto.codigo} - ${depto.nombre}`;
+                selectDepto.appendChild(option);
+            });
+
+            console.log('Datos cargados correctamente');
+
+        } catch (error) {
+            console.error('Error completo:', error);
+            console.error('Respuesta del error:', error.response);
+
+            let mensajeError = 'No se pudieron cargar los datos necesarios';
+
+            if (error.response?.status === 401) {
+                mensajeError = 'Sesión expirada. Por favor inicia sesión nuevamente.';
+            } else if (error.response?.status === 403) {
+                mensajeError = 'No tienes permisos para acceder a estos datos';
+            } else if (error.response?.data?.message) {
+                mensajeError = error.response.data.message;
+            }
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: mensajeError,
+                confirmButtonColor: '#f59e0b'
+            });
+        }
+    }
+
+    cargarDatos();
+
+    // ========================================
+    // CONTADORES DE CARACTERES
+    // ========================================
+    document.getElementById('nombre').addEventListener('input', function(e) {
+        document.getElementById('nombreCounter').textContent = `${e.target.value.length}/100`;
+        formModificado = true;
+        validarCampo(e.target);
+    });
+
+    document.getElementById('apellido').addEventListener('input', function(e) {
+        document.getElementById('apellidoCounter').textContent = `${e.target.value.length}/100`;
+        formModificado = true;
+        validarCampo(e.target);
+    });
+
+    document.getElementById('telefono').addEventListener('input', function(e) {
+        document.getElementById('telefonoCounter').textContent = `${e.target.value.length}/20`;
+        formModificado = true;
+    });
+
+    document.getElementById('especialidad').addEventListener('input', function(e) {
+        document.getElementById('especialidadCounter').textContent = `${e.target.value.length}/200`;
+        formModificado = true;
+    });
+
+    document.getElementById('email').addEventListener('input', function(e) {
+        formModificado = true;
+        validarCampo(e.target);
+    });
+
+    document.getElementById('usuarioId').addEventListener('change', function(e) {
+        formModificado = true;
+        validarCampo(e.target);
+    });
+
+    document.getElementById('departamentoId').addEventListener('change', function(e) {
+        formModificado = true;
+        validarCampo(e.target);
+    });
+
+    document.getElementById('fechaContratacion').addEventListener('change', function() {
+        formModificado = true;
+    });
+
+    // ========================================
+    // VALIDACIONES EN TIEMPO REAL
+    // ========================================
+    function validarCampo(campo) {
+        if (campo.id === 'nombre' || campo.id === 'apellido') {
+            const valor = campo.value.trim();
+            const esValido = valor.length >= 2 && valor.length <= 100;
+
+            if (valor === '') {
+                campo.classList.remove('is-valid', 'is-invalid');
+            } else if (esValido) {
+                campo.classList.add('is-valid');
+                campo.classList.remove('is-invalid');
+            } else {
+                campo.classList.add('is-invalid');
+                campo.classList.remove('is-valid');
+            }
+        }
+
+        if (campo.id === 'email') {
+            const valor = campo.value.trim();
+            const esValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor);
+
+            if (valor === '') {
+                campo.classList.remove('is-valid', 'is-invalid');
+            } else if (esValido) {
+                campo.classList.add('is-valid');
+                campo.classList.remove('is-invalid');
+            } else {
+                campo.classList.add('is-invalid');
+                campo.classList.remove('is-valid');
+            }
+        }
+
+        if (campo.id === 'usuarioId' || campo.id === 'departamentoId') {
+            if (campo.value) {
+                campo.classList.add('is-valid');
+                campo.classList.remove('is-invalid');
+            } else {
+                campo.classList.remove('is-valid', 'is-invalid');
+            }
+        }
+    }
+
+    // ========================================
+    // ENVIAR FORMULARIO
+    // ========================================
+    document.getElementById('formCrearProfesor').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const usuarioId = document.getElementById('usuarioId').value;
+        const nombre = document.getElementById('nombre').value.trim();
+        const apellido = document.getElementById('apellido').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
+        const especialidad = document.getElementById('especialidad').value.trim();
+        const departamentoId = document.getElementById('departamentoId').value;
+        const fechaContratacion = document.getElementById('fechaContratacion').value;
+
+        // Validar campos obligatorios
+        if (!usuarioId || !nombre || !apellido || !email || !departamentoId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos incompletos',
+                text: 'Por favor completa todos los campos obligatorios',
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+
+        // Validar email
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Email inválido',
+                text: 'Por favor ingresa un email válido',
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+
+        // Confirmación
+        const usuarioSeleccionado = document.getElementById('usuarioId').selectedOptions[0].text;
+        const departamentoSeleccionado = document.getElementById('departamentoId').selectedOptions[0].text;
+
+        const result = await Swal.fire({
+            title: '¿Crear profesor?',
+            html: `
+                <div style="text-align: left; margin: 20px;">
+                    <p><strong>Usuario:</strong> ${usuarioSeleccionado}</p>
+                    <p><strong>Nombre:</strong> ${nombre} ${apellido}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    ${telefono ? `<p><strong>Teléfono:</strong> ${telefono}</p>` : ''}
+                    ${especialidad ? `<p><strong>Especialidad:</strong> ${especialidad}</p>` : ''}
+                    <p><strong>Departamento:</strong> ${departamentoSeleccionado}</p>
+                    ${fechaContratacion ? `<p><strong>F. Contratación:</strong> ${fechaContratacion}</p>` : ''}
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, crear',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#f59e0b'
+        });
+
+        if (result.isConfirmed) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            guardandoFormulario = true;
+
+            try {
+                const datos = {
+                    usuarioId: parseInt(usuarioId),
+                    nombre: nombre,
+                    apellido: apellido,
+                    email: email,
+                    telefono: telefono || null,
+                    especialidad: especialidad || null,
+                    departamentoId: parseInt(departamentoId),
+                    fechaContratacion: fechaContratacion || null
+                };
+
+                await axios.post(
+                    'http://localhost:8080/api/profesores',
+                    datos,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Profesor creado!',
+                    text: 'El profesor fue creado correctamente',
+                    confirmButtonColor: '#f59e0b'
+                }).then(() => {
+                    window.location.href = '/profesores';
+                });
+
+            } catch (error) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                guardandoFormulario = false;
+
+                let mensajeError = 'No se pudo crear el profesor';
+
+                if (error.response?.status === 409 ||
+                    error.response?.data?.message?.includes('email')) {
+                    mensajeError = 'Ya existe un profesor con ese email';
+                } else if (error.response?.status === 400) {
+                    mensajeError = 'Datos inválidos. Verifica la información';
+                } else if (error.response?.data?.message) {
+                    mensajeError = error.response.data.message;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensajeError,
+                    confirmButtonColor: '#f59e0b'
+                });
+            }
+        }
+    });
+
+    // ========================================
+    // CANCELAR
+    // ========================================
+    function cancelar() {
+        if (formModificado) {
+            Swal.fire({
+                title: '¿Cancelar creación?',
+                text: 'Se perderán los datos ingresados',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, cancelar',
+                cancelButtonText: 'Continuar editando',
+                confirmButtonColor: '#dc2626'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/profesores';
+                }
+            });
+        } else {
+            window.location.href = '/profesores';
+        }
+    }
+
+    function volverLista() {
+        cancelar();
+    }
+
+    // ========================================
+    // PREVENIR SALIDA ACCIDENTAL
+    // ========================================
+    window.addEventListener('beforeunload', function(e) {
+        if (formModificado && !guardandoFormulario) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    function logout() {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: '¿Estás seguro que deseas salir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#f59e0b'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

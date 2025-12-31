@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Materia - Sistema Académico</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .user-info {
+            color: white;
+        }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .form-header {
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #059669, #10b981);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #047857, #059669);
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .char-counter {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Guardando...</span>
+        </div>
+        <p class="mt-3 mb-0">Creando materia...</p>
+    </div>
+</div>
+
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="volverLista()">
+                <i class="fas fa-arrow-left"></i> Volver a Lista
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-plus-circle"></i> Crear Nueva Materia
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h2><i class="fas fa-book"></i> Información de la Materia</h2>
+            <p class="text-muted mb-0">Completa los campos para crear una nueva materia</p>
+        </div>
+
+        <form id="formCrearMateria">
+            <!-- CÓDIGO -->
+            <div class="mb-4">
+                <label for="codigo" class="form-label fw-bold">
+                    Código <span class="text-danger">*</span>
+                </label>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="codigo"
+                        placeholder="Ej: MAT101, ING201"
+                        maxlength="20"
+                        required>
+                <div class="char-counter">
+                    <span id="codigoCounter">0/20</span> caracteres
+                </div>
+                <div class="invalid-feedback">
+                    El código es obligatorio (2-20 caracteres, solo letras y números).
+                </div>
+            </div>
+
+            <!-- NOMBRE -->
+            <div class="mb-4">
+                <label for="nombre" class="form-label fw-bold">
+                    Nombre de la Materia <span class="text-danger">*</span>
+                </label>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="nombre"
+                        placeholder="Ej: Cálculo Diferencial"
+                        maxlength="100"
+                        required>
+                <div class="char-counter">
+                    <span id="nombreCounter">0/100</span> caracteres
+                </div>
+                <div class="invalid-feedback">
+                    El nombre es obligatorio (3-100 caracteres).
+                </div>
+            </div>
+
+            <!-- DEPARTAMENTO -->
+            <div class="mb-4">
+                <label for="departamentoId" class="form-label fw-bold">
+                    Departamento <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="departamentoId" required>
+                    <option value="">Selecciona un departamento</option>
+                </select>
+                <div class="invalid-feedback">
+                    Debes seleccionar un departamento.
+                </div>
+            </div>
+
+            <!-- CRÉDITOS -->
+            <div class="mb-4">
+                <label for="creditos" class="form-label fw-bold">
+                    Créditos <span class="text-danger">*</span>
+                </label>
+                <input
+                        type="number"
+                        class="form-control"
+                        id="creditos"
+                        placeholder="1-10"
+                        min="1"
+                        max="10"
+                        required>
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>
+                    Cantidad de créditos académicos (entre 1 y 10)
+                </div>
+                <div class="invalid-feedback">
+                    Los créditos son obligatorios (entre 1 y 10).
+                </div>
+            </div>
+
+            <!-- DESCRIPCIÓN -->
+            <div class="mb-4">
+                <label for="descripcion" class="form-label fw-bold">
+                    Descripción <span class="text-muted">(Opcional)</span>
+                </label>
+                <textarea
+                        class="form-control"
+                        id="descripcion"
+                        rows="4"
+                        placeholder="Descripción detallada de la materia..."
+                        maxlength="500"></textarea>
+                <div class="char-counter">
+                    <span id="descripcionCounter">0/500</span> caracteres
+                </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="d-flex gap-2 justify-content-end mt-4">
+                <button type="button" class="btn btn-secondary" onclick="cancelar()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Crear Materia
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!token) window.location.href = '/login';
+
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    let formModificado = false;
+    let guardandoFormulario = false;
+
+    // ========================================
+    // CARGAR DEPARTAMENTOS
+    // ========================================
+    async function cargarDepartamentos() {
+        try {
+            const response = await axios.get('http://localhost:8080/api/departamentos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const select = document.getElementById('departamentoId');
+            const departamentosActivos = response.data.filter(d => d.estado === 'ACTIVO');
+
+            departamentosActivos.forEach(departamento => {
+                const option = document.createElement('option');
+                option.value = departamento.id;
+                option.textContent = `${departamento.codigo} - ${departamento.nombre}`;
+                select.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('Error cargando departamentos:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar los departamentos',
+                confirmButtonColor: '#10b981'
+            });
+        }
+    }
+
+    cargarDepartamentos();
+
+    // ========================================
+    // CONTADORES DE CARACTERES
+    // ========================================
+    document.getElementById('codigo').addEventListener('input', function(e) {
+        const valor = e.target.value.toUpperCase();
+        e.target.value = valor;
+        document.getElementById('codigoCounter').textContent = `${valor.length}/20`;
+        formModificado = true;
+        validarCampo(e.target);
+    });
+
+    document.getElementById('nombre').addEventListener('input', function(e) {
+        document.getElementById('nombreCounter').textContent = `${e.target.value.length}/100`;
+        formModificado = true;
+        validarCampo(e.target);
+    });
+
+    document.getElementById('descripcion').addEventListener('input', function(e) {
+        document.getElementById('descripcionCounter').textContent = `${e.target.value.length}/500`;
+        formModificado = true;
+    });
+
+    document.getElementById('departamentoId').addEventListener('change', function(e) {
+        formModificado = true;
+        validarCampo(e.target);
+    });
+
+    document.getElementById('creditos').addEventListener('input', function(e) {
+        formModificado = true;
+        validarCampo(e.target);
+    });
+
+    // ========================================
+    // VALIDACIONES EN TIEMPO REAL
+    // ========================================
+    function validarCampo(campo) {
+        if (campo.id === 'codigo') {
+            const valor = campo.value.trim();
+            const esValido = /^[A-Z0-9]{2,20}$/.test(valor);
+
+            if (valor === '') {
+                campo.classList.remove('is-valid', 'is-invalid');
+            } else if (esValido) {
+                campo.classList.add('is-valid');
+                campo.classList.remove('is-invalid');
+            } else {
+                campo.classList.add('is-invalid');
+                campo.classList.remove('is-valid');
+            }
+        }
+
+        if (campo.id === 'nombre') {
+            const valor = campo.value.trim();
+            const esValido = valor.length >= 3 && valor.length <= 100;
+
+            if (valor === '') {
+                campo.classList.remove('is-valid', 'is-invalid');
+            } else if (esValido) {
+                campo.classList.add('is-valid');
+                campo.classList.remove('is-invalid');
+            } else {
+                campo.classList.add('is-invalid');
+                campo.classList.remove('is-valid');
+            }
+        }
+
+        if (campo.id === 'departamentoId') {
+            if (campo.value) {
+                campo.classList.add('is-valid');
+                campo.classList.remove('is-invalid');
+            } else {
+                campo.classList.remove('is-valid', 'is-invalid');
+            }
+        }
+
+        if (campo.id === 'creditos') {
+            const valor = parseInt(campo.value);
+            const esValido = valor >= 1 && valor <= 10;
+
+            if (campo.value === '') {
+                campo.classList.remove('is-valid', 'is-invalid');
+            } else if (esValido) {
+                campo.classList.add('is-valid');
+                campo.classList.remove('is-invalid');
+            } else {
+                campo.classList.add('is-invalid');
+                campo.classList.remove('is-valid');
+            }
+        }
+    }
+
+    // ========================================
+    // ENVIAR FORMULARIO
+    // ========================================
+    document.getElementById('formCrearMateria').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const codigo = document.getElementById('codigo').value.trim();
+        const nombre = document.getElementById('nombre').value.trim();
+        const departamentoId = document.getElementById('departamentoId').value;
+        const creditos = parseInt(document.getElementById('creditos').value);
+        const descripcion = document.getElementById('descripcion').value.trim();
+
+        // Validar
+        if (!codigo || !nombre || !departamentoId || !creditos) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos incompletos',
+                text: 'Por favor completa todos los campos obligatorios',
+                confirmButtonColor: '#10b981'
+            });
+            return;
+        }
+
+        if (!/^[A-Z0-9]{2,20}$/.test(codigo)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Código inválido',
+                text: 'El código debe tener entre 2 y 20 caracteres (solo letras mayúsculas y números)',
+                confirmButtonColor: '#10b981'
+            });
+            return;
+        }
+
+        if (creditos < 1 || creditos > 10) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Créditos inválidos',
+                text: 'Los créditos deben estar entre 1 y 10',
+                confirmButtonColor: '#10b981'
+            });
+            return;
+        }
+
+        // Confirmación
+        const departamentoSeleccionado = document.getElementById('departamentoId').selectedOptions[0].text;
+
+        const result = await Swal.fire({
+            title: '¿Crear materia?',
+            html: `
+                <div style="text-align: left; margin: 20px;">
+                    <p><strong>Código:</strong> ${codigo}</p>
+                    <p><strong>Nombre:</strong> ${nombre}</p>
+                    <p><strong>Departamento:</strong> ${departamentoSeleccionado}</p>
+                    <p><strong>Créditos:</strong> ${creditos}</p>
+                    ${descripcion ? `<p><strong>Descripción:</strong> ${descripcion}</p>` : ''}
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, crear',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#10b981'
+        });
+
+        if (result.isConfirmed) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            guardandoFormulario = true;
+
+            try {
+                const datos = {
+                    codigo: codigo,
+                    nombre: nombre,
+                    departamentoId: parseInt(departamentoId),
+                    creditos: creditos,
+                    descripcion: descripcion || null
+                };
+
+                await axios.post(
+                    'http://localhost:8080/api/materias',
+                    datos,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Materia creada!',
+                    text: 'La materia fue creada correctamente',
+                    confirmButtonColor: '#10b981'
+                }).then(() => {
+                    window.location.href = '/materias';
+                });
+
+            } catch (error) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                guardandoFormulario = false;
+
+                let mensajeError = 'No se pudo crear la materia';
+
+                if (error.response?.status === 409 || error.response?.data?.message?.includes('código')) {
+                    mensajeError = 'Ya existe una materia con ese código';
+                } else if (error.response?.status === 400) {
+                    mensajeError = 'Datos inválidos. Verifica la información';
+                } else if (error.response?.data?.message) {
+                    mensajeError = error.response.data.message;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensajeError,
+                    confirmButtonColor: '#10b981'
+                });
+            }
+        }
+    });
+
+    // ========================================
+    // CANCELAR
+    // ========================================
+    function cancelar() {
+        if (formModificado) {
+            Swal.fire({
+                title: '¿Cancelar creación?',
+                text: 'Se perderán los datos ingresados',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, cancelar',
+                cancelButtonText: 'Continuar editando',
+                confirmButtonColor: '#dc2626'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/materias';
+                }
+            });
+        } else {
+            window.location.href = '/materias';
+        }
+    }
+
+    function volverLista() {
+        cancelar();
+    }
+
+    // ========================================
+    // PREVENIR SALIDA ACCIDENTAL
+    // ========================================
+    window.addEventListener('beforeunload', function(e) {
+        if (formModificado && !guardandoFormulario) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    function logout() {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: '¿Estás seguro que deseas salir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#10b981'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

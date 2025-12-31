@@ -146,6 +146,30 @@ public class ViewController {
     }
 
     // ========================================
+// MÓDULO: MATERIAS
+// ========================================
+
+    @GetMapping("/materias")
+    public String listarMaterias() {
+        return "materias/lista";
+    }
+
+    @GetMapping("/materias/nuevo")
+    public String crearMateria() {
+        return "materias/crear";
+    }
+
+    @GetMapping("/materias/editar/{id}")
+    public String editarMateria(@PathVariable Long id) {
+        return "materias/editar";
+    }
+
+    @GetMapping("/materias/ver/{id}")
+    public String verMateria(@PathVariable Long id) {
+        return "materias/ver";
+    }
+
+    // ========================================
     // MÓDULO: PROFESORES
     // ========================================
 

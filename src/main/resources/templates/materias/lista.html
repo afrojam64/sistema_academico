@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Materias - Sistema Académico</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .user-info {
+            color: white;
+        }
+        .content-header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        .table-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #059669, #10b981);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #047857, #059669);
+        }
+        .badge-activo {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .badge-inactivo {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .badge-codigo {
+            background: #e0f2fe;
+            color: #075985;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        .badge-creditos {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3 mb-0">Cargando materias...</p>
+    </div>
+</div>
+
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="volverDashboard()">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-book"></i> Gestión de Materias
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid mt-4">
+    <div class="content-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-2"><i class="fas fa-book"></i> Listado de Materias</h2>
+                <p class="text-muted mb-0">Gestiona las materias del sistema académico</p>
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="crearMateria()">
+                <i class="fas fa-plus"></i> Nueva Materia
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Filtrar por estado:</label>
+                <select class="form-select" id="filtroEstado">
+                    <option value="">Todos</option>
+                    <option value="ACTIVO" selected>Activos</option>
+                    <option value="INACTIVO">Inactivos</option>
+                </select>
+            </div>
+            <div class="col-md-8 text-end">
+                <p class="mb-0 mt-4">
+                    <strong>Total de materias:</strong>
+                    <span class="badge bg-primary" id="totalMaterias">0</span>
+                </p>
+            </div>
+        </div>
+
+        <table id="tablaMaterias" class="table table-hover table-bordered" style="width:100%">
+            <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Departamento</th>
+                <th>Créditos</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!token) window.location.href = '/login';
+
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    let tabla;
+    let materiasData = [];
+
+    $(document).ready(function() {
+        inicializarTabla();
+        cargarMaterias();
+
+        $('#filtroEstado').on('change', function() {
+            tabla.draw();
+        });
+    });
+
+    function inicializarTabla() {
+        tabla = $('#tablaMaterias').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            },
+            order: [ [0, 'asc'] ],
+            pageLength: 10,
+            data: [],
+            columns: [
+                { data: 'id' },
+                {
+                    data: 'codigo',
+                    render: function(data) {
+                        return `<span class="badge-codigo">${data}</span>`;
+                    }
+                },
+                {
+                    data: 'nombre',
+                    render: function(data) {
+                        return `<strong>${data}</strong>`;
+                    }
+                },
+                {
+                    data: null,
+                    render: function(data) {
+                        return `${data.departamentoCodigo} - ${data.departamentoNombre}`;
+                    }
+                },
+                {
+                    data: 'creditos',
+                    render: function(data) {
+                        return `<span class="badge-creditos">${data}</span>`;
+                    }
+                },
+                {
+                    data: 'estado',
+                    render: function(data) {
+                        return data === 'ACTIVO'
+                            ? '<span class="badge-activo">ACTIVO</span>'
+                            : '<span class="badge-inactivo">INACTIVO</span>';
+                    }
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    render: function(data, type, row) {
+                        return generarBotonesAccion(row);
+                    }
+                }
+            ]
+        });
+
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            const filtroEstado = $('#filtroEstado').val();
+            const estadoMateria = data[5];
+
+            if (filtroEstado === '') return true;
+
+            return estadoMateria.includes(filtroEstado);
+        });
+    }
+
+    function generarBotonesAccion(materia) {
+        const esActivo = materia.estado === 'ACTIVO';
+        const esSuperAdmin = userRole === 'SUPER_ADMIN';
+
+        let botones = `
+            <button class="btn btn-sm btn-info" onclick="verMateria(${materia.id})" title="Ver detalles">
+                <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-warning" onclick="editarMateria(${materia.id})" title="Editar">
+                <i class="fas fa-edit"></i>
+            </button>
+        `;
+
+        if (esActivo) {
+            botones += `
+                <button class="btn btn-sm btn-secondary" onclick="desactivarMateria(${materia.id}, '${materia.nombre}')" title="Desactivar">
+                    <i class="fas fa-ban"></i>
+                </button>
+            `;
+        } else {
+            botones += `
+                <button class="btn btn-sm btn-success" onclick="activarMateria(${materia.id}, '${materia.nombre}')" title="Activar">
+                    <i class="fas fa-check-circle"></i>
+                </button>
+            `;
+        }
+
+        if (esSuperAdmin) {
+            botones += `
+                <button class="btn btn-sm btn-danger" onclick="eliminarMateria(${materia.id}, '${materia.codigo}', '${materia.nombre}')" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+        }
+
+        return botones;
+    }
+
+    async function cargarMaterias() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
+        try {
+            const response = await axios.get('http://localhost:8080/api/materias', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            materiasData = response.data;
+            tabla.clear();
+            tabla.rows.add(materiasData);
+            tabla.draw();
+
+            document.getElementById('totalMaterias').textContent = materiasData.length;
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+        } catch (error) {
+            console.error('Error cargando materias:', error);
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar las materias',
+                confirmButtonColor: '#10b981'
+            });
+        }
+    }
+
+    function crearMateria() {
+        window.location.href = '/materias/nuevo';
+    }
+
+    function verMateria(id) {
+        window.location.href = `/materias/ver/${id}`;
+    }
+
+    function editarMateria(id) {
+        window.location.href = `/materias/editar/${id}`;
+    }
+
+    async function desactivarMateria(id, nombre) {
+        const result = await Swal.fire({
+            title: '¿Desactivar materia?',
+            text: `¿Estás seguro de desactivar "${nombre}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, desactivar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#f59e0b'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.patch(
+                    `http://localhost:8080/api/materias/${id}/desactivar?rolUsuario=${userRole}`,
+                    {},
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Materia desactivada',
+                    text: 'La materia fue desactivada correctamente',
+                    confirmButtonColor: '#10b981'
+                });
+
+                cargarMaterias();
+
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudo desactivar la materia',
+                    confirmButtonColor: '#10b981'
+                });
+            }
+        }
+    }
+
+    async function activarMateria(id, nombre) {
+        const result = await Swal.fire({
+            title: '¿Activar materia?',
+            text: `¿Estás seguro de activar "${nombre}"?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, activar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#10b981'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.patch(
+                    `http://localhost:8080/api/materias/${id}/activar?rolUsuario=${userRole}`,
+                    {},
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Materia activada',
+                    text: 'La materia fue activada correctamente',
+                    confirmButtonColor: '#10b981'
+                });
+
+                cargarMaterias();
+
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudo activar la materia',
+                    confirmButtonColor: '#10b981'
+                });
+            }
+        }
+    }
+
+    async function eliminarMateria(id, codigo, nombre) {
+        const result = await Swal.fire({
+            title: '¿Eliminar materia?',
+            html: `
+                <div style="text-align: left; margin: 20px;">
+                    <p>Esta acción es <strong style="color: #dc2626;">IRREVERSIBLE</strong>.</p>
+                    <p>Se eliminará permanentemente:</p>
+                    <ul style="margin-top: 15px;">
+                        <li><strong>Código:</strong> ${codigo}</li>
+                        <li><strong>Nombre:</strong> ${nombre}</li>
+                    </ul>
+                    <p style="margin-top: 15px; color: #dc2626;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Advertencia:</strong> Si esta materia tiene cursos asociados, no podrá eliminarse.
+                    </p>
+                    <p style="margin-top: 15px;">Escribe <strong>CONFIRMAR</strong> para continuar:</p>
+                </div>
+            `,
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Escribe CONFIRMAR',
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626',
+            inputValidator: (value) => {
+                if (value !== 'CONFIRMAR') return 'Debes escribir CONFIRMAR para continuar';
+            }
+        });
+
+        if (result.isConfirmed) {
+            try {
+                Swal.fire({
+                    title: 'Eliminando materia...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                await axios.delete(
+                    `http://localhost:8080/api/materias/${id}?rolUsuario=${userRole}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Materia eliminada',
+                    text: 'La materia fue eliminada permanentemente',
+                    confirmButtonColor: '#10b981'
+                });
+
+                cargarMaterias();
+
+            } catch (error) {
+                let mensajeError = 'No se pudo eliminar la materia';
+
+                if (error.response?.status === 403) {
+                    mensajeError = 'No tienes permisos para eliminar materias';
+                } else if (error.response?.status === 409) {
+                    mensajeError = 'No se puede eliminar: la materia tiene cursos asociados';
+                } else if (error.response?.data?.message) {
+                    mensajeError = error.response.data.message;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensajeError,
+                    confirmButtonColor: '#10b981'
+                });
+            }
+        }
+    }
+
+    function volverDashboard() {
+        if (userRole === 'SUPER_ADMIN') {
+            window.location.href = '/dashboard/super-admin';
+        } else if (userRole === 'ADMIN') {
+            window.location.href = '/dashboard/admin';
+        } else {
+            window.location.href = '/dashboard/profesor';
+        }
+    }
+
+    function logout() {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: '¿Estás seguro que deseas salir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#10b981'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

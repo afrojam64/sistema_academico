@@ -28,4 +28,13 @@ public interface ProfesorRepository extends JpaRepository<Profesor, Long> {
 
     // Buscar por usuario
     Optional<Profesor> findByUsuarioId(Long usuarioId);
+
+    // Verificar si existe un profesor asociado a un usuario
+    boolean existsByUsuarioId(Long usuarioId);
+
+    // Buscar profesores por ID de departamento
+    List<Profesor> findByDepartamentoId(Long departamentoId);
+
+    // Buscar profesores activos por ID de departamento
+    List<Profesor> findByDepartamentoIdAndEstado(Long departamentoId, Estado estado);
 }

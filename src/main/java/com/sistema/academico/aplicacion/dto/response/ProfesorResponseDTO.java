@@ -10,11 +10,15 @@ import lombok.*;
 public class ProfesorResponseDTO {
 
     private Long id;
+    private String nombre;
+    private String apellido;
     private String nombreCompleto;
     private String email;
     private String telefono;
     private String especialidad;
-    private String departamento;
+    private Long departamentoId;
+    private String departamentoNombre;
+    private String departamentoCodigo;
     private String fechaContratacion;
     private String estado;
 }

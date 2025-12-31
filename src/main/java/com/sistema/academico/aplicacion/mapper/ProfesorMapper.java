@@ -53,12 +53,17 @@ public class ProfesorMapper {
 
         return ProfesorResponseDTO.builder()
                 .id(profesor.getId())
+                .nombre(profesor.getNombre())
+                .apellido(profesor.getApellido())
                 .nombreCompleto(profesor.getNombre() + " " + profesor.getApellido())
                 .email(profesor.getEmail())
                 .telefono(profesor.getTelefono())
                 .especialidad(profesor.getEspecialidad())
-                .departamento(profesor.getDepartamento().getNombre())
-                .fechaContratacion(profesor.getFechaContratacion() != null ? profesor.getFechaContratacion().format(FORMATTER) : "")
+                .departamentoId(profesor.getDepartamento().getId())           // ← NUEVO
+                .departamentoNombre(profesor.getDepartamento().getNombre())   // ← RENOMBRADO
+                .departamentoCodigo(profesor.getDepartamento().getCodigo())   // ← NUEVO
+                .fechaContratacion(profesor.getFechaContratacion() != null ?
+                        profesor.getFechaContratacion().format(FORMATTER) : "")
                 .estado(profesor.getEstado().name())
                 .build();
     }
