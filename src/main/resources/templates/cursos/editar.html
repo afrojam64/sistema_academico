@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Curso - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .form-header {
+            border-bottom: 3px solid #8b5cf6;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .btn-purple {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            border: none;
+            color: white;
+        }
+        .btn-purple:hover {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+            color: white;
+        }
+        .char-counter {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner-border text-purple" style="width: 3rem; height: 3rem; color: #8b5cf6;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3 mb-0">Cargando datos del curso...</p>
+    </div>
+</div>
+
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="volverLista()">
+                <i class="fas fa-arrow-left"></i> Volver a Lista
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-edit"></i> Editar Curso
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h2><i class="fas fa-chalkboard"></i> Editar Información del Curso</h2>
+            <p class="text-muted mb-0">Modifica los campos necesarios</p>
+        </div>
+
+        <form id="formEditarCurso">
+            <input type="hidden" id="cursoId">
+
+            <!-- CÓDIGO -->
+            <div class="mb-4">
+                <label for="codigo" class="form-label fw-bold">
+                    Código <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="codigo" maxlength="20" required>
+                <div class="char-counter">
+                    <span id="codigoCounter">0/20</span> caracteres
+                </div>
+            </div>
+
+            <!-- NOMBRE -->
+            <div class="mb-4">
+                <label for="nombre" class="form-label fw-bold">
+                    Nombre del Curso <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="nombre" maxlength="100" required>
+                <div class="char-counter">
+                    <span id="nombreCounter">0/100</span> caracteres
+                </div>
+            </div>
+
+            <!-- MATERIA -->
+            <div class="mb-4">
+                <label for="materiaId" class="form-label fw-bold">
+                    Materia <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="materiaId" required>
+                    <option value="">Selecciona una materia</option>
+                </select>
+            </div>
+
+            <!-- PROFESOR -->
+            <div class="mb-4">
+                <label for="profesorId" class="form-label fw-bold">
+                    Profesor <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="profesorId" required>
+                    <option value="">Selecciona un profesor</option>
+                </select>
+            </div>
+
+            <!-- CUPO MÁXIMO -->
+            <div class="mb-4">
+                <label for="cupoMaximo" class="form-label fw-bold">
+                    Cupo Máximo <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="cupoMaximo" min="1" max="100" required>
+                <small class="text-muted">Entre 1 y 100 estudiantes</small>
+            </div>
+
+            <!-- PERIODO -->
+            <div class="mb-4">
+                <label for="periodo" class="form-label fw-bold">
+                    Periodo <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="periodo" maxlength="20" required>
+                <div class="char-counter">
+                    <span id="periodoCounter">0/20</span> caracteres
+                </div>
+            </div>
+
+            <!-- FECHA INICIO -->
+            <div class="mb-4">
+                <label for="fechaInicio" class="form-label fw-bold">
+                    Fecha de Inicio <span class="text-danger">*</span>
+                </label>
+                <input type="date" class="form-control" id="fechaInicio" required>
+            </div>
+
+            <!-- FECHA FIN -->
+            <div class="mb-4">
+                <label for="fechaFin" class="form-label fw-bold">
+                    Fecha de Fin <span class="text-danger">*</span>
+                </label>
+                <input type="date" class="form-control" id="fechaFin" required>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="d-flex gap-2 justify-content-end mt-4">
+                <button type="button" class="btn btn-secondary" onclick="cancelar()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-purple">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!token) window.location.href = '/login';
+
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const cursoId = urlParams.get('id') || window.location.pathname.split('/').pop();
+
+    let formModificado = false;
+    let guardandoFormulario = false;
+    let cursoOriginal = null;
+
+    async function cargarDatos() {
+        try {
+            // Cargar curso
+            const cursoResponse = await axios.get(`http://localhost:8080/api/cursos/${cursoId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            cursoOriginal = cursoResponse.data;
+
+            // Cargar materias
+            const materiasResponse = await axios.get('http://localhost:8080/api/materias/activas', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Cargar profesores
+            const profesoresResponse = await axios.get('http://localhost:8080/api/profesores/activos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Llenar select de materias
+            const selectMaterias = document.getElementById('materiaId');
+            materiasResponse.data.forEach(materia => {
+                const option = document.createElement('option');
+                option.value = materia.id;
+                option.textContent = `${materia.codigo} - ${materia.nombre}`;
+                selectMaterias.appendChild(option);
+            });
+
+            // Llenar select de profesores
+            const selectProfesores = document.getElementById('profesorId');
+            profesoresResponse.data.forEach(profesor => {
+                const option = document.createElement('option');
+                option.value = profesor.id;
+                option.textContent = profesor.nombreCompleto;
+                selectProfesores.appendChild(option);
+            });
+
+            // Llenar formulario con datos del curso
+            document.getElementById('cursoId').value = cursoOriginal.id;
+            document.getElementById('codigo').value = cursoOriginal.codigo;
+            document.getElementById('nombre').value = cursoOriginal.nombre;
+            document.getElementById('cupoMaximo').value = cursoOriginal.cupoMaximo;
+            document.getElementById('periodo').value = cursoOriginal.periodo;
+            document.getElementById('fechaInicio').value = formatearFechaParaInput(cursoOriginal.fechaInicio);
+            document.getElementById('fechaFin').value = formatearFechaParaInput(cursoOriginal.fechaFin);
+
+            // Actualizar contadores
+            document.getElementById('codigoCounter').textContent = `${cursoOriginal.codigo.length}/20`;
+            document.getElementById('nombreCounter').textContent = `${cursoOriginal.nombre.length}/100`;
+            document.getElementById('periodoCounter').textContent = `${cursoOriginal.periodo.length}/20`;
+
+            // Nota: No podemos seleccionar materia/profesor por nombre, necesitamos sus IDs
+            // Hacemos búsqueda por nombre
+            const materiaSeleccionada = materiasResponse.data.find(m =>
+                cursoOriginal.materia.includes(m.nombre));
+            if (materiaSeleccionada) {
+                document.getElementById('materiaId').value = materiaSeleccionada.id;
+            }
+
+            const profesorSeleccionado = profesoresResponse.data.find(p =>
+                cursoOriginal.profesor === p.nombreCompleto);
+            if (profesorSeleccionado) {
+                document.getElementById('profesorId').value = profesorSeleccionado.id;
+            }
+
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+        } catch (error) {
+            console.error('Error cargando datos:', error);
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar los datos del curso',
+                confirmButtonColor: '#8b5cf6'
+            }).then(() => {
+                window.location.href = '/cursos';
+            });
+        }
+    }
+
+    function formatearFechaParaInput(fechaStr) {
+        const partes = fechaStr.split('/');
+        if (partes.length === 3) {
+            return `${partes[2]}-${partes[1]}-${partes[0]}`;
+        }
+        return fechaStr;
+    }
+
+    cargarDatos();
+
+    // Contadores
+    document.getElementById('codigo').addEventListener('input', function(e) {
+        document.getElementById('codigoCounter').textContent = `${e.target.value.length}/20`;
+        formModificado = true;
+    });
+
+    document.getElementById('nombre').addEventListener('input', function(e) {
+        document.getElementById('nombreCounter').textContent = `${e.target.value.length}/100`;
+        formModificado = true;
+    });
+
+    document.getElementById('periodo').addEventListener('input', function(e) {
+        document.getElementById('periodoCounter').textContent = `${e.target.value.length}/20`;
+        formModificado = true;
+    });
+
+    ['materiaId', 'profesorId', 'cupoMaximo', 'fechaInicio', 'fechaFin'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => formModificado = true);
+    });
+
+    document.getElementById('formEditarCurso').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const datos = {
+            codigo: document.getElementById('codigo').value.trim(),
+            nombre: document.getElementById('nombre').value.trim(),
+            materiaId: parseInt(document.getElementById('materiaId').value),
+            profesorId: parseInt(document.getElementById('profesorId').value),
+            cupoMaximo: parseInt(document.getElementById('cupoMaximo').value),
+            periodo: document.getElementById('periodo').value.trim(),
+            fechaInicio: document.getElementById('fechaInicio').value,
+            fechaFin: document.getElementById('fechaFin').value
+        };
+
+        if (!datos.codigo || !datos.nombre || !datos.materiaId || !datos.profesorId ||
+            !datos.cupoMaximo || !datos.periodo || !datos.fechaInicio || !datos.fechaFin) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos incompletos',
+                text: 'Por favor completa todos los campos obligatorios',
+                confirmButtonColor: '#8b5cf6'
+            });
+            return;
+        }
+
+        if (new Date(datos.fechaFin) <= new Date(datos.fechaInicio)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Fechas inválidas',
+                text: 'La fecha de fin debe ser posterior a la fecha de inicio',
+                confirmButtonColor: '#8b5cf6'
+            });
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: '¿Guardar cambios?',
+            text: 'Se actualizará la información del curso',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#8b5cf6'
+        });
+
+        if (result.isConfirmed) {
+            document.getElementById('loadingOverlay').querySelector('p').textContent = 'Guardando cambios...';
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            guardandoFormulario = true;
+
+            try {
+                await axios.put(
+                    `http://localhost:8080/api/cursos/${cursoId}`,
+                    datos,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Cambios guardados!',
+                    text: 'La información del curso fue actualizada correctamente',
+                    confirmButtonColor: '#8b5cf6'
+                }).then(() => {
+                    window.location.href = '/cursos';
+                });
+
+            } catch (error) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                guardandoFormulario = false;
+
+                let mensajeError = 'No se pudieron guardar los cambios';
+
+                if (error.response?.data?.message?.includes('código')) {
+                    mensajeError = 'Ya existe un curso con ese código';
+                } else if (error.response?.data?.message) {
+                    mensajeError = error.response.data.message;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensajeError,
+                    confirmButtonColor: '#8b5cf6'
+                });
+            }
+        }
+    });
+
+    function cancelar() {
+        if (formModificado) {
+            Swal.fire({
+                title: '¿Descartar cambios?',
+                text: 'Se perderán las modificaciones realizadas',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, descartar',
+                cancelButtonText: 'Continuar editando',
+                confirmButtonColor: '#dc2626'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/cursos';
+                }
+            });
+        } else {
+            window.location.href = '/cursos';
+        }
+    }
+
+    function volverLista() {
+        cancelar();
+    }
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formModificado && !guardandoFormulario) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>

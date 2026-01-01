@@ -413,11 +413,17 @@
             });
             document.getElementById('totalEstudiantes').textContent = estudiantes.data.length;
 
-            // Materias (placeholder)
-            document.getElementById('totalMaterias').textContent = '0';
+            // Materias
+            const materias = await axios.get('http://localhost:8080/api/materias', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            document.getElementById('totalMaterias').textContent = materias.data.length;
 
             // Cursos (placeholder)
-            document.getElementById('totalCursos').textContent = '0';
+            const cursos = await axios.get('http://localhost:8080/api/cursos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            document.getElementById('totalCursos').textContent = cursos.data.length;
 
 
 
@@ -462,12 +468,7 @@
     }
 
     function verCursos() {
-        Swal.fire({
-            icon: 'info',
-            title: 'Próximamente',
-            text: 'Módulo de Cursos en desarrollo',
-            confirmButtonColor: '#3b82f6'
-        });
+        window.location.href = '/cursos';
     }
 
     function verInscripciones() {

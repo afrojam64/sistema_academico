@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Materias - Sistema Académico</title>
+    <title>Lista de Cursos - Sistema Académico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
@@ -13,7 +13,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .navbar {
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .navbar-brand { color: white !important; font-weight: 700; }
@@ -26,13 +26,15 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
-        .page-title { color: #3b82f6; font-weight: 700; margin: 0; }
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        .page-title { color: #8b5cf6; font-weight: 700; margin: 0; }
+        .btn-purple {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
             border: none;
+            color: white;
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2563eb, #3b82f6);
+        .btn-purple:hover {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+            color: white;
         }
         .table-container {
             background: white;
@@ -41,14 +43,20 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .badge-codigo {
-            background: #3b82f6;
+            background: #8b5cf6;
             color: white;
             padding: 5px 10px;
             border-radius: 5px;
             font-size: 12px;
         }
-        .badge-creditos {
-            background: #8b5cf6;
+        .badge-cupos {
+            background: #10b981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .badge-sin-cupos {
+            background: #ef4444;
             color: white;
             padding: 5px 10px;
             border-radius: 5px;
@@ -67,7 +75,7 @@
                 <i class="fas fa-arrow-left"></i> Volver al Dashboard
             </button>
             <span class="navbar-brand mb-0 h1">
-                <i class="fas fa-book"></i> Gestión de Materias
+                <i class="fas fa-chalkboard"></i> Gestión de Cursos
             </span>
         </div>
         <div class="user-info">
@@ -84,25 +92,27 @@
     <div class="page-header">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="page-title">Lista de Materias</h2>
-                <p class="text-muted mb-0">Gestiona las materias del sistema</p>
+                <h2 class="page-title">Lista de Cursos</h2>
+                <p class="text-muted mb-0">Gestiona los cursos del sistema</p>
             </div>
-            <button class="btn btn-primary" onclick="window.location.href='/materias/nuevo'">
-                <i class="fas fa-plus"></i> Nueva Materia
+            <button class="btn btn-purple" onclick="window.location.href='/cursos/nuevo'">
+                <i class="fas fa-plus"></i> Nuevo Curso
             </button>
         </div>
     </div>
 
     <div class="table-container">
-        <table id="tablaMaterias" class="table table-hover table-striped">
-            <thead class="table-primary">
+        <table id="tablaCursos" class="table table-hover table-striped">
+            <thead style="background: #8b5cf6; color: white;">
             <tr>
                 <th>ID</th>
                 <th>Código</th>
                 <th>Nombre</th>
-                <th>Créditos</th>
-                <th>Departamento</th>
-                <th>Descripción</th>
+                <th>Materia</th>
+                <th>Profesor</th>
+                <th>Periodo</th>
+                <th>Cupos</th>
+                <th>Fechas</th>
                 <th>Estado</th>
                 <th>Acciones</th>
             </tr>
@@ -127,74 +137,76 @@
     if (!token) window.location.href = '/login';
     document.getElementById('userName').textContent = userName || 'Admin';
 
-    let tablaMaterias = null;
+    let tablaCursos = null;
 
-    async function cargarMaterias() {
+    async function cargarCursos() {
         try {
-            const response = await axios.get('http://localhost:8080/api/materias', {
+            const response = await axios.get('http://localhost:8080/api/cursos', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            mostrarMaterias(response.data);
+            mostrarCursos(response.data);
         } catch (error) {
-            console.error('Error cargando materias:', error);
+            console.error('Error cargando cursos:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'No se pudieron cargar las materias',
-                confirmButtonColor: '#3b82f6'
+                text: 'No se pudieron cargar los cursos',
+                confirmButtonColor: '#8b5cf6'
             });
         }
     }
 
-    function mostrarMaterias(materias) {
-        if (tablaMaterias) tablaMaterias.destroy();
-        $('#tablaMaterias tbody').empty();
+    function mostrarCursos(cursos) {
+        if (tablaCursos) tablaCursos.destroy();
+        $('#tablaCursos tbody').empty();
 
-        materias.forEach(materia => {
-            const estado = materia.estado === 'ACTIVO'
+        cursos.forEach(curso => {
+            const estado = curso.estado === 'ACTIVO'
                 ? '<span class="badge badge-activo">ACTIVO</span>'
                 : '<span class="badge badge-inactivo">INACTIVO</span>';
 
-            const descripcion = materia.descripcion ?
-                (materia.descripcion.length > 50 ? materia.descripcion.substring(0, 50) + '...' : materia.descripcion)
-                : '-';
+            const cupos = curso.cuposDisponibles > 0
+                ? `<span class="badge badge-cupos">${curso.cupoActual}/${curso.cupoMaximo}</span>`
+                : `<span class="badge badge-sin-cupos">LLENO</span>`;
 
             const fila = `
                 <tr>
-                    <td>${materia.id}</td>
-                    <td><span class="badge badge-codigo">${materia.codigo}</span></td>
-                    <td><strong>${materia.nombre}</strong></td>
-                    <td><span class="badge badge-creditos">${materia.creditos}</span></td>
-                    <td>${materia.departamentoCodigo} - ${materia.departamentoNombre}</td>
-                    <td>${descripcion}</td>
+                    <td>${curso.id}</td>
+                    <td><span class="badge badge-codigo">${curso.codigo}</span></td>
+                    <td><strong>${curso.nombre}</strong></td>
+                    <td>${curso.materia}</td>
+                    <td>${curso.profesor}</td>
+                    <td>${curso.periodo}</td>
+                    <td>${cupos}</td>
+                    <td><small>${curso.fechaInicio} - ${curso.fechaFin}</small></td>
                     <td>${estado}</td>
                     <td>
                         <button class="btn btn-sm btn-info btn-action"
-                                onclick="verMateria(${materia.id})" title="Ver detalles">
+                                onclick="verCurso(${curso.id})" title="Ver detalles">
                             <i class="fas fa-eye"></i>
                         </button>
                         <button class="btn btn-sm btn-warning btn-action"
-                                onclick="editarMateria(${materia.id})" title="Editar">
+                                onclick="editarCurso(${curso.id})" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
-                        ${materia.estado === 'ACTIVO' ? `
+                        ${curso.estado === 'ACTIVO' ? `
                             <button class="btn btn-sm btn-danger btn-action"
-                                    onclick="desactivarMateria(${materia.id}, '${materia.nombre}')" title="Desactivar">
+                                    onclick="desactivarCurso(${curso.id}, '${curso.nombre}')" title="Desactivar">
                                 <i class="fas fa-ban"></i>
                             </button>
                         ` : `
                             <button class="btn btn-sm btn-success btn-action"
-                                    onclick="activarMateria(${materia.id}, '${materia.nombre}')" title="Activar">
+                                    onclick="activarCurso(${curso.id}, '${curso.nombre}')" title="Activar">
                                 <i class="fas fa-check"></i>
                             </button>
                         `}
                     </td>
                 </tr>
             `;
-            $('#tablaMaterias tbody').append(fila);
+            $('#tablaCursos tbody').append(fila);
         });
 
-        tablaMaterias = $('#tablaMaterias').DataTable({
+        tablaCursos = $('#tablaCursos').DataTable({
             language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
             pageLength: 10,
             responsive: true,
@@ -202,17 +214,17 @@
         });
     }
 
-    function verMateria(id) {
-        window.location.href = `/materias/ver/${id}`;
+    function verCurso(id) {
+        window.location.href = `/cursos/ver/${id}`;
     }
 
-    function editarMateria(id) {
-        window.location.href = `/materias/editar/${id}`;
+    function editarCurso(id) {
+        window.location.href = `/cursos/editar/${id}`;
     }
 
-    async function desactivarMateria(id, nombre) {
+    async function desactivarCurso(id, nombre) {
         const result = await Swal.fire({
-            title: '¿Desactivar materia?',
+            title: '¿Desactivar curso?',
             text: `¿Está seguro de desactivar ${nombre}?`,
             icon: 'warning',
             showCancelButton: true,
@@ -224,59 +236,59 @@
         if (result.isConfirmed) {
             try {
                 await axios.patch(
-                    `http://localhost:8080/api/materias/${id}/desactivar?rolUsuario=${userRole}`,
+                    `http://localhost:8080/api/cursos/${id}/desactivar?rolUsuario=${userRole}`,
                     {},
                     { headers: { 'Authorization': `Bearer ${token}` } }
                 );
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Desactivada!',
-                    text: 'La materia fue desactivada correctamente',
-                    confirmButtonColor: '#3b82f6'
+                    title: '¡Desactivado!',
+                    text: 'El curso fue desactivado correctamente',
+                    confirmButtonColor: '#8b5cf6'
                 });
-                cargarMaterias();
+                cargarCursos();
             } catch (error) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: error.response?.data?.message || 'No se pudo desactivar la materia',
-                    confirmButtonColor: '#3b82f6'
+                    text: error.response?.data?.message || 'No se pudo desactivar el curso',
+                    confirmButtonColor: '#8b5cf6'
                 });
             }
         }
     }
 
-    async function activarMateria(id, nombre) {
+    async function activarCurso(id, nombre) {
         const result = await Swal.fire({
-            title: '¿Activar materia?',
+            title: '¿Activar curso?',
             text: `¿Está seguro de activar ${nombre}?`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Sí, activar',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#3b82f6'
+            confirmButtonColor: '#8b5cf6'
         });
 
         if (result.isConfirmed) {
             try {
                 await axios.patch(
-                    `http://localhost:8080/api/materias/${id}/activar?rolUsuario=${userRole}`,
+                    `http://localhost:8080/api/cursos/${id}/activar?rolUsuario=${userRole}`,
                     {},
                     { headers: { 'Authorization': `Bearer ${token}` } }
                 );
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Activada!',
-                    text: 'La materia fue activada correctamente',
-                    confirmButtonColor: '#3b82f6'
+                    title: '¡Activado!',
+                    text: 'El curso fue activado correctamente',
+                    confirmButtonColor: '#8b5cf6'
                 });
-                cargarMaterias();
+                cargarCursos();
             } catch (error) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: error.response?.data?.message || 'No se pudo activar la materia',
-                    confirmButtonColor: '#3b82f6'
+                    text: error.response?.data?.message || 'No se pudo activar el curso',
+                    confirmButtonColor: '#8b5cf6'
                 });
             }
         }
@@ -310,7 +322,7 @@
         window.location.href = '/login';
     }
 
-    cargarMaterias();
+    cargarCursos();
 </script>
 
 </body>
