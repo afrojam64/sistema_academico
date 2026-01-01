@@ -10,6 +10,13 @@ import lombok.*;
 public class CalificacionResponseDTO {
 
     private Long id;
+    private Long inscripcionId;
+
+    //Campos adicionales paara mostrar en calificaciones
+    private String estudiante;
+    private String curso;
+    private String materia;
+
     private String nombreEvaluacion;
     private String nota;
     private Integer porcentaje;

@@ -259,6 +259,24 @@
                     <div class="stat-label">Total Profesores</div>
                 </div>
             </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon color-cursos">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-number color-cursos" id="totalInscripciones">...</div>
+                    <div class="stat-label">Total Inscripciones</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon color-cursos">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-number color-cursos" id="totalCalificaciones">...</div>
+                    <div class="stat-label">Total Calificaciones</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -425,6 +443,20 @@
             });
             document.getElementById('totalCursos').textContent = cursos.data.length;
 
+            // Inscripciones
+            const inscripciones = await axios.get('http://localhost:8080/api/inscripciones',{
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            document.getElementById('totalInscripciones').textContent = inscripciones.data.length;
+
+            // Calificaciones
+            const calificaciones = await axios.get('http://localhost:8080/api/calificaciones',{
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            document.getElementById('totalCalificaciones').textContent = calificaciones.data.length;
+
         } catch (error) {
             console.error('Error cargando estadísticas:', error);
             document.getElementById('totalUsuarios').textContent = '0';
@@ -468,12 +500,7 @@
     }
 
     function verCalificaciones() {
-        Swal.fire({
-            icon: 'info',
-            title: 'Próximamente',
-            text: 'Módulo de Calificaciones en desarrollo',
-            confirmButtonColor: '#10b981'
-        });
+        window.location.href = '/calificaciones';
     }
 
     function logout() {

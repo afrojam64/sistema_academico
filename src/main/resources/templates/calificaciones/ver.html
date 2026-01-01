@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Calificación - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+        .detail-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .detail-header {
+            border-bottom: 3px solid #059669;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .detail-row {
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        .detail-value {
+            color: #1f2937;
+        }
+        .badge-aprobada {
+            background: #10b981;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .badge-reprobada {
+            background: #ef4444;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .nota-destacada {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .nota-aprobada { color: #10b981; }
+        .nota-reprobada { color: #ef4444; }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #059669, #10b981);
+            border: none;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #047857, #059669);
+        }
+        .info-box {
+            background: #f0fdf4;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #10b981;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner-border" style="width: 3rem; height: 3rem; color: #059669;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3 mb-0">Cargando información de la calificación...</p>
+    </div>
+</div>
+
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.location.href='/calificaciones'">
+                <i class="fas fa-arrow-left"></i> Volver a Lista
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-eye"></i> Detalles de la Calificación
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="detail-container">
+        <div class="detail-header">
+            <h2><i class="fas fa-graduation-cap"></i> Información de la Calificación</h2>
+            <p class="text-muted mb-0">Detalles completos de la calificación</p>
+        </div>
+
+        <div id="calificacionDetails">
+            <!-- Los detalles se cargarán aquí -->
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end mt-4">
+            <button class="btn btn-secondary" onclick="window.location.href='/calificaciones'">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <button class="btn btn-success" onclick="editar()">
+                <i class="fas fa-edit"></i> Editar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) window.location.href = '/login';
+
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const calificacionId = urlParams.get('id') || window.location.pathname.split('/').pop();
+
+    async function cargarCalificacion() {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/calificaciones/${calificacionId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const calif = response.data;
+
+            const estadoBadge = calif.esAprobada
+                ? '<span class="badge-aprobada"><i class="fas fa-check-circle"></i> APROBADA</span>'
+                : '<span class="badge-reprobada"><i class="fas fa-times-circle"></i> REPROBADA</span>';
+
+            const notaClass = calif.esAprobada ? 'nota-aprobada' : 'nota-reprobada';
+
+            const html = `
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">ID</div>
+                        <div class="col-md-8 detail-value">${calif.id}</div>
+                    </div>
+                </div>
+
+                <!-- ✅ AGREGAR INFORMACIÓN CONTEXTUAL -->
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Estudiante</div>
+                        <div class="col-md-8 detail-value">
+                            <i class="fas fa-user-graduate"></i> <strong>${calif.estudiante}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Materia</div>
+                        <div class="col-md-8 detail-value">
+                            <i class="fas fa-book"></i> ${calif.materia}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Curso</div>
+                        <div class="col-md-8 detail-value">
+                            <i class="fas fa-chalkboard"></i> ${calif.curso}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">ID</div>
+                        <div class="col-md-8 detail-value">${calif.id}</div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Nombre de la Evaluación</div>
+                        <div class="col-md-8 detail-value">
+                            <strong style="font-size: 1.2em;">${calif.nombreEvaluacion}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Nota</div>
+                        <div class="col-md-8 detail-value">
+                            <div class="nota-destacada ${notaClass}">
+                                ${calif.nota} / 5.0
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Porcentaje</div>
+                        <div class="col-md-8 detail-value">
+                            <strong style="font-size: 1.3em;">${calif.porcentaje}%</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Nota Ponderada</div>
+                        <div class="col-md-8 detail-value">
+                            <strong style="font-size: 1.3em; color: #059669;">${calif.notaPonderada}</strong>
+                            <br>
+                            <small class="text-muted">Calculada como: ${calif.nota} × ${calif.porcentaje}% = ${calif.notaPonderada}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Fecha de Calificación</div>
+                        <div class="col-md-8 detail-value">
+                            <i class="fas fa-calendar-day"></i> ${calif.fechaCalificacion}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Estado</div>
+                        <div class="col-md-8 detail-value">${estadoBadge}</div>
+                    </div>
+                </div>
+
+                ${calif.observaciones ? `
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-md-4 detail-label">Observaciones</div>
+                        <div class="col-md-8 detail-value">
+                            <p class="mb-0">${calif.observaciones}</p>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="info-box">
+                    <h6><i class="fas fa-info-circle"></i> Información Adicional</h6>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Nota Mínima Aprobatoria:</strong> 3.0</p>
+                            <p class="mb-2"><strong>Escala:</strong> 0.0 - 5.0</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Aporte al promedio final:</strong> ${calif.porcentaje}%</p>
+                            <p class="mb-2"><strong>Puntos obtenidos:</strong> ${calif.notaPonderada} de ${(calif.porcentaje * 5.0 / 100).toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('calificacionDetails').innerHTML = html;
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+        } catch (error) {
+            console.error('Error cargando calificación:', error);
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo cargar la información de la calificación',
+                confirmButtonColor: '#059669'
+            }).then(() => {
+                window.location.href = '/calificaciones';
+            });
+        }
+    }
+
+    cargarCalificacion();
+
+    function editar() {
+        window.location.href = `/calificaciones/editar/${calificacionId}`;
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>

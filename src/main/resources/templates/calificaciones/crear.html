@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Calificación - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .form-header {
+            border-bottom: 3px solid #059669;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #059669, #10b981);
+            border: none;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #047857, #059669);
+        }
+        .char-counter {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .alert-info {
+            background-color: #dbeafe;
+            border-left: 4px solid #3b82f6;
+        }
+        .nota-preview {
+            background: #f0fdf4;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 2px solid #10b981;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.location.href='/calificaciones'">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-graduation-cap"></i> Registrar Calificación
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h2><i class="fas fa-graduation-cap"></i> Registrar Nueva Calificación</h2>
+            <p class="text-muted mb-0">Registra la nota de una evaluación</p>
+        </div>
+
+        <div class="alert alert-info">
+            <div class="d-flex align-items-start">
+                <i class="fas fa-info-circle me-2 mt-1"></i>
+                <div class="flex-grow-1">
+                    <strong>Importante:</strong>
+                    <ul class="mb-0 mt-2 small">
+                        <li>✅ Solo inscripciones ACTIVAS pueden tener calificaciones</li>
+                        <li>✅ La suma de porcentajes NO puede exceder 100%</li>
+                        <li>✅ Nota mínima: 0.0 - Nota máxima: 5.0</li>
+                        <li>✅ Nota aprobatoria: >= 3.0</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <form id="formCrearCalificacion">
+            <!-- INSCRIPCIÓN -->
+            <div class="mb-4">
+                <label for="inscripcionId" class="form-label fw-bold">
+                    Inscripción <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="inscripcionId" required>
+                    <option value="">Selecciona una inscripción</option>
+                </select>
+                <small class="text-muted">Estudiante - Curso</small>
+            </div>
+
+            <!-- NOMBRE EVALUACIÓN -->
+            <div class="mb-4">
+                <label for="nombreEvaluacion" class="form-label fw-bold">
+                    Nombre de la Evaluación <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="nombreEvaluacion"
+                       placeholder="Ej: Parcial 1, Quiz 2, Examen Final" maxlength="100" required>
+                <div class="char-counter">
+                    <span id="nombreCounter">0/100</span> caracteres
+                </div>
+            </div>
+
+            <!-- NOTA -->
+            <div class="mb-4">
+                <label for="nota" class="form-label fw-bold">
+                    Nota <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="nota"
+                       placeholder="Ej: 4.5" min="0" max="5" step="0.1" required>
+                <small class="text-muted">Entre 0.0 y 5.0 (Aprobación >= 3.0)</small>
+            </div>
+
+            <!-- PORCENTAJE -->
+            <div class="mb-4">
+                <label for="porcentaje" class="form-label fw-bold">
+                    Porcentaje <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="porcentaje"
+                       placeholder="Ej: 30" min="1" max="100" required>
+                <small class="text-muted">Entre 1% y 100%</small>
+            </div>
+
+            <!-- PREVIEW DE NOTA PONDERADA -->
+            <div class="nota-preview" id="notaPreview" style="display: none;">
+                <h6><i class="fas fa-calculator"></i> Cálculo Automático</h6>
+                <p class="mb-1"><strong>Nota Ponderada:</strong> <span id="notaPonderadaCalc">0.00</span></p>
+                <p class="mb-0"><strong>Estado:</strong> <span id="estadoNota"></span></p>
+            </div>
+
+            <!-- OBSERVACIONES -->
+            <div class="mb-4 mt-4">
+                <label for="observaciones" class="form-label fw-bold">
+                    Observaciones <span class="text-muted">(Opcional)</span>
+                </label>
+                <textarea class="form-control" id="observaciones" rows="3"
+                          placeholder="Comentarios adicionales..." maxlength="500"></textarea>
+                <div class="char-counter">
+                    <span id="observacionesCounter">0/500</span> caracteres
+                </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="d-flex gap-2 justify-content-end mt-4">
+                <button type="button" class="btn btn-secondary" onclick="cancelar()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Registrar Calificación
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) window.location.href = '/login';
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    let formModificado = false;
+
+    async function cargarInscripciones() {
+        try {
+            // Cargar inscripciones activas
+            const response = await axios.get('http://localhost:8080/api/inscripciones/activas', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const select = document.getElementById('inscripcionId');
+            response.data.forEach(inscripcion => {
+                const option = document.createElement('option');
+                option.value = inscripcion.id;
+                option.textContent = `${inscripcion.estudiante} - ${inscripcion.curso}`;
+                select.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('Error cargando inscripciones:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar las inscripciones',
+                confirmButtonColor: '#059669'
+            });
+        }
+    }
+
+    cargarInscripciones();
+
+    // Contadores
+    document.getElementById('nombreEvaluacion').addEventListener('input', function(e) {
+        document.getElementById('nombreCounter').textContent = `${e.target.value.length}/100`;
+        formModificado = true;
+    });
+
+    document.getElementById('observaciones').addEventListener('input', function(e) {
+        document.getElementById('observacionesCounter').textContent = `${e.target.value.length}/500`;
+        formModificado = true;
+    });
+
+    // Calcular nota ponderada en tiempo real
+    function calcularNotaPonderada() {
+        const nota = parseFloat(document.getElementById('nota').value) || 0;
+        const porcentaje = parseInt(document.getElementById('porcentaje').value) || 0;
+
+        if (nota > 0 && porcentaje > 0) {
+            const notaPonderada = (nota * porcentaje / 100).toFixed(2);
+            document.getElementById('notaPonderadaCalc').textContent = notaPonderada;
+
+            const estado = nota >= 3.0
+                ? '<span class="text-success"><i class="fas fa-check"></i> APROBADA</span>'
+                : '<span class="text-danger"><i class="fas fa-times"></i> REPROBADA</span>';
+            document.getElementById('estadoNota').innerHTML = estado;
+
+            document.getElementById('notaPreview').style.display = 'block';
+        } else {
+            document.getElementById('notaPreview').style.display = 'none';
+        }
+    }
+
+    document.getElementById('nota').addEventListener('input', calcularNotaPonderada);
+    document.getElementById('porcentaje').addEventListener('input', calcularNotaPonderada);
+
+    ['inscripcionId', 'nota', 'porcentaje'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => formModificado = true);
+    });
+
+    // Enviar formulario
+    document.getElementById('formCrearCalificacion').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const inscripcionId = document.getElementById('inscripcionId').value;
+        const nombreEvaluacion = document.getElementById('nombreEvaluacion').value.trim();
+        const nota = parseFloat(document.getElementById('nota').value);
+        const porcentaje = parseInt(document.getElementById('porcentaje').value);
+        const observaciones = document.getElementById('observaciones').value.trim();
+
+        if (!inscripcionId || !nombreEvaluacion || !nota || !porcentaje) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos incompletos',
+                text: 'Completa todos los campos obligatorios',
+                confirmButtonColor: '#059669'
+            });
+            return;
+        }
+
+        if (nota < 0 || nota > 5) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Nota inválida',
+                text: 'La nota debe estar entre 0.0 y 5.0',
+                confirmButtonColor: '#059669'
+            });
+            return;
+        }
+
+        if (porcentaje < 1 || porcentaje > 100) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Porcentaje inválido',
+                text: 'El porcentaje debe estar entre 1 y 100',
+                confirmButtonColor: '#059669'
+            });
+            return;
+        }
+
+        const inscripcionNombre = document.getElementById('inscripcionId').selectedOptions[0].text;
+        const notaPonderada = (nota * porcentaje / 100).toFixed(2);
+        const estado = nota >= 3.0 ? 'APROBADA' : 'REPROBADA';
+
+        const result = await Swal.fire({
+            title: '¿Registrar calificación?',
+            html: `
+                <div style="text-align: left; margin: 20px;">
+                    <p><strong>Inscripción:</strong> ${inscripcionNombre}</p>
+                    <p><strong>Evaluación:</strong> ${nombreEvaluacion}</p>
+                    <p><strong>Nota:</strong> ${nota}</p>
+                    <p><strong>Porcentaje:</strong> ${porcentaje}%</p>
+                    <p><strong>Nota Ponderada:</strong> ${notaPonderada}</p>
+                    <p><strong>Estado:</strong> ${estado}</p>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, registrar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#059669'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const datos = {
+                    inscripcionId: parseInt(inscripcionId),
+                    nombreEvaluacion: nombreEvaluacion,
+                    nota: nota,
+                    porcentaje: porcentaje,
+                    observaciones: observaciones || null
+                };
+
+                await axios.post(
+                    'http://localhost:8080/api/calificaciones',
+                    datos,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Calificación registrada!',
+                    text: 'La calificación fue registrada correctamente',
+                    confirmButtonColor: '#059669'
+                }).then(() => {
+                    window.location.href = '/calificaciones';
+                });
+
+            } catch (error) {
+                let mensajeError = 'No se pudo registrar la calificación';
+
+                if (error.response?.data?.message?.includes('porcentajes excede 100')) {
+                    mensajeError = error.response.data.message;
+                } else if (error.response?.data?.message?.includes('activas')) {
+                    mensajeError = 'Solo se pueden registrar calificaciones en inscripciones activas';
+                } else if (error.response?.data?.message) {
+                    mensajeError = error.response.data.message;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensajeError,
+                    confirmButtonColor: '#059669'
+                });
+            }
+        }
+    });
+
+    function cancelar() {
+        if (formModificado) {
+            Swal.fire({
+                title: '¿Descartar cambios?',
+                text: 'Se perderán los datos ingresados',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, descartar',
+                cancelButtonText: 'Continuar',
+                confirmButtonColor: '#dc2626'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/calificaciones';
+                }
+            });
+        } else {
+            window.location.href = '/calificaciones';
+        }
+    }
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formModificado) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>

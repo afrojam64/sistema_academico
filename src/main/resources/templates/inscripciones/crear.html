@@ -1,10 +1,346 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Inscripción - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .form-header {
+            border-bottom: 3px solid #f59e0b;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            border: none;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            color: white;
+        }
+        .alert-info {
+            background-color: #dbeafe;
+            border-left: 4px solid #3b82f6;
+        }
+        .curso-info {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+        .badge-cupos {
+            background: #10b981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .badge-sin-cupos {
+            background: #ef4444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
+
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.location.href='/inscripciones'">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-clipboard-check"></i> Nueva Inscripción
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h2><i class="fas fa-clipboard-check"></i> Nueva Inscripción</h2>
+            <p class="text-muted mb-0">Inscribe un estudiante en un curso</p>
+        </div>
+
+        <div class="alert alert-info">
+            <div class="d-flex align-items-start">
+                <i class="fas fa-info-circle me-2 mt-1"></i>
+                <div class="flex-grow-1">
+                    <strong>Importante:</strong>
+                    <ul class="mb-0 mt-2 small">
+                        <li>✅ Solo se pueden inscribir cursos con cupos disponibles</li>
+                        <li>✅ Un estudiante no puede inscribirse dos veces en el mismo curso</li>
+                        <li>✅ La inscripción se creará con estado ACTIVO</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <form id="formCrearInscripcion">
+            <!-- ESTUDIANTE -->
+            <div class="mb-4">
+                <label for="estudianteId" class="form-label fw-bold">
+                    Estudiante <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="estudianteId" required>
+                    <option value="">Selecciona un estudiante</option>
+                </select>
+            </div>
+
+            <!-- CURSO -->
+            <div class="mb-4">
+                <label for="cursoId" class="form-label fw-bold">
+                    Curso <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="cursoId" required>
+                    <option value="">Selecciona un curso</option>
+                </select>
+            </div>
+
+            <!-- INFORMACIÓN DEL CURSO SELECCIONADO -->
+            <div class="curso-info" id="cursoInfo">
+                <h6><i class="fas fa-info-circle"></i> Información del Curso</h6>
+                <div id="cursoDetalles"></div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="d-flex gap-2 justify-content-end mt-4">
+                <button type="button" class="btn btn-secondary" onclick="cancelar()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-save"></i> Inscribir Estudiante
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) window.location.href = '/login';
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    let formModificado = false;
+    let cursosData = [];
+
+    async function cargarDatos() {
+        try {
+            // Cargar estudiantes activos
+            const estudiantesResponse = await axios.get('http://localhost:8080/api/estudiantes/activos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const selectEstudiantes = document.getElementById('estudianteId');
+            estudiantesResponse.data.forEach(estudiante => {
+                const option = document.createElement('option');
+                option.value = estudiante.id;
+                option.textContent = `${estudiante.codigoEstudiante} - ${estudiante.nombreCompleto}`;
+                selectEstudiantes.appendChild(option);
+            });
+
+            // Cargar cursos con cupos disponibles
+            const cursosResponse = await axios.get('http://localhost:8080/api/cursos/con-cupos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            cursosData = cursosResponse.data;
+            const selectCursos = document.getElementById('cursoId');
+            cursosData.forEach(curso => {
+                const option = document.createElement('option');
+                option.value = curso.id;
+                option.textContent = `${curso.codigo} - ${curso.nombre} (${curso.cuposDisponibles} cupos)`;
+                selectCursos.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('Error cargando datos:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar los estudiantes y cursos',
+                confirmButtonColor: '#f59e0b'
+            });
+        }
+    }
+
+    cargarDatos();
+
+    // Mostrar información del curso seleccionado
+    document.getElementById('cursoId').addEventListener('change', function() {
+        const cursoId = parseInt(this.value);
+        const cursoInfo = document.getElementById('cursoInfo');
+        const cursoDetalles = document.getElementById('cursoDetalles');
+
+        if (cursoId) {
+            const curso = cursosData.find(c => c.id === cursoId);
+            if (curso) {
+                const cuposBadge = curso.cuposDisponibles > 0
+                    ? `<span class="badge-cupos">${curso.cupoActual}/${curso.cupoMaximo} (${curso.cuposDisponibles} disponibles)</span>`
+                    : `<span class="badge-sin-cupos">SIN CUPOS</span>`;
+
+                cursoDetalles.innerHTML = `
+                    <p class="mb-1"><strong>Materia:</strong> ${curso.materia}</p>
+                    <p class="mb-1"><strong>Profesor:</strong> ${curso.profesor}</p>
+                    <p class="mb-1"><strong>Periodo:</strong> ${curso.periodo}</p>
+                    <p class="mb-1"><strong>Cupos:</strong> ${cuposBadge}</p>
+                    <p class="mb-0"><strong>Fechas:</strong> ${curso.fechaInicio} - ${curso.fechaFin}</p>
+                `;
+                cursoInfo.style.display = 'block';
+            }
+        } else {
+            cursoInfo.style.display = 'none';
+        }
+        formModificado = true;
+    });
+
+    document.getElementById('estudianteId').addEventListener('change', () => formModificado = true);
+
+    // Enviar formulario
+    document.getElementById('formCrearInscripcion').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const estudianteId = document.getElementById('estudianteId').value;
+        const cursoId = document.getElementById('cursoId').value;
+
+        if (!estudianteId || !cursoId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos incompletos',
+                text: 'Selecciona un estudiante y un curso',
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+
+        const estudianteNombre = document.getElementById('estudianteId').selectedOptions[0].text;
+        const cursoNombre = document.getElementById('cursoId').selectedOptions[0].text;
+
+        const result = await Swal.fire({
+            title: '¿Crear inscripción?',
+            html: `
+                <div style="text-align: left; margin: 20px;">
+                    <p><strong>Estudiante:</strong> ${estudianteNombre}</p>
+                    <p><strong>Curso:</strong> ${cursoNombre}</p>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, inscribir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#f59e0b'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const datos = {
+                    estudianteId: parseInt(estudianteId),
+                    cursoId: parseInt(cursoId)
+                };
+
+                await axios.post(
+                    'http://localhost:8080/api/inscripciones',
+                    datos,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Inscripción creada!',
+                    text: 'El estudiante fue inscrito correctamente',
+                    confirmButtonColor: '#f59e0b'
+                }).then(() => {
+                    window.location.href = '/inscripciones';
+                });
+
+            } catch (error) {
+                let mensajeError = 'No se pudo crear la inscripción';
+
+                if (error.response?.data?.message?.includes('ya está inscrito')) {
+                    mensajeError = 'El estudiante ya está inscrito en este curso';
+                } else if (error.response?.data?.message?.includes('cupos')) {
+                    mensajeError = 'El curso no tiene cupos disponibles';
+                } else if (error.response?.data?.message) {
+                    mensajeError = error.response.data.message;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensajeError,
+                    confirmButtonColor: '#f59e0b'
+                });
+            }
+        }
+    });
+
+    function cancelar() {
+        if (formModificado) {
+            Swal.fire({
+                title: '¿Descartar cambios?',
+                text: 'Se perderán los datos ingresados',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, descartar',
+                cancelButtonText: 'Continuar',
+                confirmButtonColor: '#dc2626'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/inscripciones';
+                }
+            });
+        } else {
+            window.location.href = '/inscripciones';
+        }
+    }
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formModificado) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
 
 </body>
 </html>

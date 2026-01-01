@@ -1,6 +1,7 @@
 package com.sistema.academico.infraestructura.controlador;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -146,8 +147,8 @@ public class ViewController {
     }
 
     // ========================================
-// MÓDULO: MATERIAS
-// ========================================
+    // MÓDULO: MATERIAS
+    // ========================================
 
     @GetMapping("/materias")
     public String listarMaterias() {
@@ -306,19 +307,31 @@ public class ViewController {
      * Formulario para registrar calificación
      * Ruta: http://localhost:8080/calificaciones/registrar
      */
-    @GetMapping("/calificaciones/registrar")
-    public String registrarCalificacion() {
-        return "calificaciones/registrar";
+    @GetMapping("/calificaciones/nuevo")
+    public String calificacionesNuevo() {
+        return "calificaciones/crear";
+    }
+
+    @GetMapping("/calificaciones/editar/{id}")
+    public String calificacionesEditar(@PathVariable Long id, Model model) {
+        model.addAttribute("id", id);
+        return "calificaciones/editar";
+    }
+
+    @GetMapping("/calificaciones/ver/{id}")
+    public String calificacionesVer(@PathVariable Long id, Model model) {
+        model.addAttribute("id", id);
+        return "calificaciones/ver";
     }
 
     /**
      * Ver calificaciones de un estudiante
      * Ruta: http://localhost:8080/calificaciones/estudiante/{id}
-     */
+
     @GetMapping("/calificaciones/estudiante/{id}")
     public String verCalificacionesEstudiante(@PathVariable Long id) {
         return "calificaciones/ver";
-    }
+    }*/
 
     // ========================================
     // MÓDULO: INSCRIPCIONES

@@ -3,6 +3,8 @@ package com.sistema.academico.aplicacion.mapper;
 import com.sistema.academico.aplicacion.dto.request.CalificacionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.CalificacionResponseDTO;
 import com.sistema.academico.dominio.entidad.Calificacion;
+import com.sistema.academico.dominio.entidad.Curso;
+import com.sistema.academico.dominio.entidad.Estudiante;
 import com.sistema.academico.dominio.entidad.Inscripcion;
 import org.springframework.stereotype.Component;
 
@@ -48,8 +50,19 @@ public class CalificacionMapper {
 
         BigDecimal notaPonderada = calificacion.getNotaPonderada();
 
+        // OBTENER DATOS DE LA INSCRIPCIÓN
+        Inscripcion inscripcion = calificacion.getInscripcion();
+        Estudiante estudiante = inscripcion.getEstudiante();
+        Curso curso = inscripcion.getCurso();
+
         return CalificacionResponseDTO.builder()
                 .id(calificacion.getId())
+                .inscripcionId(calificacion.getInscripcion().getId())
+
+                .estudiante(estudiante.getNombreCompleto())
+                .curso(curso.getCodigo() + " - " + curso.getNombre())
+                .materia(curso.getMateria().getNombre())
+
                 .nombreEvaluacion(calificacion.getNombreEvaluacion())
                 .nota(calificacion.getNota() != null ? calificacion.getNota().toString() : "")
                 .porcentaje(calificacion.getPorcentaje())
