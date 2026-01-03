@@ -5,12 +5,16 @@ import com.sistema.academico.aplicacion.dto.response.CalificacionResponseDTO;
 import com.sistema.academico.aplicacion.mapper.CalificacionMapper;
 import com.sistema.academico.aplicacion.servicio.ICalificacionService;
 import com.sistema.academico.dominio.entidad.Calificacion;
+import com.sistema.academico.dominio.entidad.Curso;
+import com.sistema.academico.dominio.entidad.Estudiante;
 import com.sistema.academico.dominio.entidad.Inscripcion;
 import com.sistema.academico.dominio.enumeracion.Rol;
 import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
 import com.sistema.academico.infraestructura.excepcion.ValidacionNegocioException;
 import com.sistema.academico.infraestructura.repositorio.CalificacionRepository;
+import com.sistema.academico.infraestructura.repositorio.CursoRepository;
+import com.sistema.academico.infraestructura.repositorio.EstudianteRepository;
 import com.sistema.academico.infraestructura.repositorio.InscripcionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,8 @@ public class CalificacionServiceImpl implements ICalificacionService {
 
     private final CalificacionRepository calificacionRepository;
     private final InscripcionRepository inscripcionRepository;
+    private final EstudianteRepository estudianteRepository;
+    private final CursoRepository cursoRepository;
     private final CalificacionMapper calificacionMapper;
 
     @Override
@@ -134,5 +140,41 @@ public class CalificacionServiceImpl implements ICalificacionService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Calificación no encontrada con ID: " + id));
 
         calificacionRepository.delete(calificacion);
+    }
+
+    // ========================================
+    // MÉTODOS PARA DASHBOARDS
+    // ========================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CalificacionResponseDTO> listarPorEstudiante(Long estudianteId) {
+        Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + estudianteId));
+
+        // Obtener todas las inscripciones del estudiante
+        List<Inscripcion> inscripciones = inscripcionRepository.findByEstudiante(estudiante);
+
+        // Obtener todas las calificaciones de esas inscripciones
+        return inscripciones.stream()
+                .flatMap(inscripcion -> calificacionRepository.findByInscripcion(inscripcion).stream())
+                .map(calificacionMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CalificacionResponseDTO> listarPorCurso(Long cursoId) {
+        Curso curso = cursoRepository.findById(cursoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Curso no encontrado con ID: " + cursoId));
+
+        // Obtener todas las inscripciones del curso
+        List<Inscripcion> inscripciones = inscripcionRepository.findByCurso(curso);
+
+        // Obtener todas las calificaciones de esas inscripciones
+        return inscripciones.stream()
+                .flatMap(inscripcion -> calificacionRepository.findByInscripcion(inscripcion).stream())
+                .map(calificacionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 }

@@ -24,4 +24,29 @@ public interface IInscripcionService {
     void completar(Long id, Rol rolUsuarioActual);
 
     void eliminar(Long id, Rol rolUsuarioActual);
+
+    // ========================================
+    // NUEVOS MÉTODOS PARA DASHBOARDS
+    // ========================================
+
+    /**
+     * Listar todas las inscripciones de un estudiante específico
+     * @param estudianteId ID del estudiante
+     * @return Lista de inscripciones del estudiante
+     */
+    List<InscripcionResponseDTO> listarPorEstudiante(Long estudianteId);
+
+    /**
+     * Listar inscripciones ACTIVAS de un estudiante específico
+     * @param estudianteId ID del estudiante
+     * @return Lista de inscripciones activas del estudiante
+     */
+    List<InscripcionResponseDTO> listarActivasPorEstudiante(Long estudianteId);
+
+    /**
+     * Listar todas las inscripciones de un curso específico
+     * @param cursoId ID del curso
+     * @return Lista de inscripciones del curso
+     */
+    List<InscripcionResponseDTO> listarPorCurso(Long cursoId);
 }

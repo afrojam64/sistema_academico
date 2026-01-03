@@ -26,4 +26,9 @@ public interface IProfesorService {
     void activar(Long id, Rol rolUsuarioActual);
 
     void eliminar(Long id, Rol rolUsuarioActual);
+
+    /**
+     * Cambiar contraseña de un profesor
+     */
+    void cambiarContrasena(Long id, String nuevaContrasena);
 }

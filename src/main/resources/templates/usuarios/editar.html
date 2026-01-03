@@ -390,9 +390,31 @@
             document.getElementById('direccion').value = usuario.direccion || '';
 
             // Fecha de nacimiento
+            // Fecha de nacimiento - VALIDACIÓN MEJORADA
             if (usuario.fechaNacimiento) {
-                const fecha = new Date(usuario.fechaNacimiento);
-                document.getElementById('fechaNacimiento').value = fecha.toISOString().split('T')[0];
+                try {
+                    // Intentar diferentes formatos
+                    let fecha;
+                    if (usuario.fechaNacimiento.includes('T')) {
+                        // Formato ISO: 2000-01-15T00:00:00
+                        fecha = new Date(usuario.fechaNacimiento);
+                    } else if (usuario.fechaNacimiento.includes('/')) {
+                        // Formato: 15/01/2000
+                        const [dia, mes, anio] = usuario.fechaNacimiento.split('/');
+                        fecha = new Date(anio, mes - 1, dia);
+                    } else {
+                        // Formato: 2000-01-15
+                        fecha = new Date(usuario.fechaNacimiento);
+                    }
+
+                    // Verificar que la fecha sea válida
+                    if (!isNaN(fecha.getTime())) {
+                        document.getElementById('fechaNacimiento').value = fecha.toISOString().split('T')[0];
+                    }
+                } catch (error) {
+                    console.warn('Fecha de nacimiento inválida:', usuario.fechaNacimiento);
+                    // Dejar el campo vacío si la fecha es inválida
+                }
             }
 
             // Actualizar título

@@ -28,4 +28,22 @@ public interface ICursoService {
     void activar(Long id, Rol rolUsuarioActual);
 
     void eliminar(Long id, Rol rolUsuarioActual);
+
+    // ========================================
+    // NUEVOS MÉTODOS PARA DASHBOARD PROFESOR
+    // ========================================
+
+    /**
+     * Listar todos los cursos de un profesor específico
+     * @param profesorId ID del profesor
+     * @return Lista de cursos del profesor
+     */
+    List<CursoResponseDTO> listarCursosPorProfesor(Long profesorId);
+
+    /**
+     * Listar cursos ACTIVOS de un profesor específico
+     * @param profesorId ID del profesor
+     * @return Lista de cursos activos del profesor
+     */
+    List<CursoResponseDTO> listarCursosActivosPorProfesor(Long profesorId);
 }

@@ -16,15 +16,17 @@ import java.util.List;
  * Controller REST para gestionar Cursos
  *
  * Endpoints disponibles:
- * - POST   /api/cursos                → Crear curso
- * - GET    /api/cursos                → Listar todos
- * - GET    /api/cursos/activos        → Listar activos
- * - GET    /api/cursos/con-cupos      → Listar con cupos disponibles
- * - GET    /api/cursos/{id}           → Obtener por ID
- * - PUT    /api/cursos/{id}           → Actualizar
- * - PATCH  /api/cursos/{id}/desactivar → Desactivar
- * - PATCH  /api/cursos/{id}/activar    → Activar
- * - DELETE /api/cursos/{id}           → Eliminar físicamente
+ * - POST   /api/cursos                         → Crear curso
+ * - GET    /api/cursos                         → Listar todos
+ * - GET    /api/cursos/activos                 → Listar activos
+ * - GET    /api/cursos/con-cupos               → Listar con cupos disponibles
+ * - GET    /api/cursos/profesor/{profesorId}   → Listar cursos de un profesor
+ * - GET    /api/cursos/profesor/{profesorId}/activos → Listar cursos activos de un profesor
+ * - GET    /api/cursos/{id}                    → Obtener por ID
+ * - PUT    /api/cursos/{id}                    → Actualizar
+ * - PATCH  /api/cursos/{id}/desactivar         → Desactivar
+ * - PATCH  /api/cursos/{id}/activar            → Activar
+ * - DELETE /api/cursos/{id}                    → Eliminar físicamente
  */
 @RestController
 @RequestMapping("/api/cursos")
@@ -64,6 +66,30 @@ public class CursoController {
     @GetMapping("/con-cupos")
     public ResponseEntity<List<CursoResponseDTO>> listarCursosConCupos() {
         List<CursoResponseDTO> cursos = cursoService.listarCursosConCupos();
+        return ResponseEntity.ok(cursos);
+    }
+
+    // ========================================
+    // ENDPOINTS PARA DASHBOARD PROFESOR
+    // ========================================
+
+    /**
+     * Listar todos los cursos de un profesor
+     * Ruta: GET /api/cursos/profesor/{profesorId}
+     */
+    @GetMapping("/profesor/{profesorId}")
+    public ResponseEntity<List<CursoResponseDTO>> listarCursosPorProfesor(@PathVariable Long profesorId) {
+        List<CursoResponseDTO> cursos = cursoService.listarCursosPorProfesor(profesorId);
+        return ResponseEntity.ok(cursos);
+    }
+
+    /**
+     * Listar cursos ACTIVOS de un profesor
+     * Ruta: GET /api/cursos/profesor/{profesorId}/activos
+     */
+    @GetMapping("/profesor/{profesorId}/activos")
+    public ResponseEntity<List<CursoResponseDTO>> listarCursosActivosProfesor(@PathVariable Long profesorId) {
+        List<CursoResponseDTO> cursos = cursoService.listarCursosActivosPorProfesor(profesorId);
         return ResponseEntity.ok(cursos);
     }
 

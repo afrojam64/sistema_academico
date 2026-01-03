@@ -16,12 +16,14 @@ import java.util.List;
  * Controller REST para gestionar Calificaciones
  *
  * Endpoints disponibles:
- * - POST   /api/calificaciones                        → Registrar calificación
- * - GET    /api/calificaciones                        → Listar todas
- * - GET    /api/calificaciones/{id}                   → Obtener por ID
+ * - POST   /api/calificaciones                          → Registrar calificación
+ * - GET    /api/calificaciones                          → Listar todas
+ * - GET    /api/calificaciones/{id}                     → Obtener por ID
  * - GET    /api/calificaciones/inscripcion/{inscripcionId} → Listar por inscripción
- * - PUT    /api/calificaciones/{id}                   → Actualizar
- * - DELETE /api/calificaciones/{id}                   → Eliminar físicamente
+ * - GET    /api/calificaciones/estudiante/{estudianteId} → Listar por estudiante
+ * - GET    /api/calificaciones/curso/{cursoId}          → Listar por curso
+ * - PUT    /api/calificaciones/{id}                     → Actualizar
+ * - DELETE /api/calificaciones/{id}                     → Eliminar físicamente
  */
 @RestController
 @RequestMapping("/api/calificaciones")
@@ -55,6 +57,32 @@ public class CalificacionController {
     @GetMapping("/inscripcion/{inscripcionId}")
     public ResponseEntity<List<CalificacionResponseDTO>> listarPorInscripcion(@PathVariable Long inscripcionId) {
         List<CalificacionResponseDTO> calificaciones = calificacionService.listarPorInscripcion(inscripcionId);
+        return ResponseEntity.ok(calificaciones);
+    }
+
+    // ========================================
+    // ENDPOINTS PARA DASHBOARDS
+    // ========================================
+
+    /**
+     * Listar todas las calificaciones de un estudiante (todas sus inscripciones)
+     * Ruta: GET /api/calificaciones/estudiante/{estudianteId}
+     * Útil para: Dashboard de estudiante (ver todas sus notas)
+     */
+    @GetMapping("/estudiante/{estudianteId}")
+    public ResponseEntity<List<CalificacionResponseDTO>> listarPorEstudiante(@PathVariable Long estudianteId) {
+        List<CalificacionResponseDTO> calificaciones = calificacionService.listarPorEstudiante(estudianteId);
+        return ResponseEntity.ok(calificaciones);
+    }
+
+    /**
+     * Listar todas las calificaciones de un curso específico
+     * Ruta: GET /api/calificaciones/curso/{cursoId}
+     * Útil para: Dashboard de profesor (ver notas de todos los estudiantes de un curso)
+     */
+    @GetMapping("/curso/{cursoId}")
+    public ResponseEntity<List<CalificacionResponseDTO>> listarPorCurso(@PathVariable Long cursoId) {
+        List<CalificacionResponseDTO> calificaciones = calificacionService.listarPorCurso(cursoId);
         return ResponseEntity.ok(calificaciones);
     }
 

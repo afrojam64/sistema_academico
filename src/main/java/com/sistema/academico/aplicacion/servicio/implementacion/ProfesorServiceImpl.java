@@ -215,4 +215,25 @@ public class ProfesorServiceImpl implements IProfesorService {
         // Eliminar profesor (el usuario se mantiene)
         profesorRepository.delete(profesor);
     }
+
+    /**
+     * Cambiar la contraseña de un profesor
+     * @param id ID del profesor
+     * @param nuevaContrasena Nueva contraseña (se encriptará automáticamente)
+     */
+    @Override
+    @Transactional
+    public void cambiarContrasena(Long id, String nuevaContrasena) {
+        Profesor profesor = profesorRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Profesor no encontrado con ID: " + id));
+
+        Usuario usuario = profesor.getUsuario();
+
+        // Encriptar la nueva contraseña
+        usuario.setContrasena(passwordEncoder.encode(nuevaContrasena));
+
+        // Guardar el usuario actualizado
+        usuarioRepository.save(usuario);
+    }
 }

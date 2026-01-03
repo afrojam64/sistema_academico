@@ -66,11 +66,35 @@
             color: #6b7280;
             margin-top: 4px;
         }
+        /* NUEVOS ESTILOS PARA CAMBIAR CONTRASEÑA */
+        .password-section {
+            background: #fef3c7;
+            border: 2px dashed #f59e0b;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .password-toggle {
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 38px;
+            color: #6b7280;
+        }
+        .password-toggle:hover {
+            color: #f59e0b;
+        }
+        .password-requirements {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay">
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
     <div class="loading-spinner">
         <div class="spinner-border text-warning" style="width: 3rem; height: 3rem;" role="status">
             <span class="visually-hidden">Cargando...</span>
@@ -114,12 +138,7 @@
                 <label for="nombre" class="form-label fw-bold">
                     Nombre <span class="text-danger">*</span>
                 </label>
-                <input
-                        type="text"
-                        class="form-control"
-                        id="nombre"
-                        maxlength="100"
-                        required>
+                <input type="text" class="form-control" id="nombre" maxlength="100" required>
                 <div class="char-counter">
                     <span id="nombreCounter">0/100</span> caracteres
                 </div>
@@ -130,12 +149,7 @@
                 <label for="apellido" class="form-label fw-bold">
                     Apellido <span class="text-danger">*</span>
                 </label>
-                <input
-                        type="text"
-                        class="form-control"
-                        id="apellido"
-                        maxlength="100"
-                        required>
+                <input type="text" class="form-control" id="apellido" maxlength="100" required>
                 <div class="char-counter">
                     <span id="apellidoCounter">0/100</span> caracteres
                 </div>
@@ -146,12 +160,7 @@
                 <label for="cedula" class="form-label fw-bold">
                     Cédula <span class="text-danger">*</span>
                 </label>
-                <input
-                        type="text"
-                        class="form-control"
-                        id="cedula"
-                        maxlength="20"
-                        required>
+                <input type="text" class="form-control" id="cedula" maxlength="20" required>
                 <div class="char-counter">
                     <span id="cedulaCounter">0/20</span> caracteres
                 </div>
@@ -162,12 +171,7 @@
                 <label for="email" class="form-label fw-bold">
                     Email <span class="text-danger">*</span>
                 </label>
-                <input
-                        type="email"
-                        class="form-control"
-                        id="email"
-                        maxlength="150"
-                        required>
+                <input type="email" class="form-control" id="email" maxlength="150" required>
             </div>
 
             <!-- TELÉFONO -->
@@ -175,11 +179,7 @@
                 <label for="telefono" class="form-label fw-bold">
                     Teléfono <span class="text-muted">(Opcional)</span>
                 </label>
-                <input
-                        type="text"
-                        class="form-control"
-                        id="telefono"
-                        maxlength="20">
+                <input type="text" class="form-control" id="telefono" maxlength="20">
                 <div class="char-counter">
                     <span id="telefonoCounter">0/20</span> caracteres
                 </div>
@@ -190,11 +190,7 @@
                 <label for="especialidad" class="form-label fw-bold">
                     Especialidad <span class="text-muted">(Opcional)</span>
                 </label>
-                <input
-                        type="text"
-                        class="form-control"
-                        id="especialidad"
-                        maxlength="200">
+                <input type="text" class="form-control" id="especialidad" maxlength="200">
                 <div class="char-counter">
                     <span id="especialidadCounter">0/200</span> caracteres
                 </div>
@@ -210,19 +206,16 @@
                 </select>
             </div>
 
-            <!-- FECHA DE CONTRATACIÓN -->
+            <!-- FECHA CONTRATACIÓN -->
             <div class="mb-4">
                 <label for="fechaContratacion" class="form-label fw-bold">
-                    Fecha de Contratación
+                    Fecha de Contratación <span class="text-muted">(Opcional)</span>
                 </label>
-                <input
-                        type="date"
-                        class="form-control"
-                        id="fechaContratacion">
+                <input type="date" class="form-control" id="fechaContratacion">
             </div>
 
-            <!-- BOTONES -->
-            <div class="d-flex gap-2 justify-content-end mt-4">
+            <!-- BOTONES FORMULARIO PRINCIPAL -->
+            <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-secondary" onclick="cancelar()">
                     <i class="fas fa-times"></i> Cancelar
                 </button>
@@ -231,26 +224,64 @@
                 </button>
             </div>
         </form>
+
+        <!-- ========================================
+             SECCIÓN DE CAMBIAR CONTRASEÑA (NUEVA)
+             ======================================== -->
+        <div class="password-section">
+            <h5 class="mb-3">
+                <i class="fas fa-key"></i> Cambiar Contraseña
+            </h5>
+            <p class="text-muted mb-3">
+                Modifica la contraseña de acceso del profesor al sistema
+            </p>
+
+            <form id="formCambiarContrasena">
+                <div class="mb-3 position-relative">
+                    <label for="nuevaContrasena" class="form-label fw-bold">
+                        Nueva Contraseña <span class="text-danger">*</span>
+                    </label>
+                    <input type="password" class="form-control" id="nuevaContrasena" placeholder="Mínimo 8 caracteres">
+                    <i class="fas fa-eye password-toggle" id="toggleNuevaContrasena"></i>
+                    <div class="password-requirements">
+                        <small>
+                            <i class="fas fa-info-circle"></i> La contraseña debe tener al menos 8 caracteres
+                        </small>
+                    </div>
+                </div>
+
+                <div class="mb-3 position-relative">
+                    <label for="confirmarContrasena" class="form-label fw-bold">
+                        Confirmar Contraseña <span class="text-danger">*</span>
+                    </label>
+                    <input type="password" class="form-control" id="confirmarContrasena" placeholder="Repite la contraseña">
+                    <i class="fas fa-eye password-toggle" id="toggleConfirmarContrasena"></i>
+                    <div class="invalid-feedback">Las contraseñas no coinciden</div>
+                </div>
+
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-key"></i> Cambiar Contraseña
+                </button>
+            </form>
+        </div>
+
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     const token = localStorage.getItem('token');
     const userName = localStorage.getItem('userName');
-    const userRole = localStorage.getItem('userRole');
 
-    if (!token) window.location.href = '/login';
+    if (!token) {
+        window.location.href = '/login';
+    }
 
     document.getElementById('userName').textContent = userName || 'Admin';
 
-    // Obtener ID del profesor de la URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const profesorId = urlParams.get('id') || window.location.pathname.split('/').pop();
-
+    const profesorId = window.location.pathname.split('/').pop();
     let formModificado = false;
     let guardandoFormulario = false;
 
@@ -258,23 +289,23 @@
     // CARGAR DATOS
     // ========================================
     async function cargarDatos() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
         try {
             // Cargar departamentos
-            const deptosResponse = await axios.get('http://localhost:8080/api/departamentos', {
+            const deptResponse = await axios.get('http://localhost:8080/api/departamentos/activos', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            const selectDepto = document.getElementById('departamentoId');
-            const deptosActivos = deptosResponse.data.filter(d => d.estado === 'ACTIVO');
-
-            deptosActivos.forEach(depto => {
+            const selectDept = document.getElementById('departamentoId');
+            deptResponse.data.forEach(dept => {
                 const option = document.createElement('option');
-                option.value = depto.id;
-                option.textContent = `${depto.codigo} - ${depto.nombre}`;
-                selectDepto.appendChild(option);
+                option.value = dept.id;
+                option.textContent = `${dept.codigo} - ${dept.nombre}`;
+                selectDept.appendChild(option);
             });
 
-            // Cargar datos del profesor
+            // Cargar profesor
             const profesorResponse = await axios.get(`http://localhost:8080/api/profesores/${profesorId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -318,7 +349,6 @@
     }
 
     function formatearFechaParaInput(fechaStr) {
-        // Convierte DD/MM/YYYY a YYYY-MM-DD
         const partes = fechaStr.split('/');
         if (partes.length === 3) {
             return `${partes[2]}-${partes[1]}-${partes[0]}`;
@@ -328,9 +358,7 @@
 
     cargarDatos();
 
-    // ========================================
-    // CONTADORES Y EVENTOS
-    // ========================================
+    // CONTADORES
     document.getElementById('nombre').addEventListener('input', function(e) {
         document.getElementById('nombreCounter').textContent = `${e.target.value.length}/100`;
         formModificado = true;
@@ -360,9 +388,7 @@
         document.getElementById(id).addEventListener('change', () => formModificado = true);
     });
 
-    // ========================================
-    // ENVIAR FORMULARIO
-    // ========================================
+    // ENVIAR FORMULARIO PRINCIPAL
     document.getElementById('formEditarProfesor').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -377,7 +403,6 @@
             fechaContratacion: document.getElementById('fechaContratacion').value || null
         };
 
-        // Validaciones
         if (!datos.nombre || !datos.apellido || !datos.cedula || !datos.email || !datos.departamentoId) {
             Swal.fire({
                 icon: 'warning',
@@ -388,7 +413,6 @@
             return;
         }
 
-        // Confirmación
         const result = await Swal.fire({
             title: '¿Guardar cambios?',
             text: 'Se actualizará la información del profesor',
@@ -444,6 +468,113 @@
                     confirmButtonColor: '#f59e0b'
                 });
             }
+        }
+    });
+
+    // ========================================
+    // CAMBIAR CONTRASEÑA (NUEVO)
+    // ========================================
+    document.getElementById('formCambiarContrasena').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const nuevaContrasena = document.getElementById('nuevaContrasena').value;
+        const confirmarContrasena = document.getElementById('confirmarContrasena').value;
+
+        if (nuevaContrasena.length < 8) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Contraseña muy corta',
+                text: 'La contraseña debe tener al menos 8 caracteres',
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+
+        if (nuevaContrasena !== confirmarContrasena) {
+            document.getElementById('confirmarContrasena').classList.add('is-invalid');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Las contraseñas no coinciden',
+                text: 'Por favor verifica que ambas contraseñas sean iguales',
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: '¿Cambiar contraseña?',
+            text: 'Se actualizará la contraseña de acceso del profesor',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cambiar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#f59e0b'
+        });
+
+        if (result.isConfirmed) {
+            document.getElementById('loadingOverlay').querySelector('p').textContent = 'Cambiando contraseña...';
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            try {
+                await axios.patch(
+                    `http://localhost:8080/api/profesores/${profesorId}/cambiar-contrasena`,
+                    { nuevaContrasena: nuevaContrasena },
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                document.getElementById('nuevaContrasena').value = '';
+                document.getElementById('confirmarContrasena').value = '';
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Contraseña actualizada!',
+                    text: 'La contraseña fue cambiada correctamente',
+                    confirmButtonColor: '#f59e0b'
+                });
+
+            } catch (error) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.response?.data?.message || 'No se pudo cambiar la contraseña',
+                    confirmButtonColor: '#f59e0b'
+                });
+            }
+        }
+    });
+
+    document.getElementById('confirmarContrasena').addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+    });
+
+    // Toggle contraseñas
+    document.getElementById('toggleNuevaContrasena').addEventListener('click', function() {
+        const input = document.getElementById('nuevaContrasena');
+        if (input.type === 'password') {
+            input.type = 'text';
+            this.classList.remove('fa-eye');
+            this.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            this.classList.remove('fa-eye-slash');
+            this.classList.add('fa-eye');
+        }
+    });
+
+    document.getElementById('toggleConfirmarContrasena').addEventListener('click', function() {
+        const input = document.getElementById('confirmarContrasena');
+        if (input.type === 'password') {
+            input.type = 'text';
+            this.classList.remove('fa-eye');
+            this.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            this.classList.remove('fa-eye-slash');
+            this.classList.add('fa-eye');
         }
     });
 

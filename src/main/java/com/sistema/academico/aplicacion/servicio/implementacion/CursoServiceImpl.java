@@ -159,4 +159,30 @@ public class CursoServiceImpl implements ICursoService {
 
         cursoRepository.delete(curso);
     }
+
+    // ========================================
+    // MÉTODOS PARA DASHBOARD PROFESOR
+    // ========================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CursoResponseDTO> listarCursosPorProfesor(Long profesorId) {
+        Profesor profesor = profesorRepository.findById(profesorId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado con ID: " + profesorId));
+
+        return cursoRepository.findByProfesor(profesor).stream()
+                .map(cursoMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CursoResponseDTO> listarCursosActivosPorProfesor(Long profesorId) {
+        Profesor profesor = profesorRepository.findById(profesorId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado con ID: " + profesorId));
+
+        return cursoRepository.findByProfesorAndEstado(profesor, Estado.ACTIVO).stream()
+                .map(cursoMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 }

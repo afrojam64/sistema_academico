@@ -16,13 +16,16 @@ import java.util.List;
  * Controller REST para gestionar Inscripciones
  *
  * Endpoints disponibles:
- * - POST   /api/inscripciones              → Crear inscripción
- * - GET    /api/inscripciones              → Listar todas
- * - GET    /api/inscripciones/activas      → Listar activas
- * - GET    /api/inscripciones/{id}         → Obtener por ID
- * - PATCH  /api/inscripciones/{id}/retirar → Retirar inscripción
- * - PATCH  /api/inscripciones/{id}/completar → Completar inscripción
- * - DELETE /api/inscripciones/{id}         → Eliminar físicamente
+ * - POST   /api/inscripciones                          → Crear inscripción
+ * - GET    /api/inscripciones                          → Listar todas
+ * - GET    /api/inscripciones/activas                  → Listar activas
+ * - GET    /api/inscripciones/{id}                     → Obtener por ID
+ * - GET    /api/inscripciones/estudiante/{estudianteId} → Listar por estudiante
+ * - GET    /api/inscripciones/estudiante/{estudianteId}/activas → Listar activas de estudiante
+ * - GET    /api/inscripciones/curso/{cursoId}          → Listar por curso
+ * - PATCH  /api/inscripciones/{id}/retirar             → Retirar inscripción
+ * - PATCH  /api/inscripciones/{id}/completar           → Completar inscripción
+ * - DELETE /api/inscripciones/{id}                     → Eliminar físicamente
  */
 @RestController
 @RequestMapping("/api/inscripciones")
@@ -52,6 +55,43 @@ public class InscripcionController {
     @GetMapping("/activas")
     public ResponseEntity<List<InscripcionResponseDTO>> listarActivas() {
         List<InscripcionResponseDTO> inscripciones = inscripcionService.listarActivas();
+        return ResponseEntity.ok(inscripciones);
+    }
+
+    // ========================================
+    // ENDPOINTS PARA DASHBOARDS
+    // ========================================
+
+    /**
+     * Listar todas las inscripciones de un estudiante
+     * Ruta: GET /api/inscripciones/estudiante/{estudianteId}
+     * Útil para: Dashboard de estudiante
+     */
+    @GetMapping("/estudiante/{estudianteId}")
+    public ResponseEntity<List<InscripcionResponseDTO>> listarPorEstudiante(@PathVariable Long estudianteId) {
+        List<InscripcionResponseDTO> inscripciones = inscripcionService.listarPorEstudiante(estudianteId);
+        return ResponseEntity.ok(inscripciones);
+    }
+
+    /**
+     * Listar inscripciones ACTIVAS de un estudiante
+     * Ruta: GET /api/inscripciones/estudiante/{estudianteId}/activas
+     * Útil para: Dashboard de estudiante (cursos en progreso)
+     */
+    @GetMapping("/estudiante/{estudianteId}/activas")
+    public ResponseEntity<List<InscripcionResponseDTO>> listarActivasPorEstudiante(@PathVariable Long estudianteId) {
+        List<InscripcionResponseDTO> inscripciones = inscripcionService.listarActivasPorEstudiante(estudianteId);
+        return ResponseEntity.ok(inscripciones);
+    }
+
+    /**
+     * Listar todas las inscripciones de un curso
+     * Ruta: GET /api/inscripciones/curso/{cursoId}
+     * Útil para: Dashboard de profesor (ver estudiantes de un curso)
+     */
+    @GetMapping("/curso/{cursoId}")
+    public ResponseEntity<List<InscripcionResponseDTO>> listarPorCurso(@PathVariable Long cursoId) {
+        List<InscripcionResponseDTO> inscripciones = inscripcionService.listarPorCurso(cursoId);
         return ResponseEntity.ok(inscripciones);
     }
 

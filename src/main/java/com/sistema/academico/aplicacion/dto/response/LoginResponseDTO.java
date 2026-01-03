@@ -9,6 +9,7 @@ import lombok.*;
  * - Token JWT
  * - Tipo de token (Bearer)
  * - Información del usuario autenticado
+ * - ID del profesor o estudiante (si aplica)
  */
 @Getter
 @Setter
@@ -47,4 +48,20 @@ public class LoginResponseDTO {
      * Rol del usuario (SUPER_ADMIN, ADMIN, PROFESOR, ESTUDIANTE)
      */
     private String rol;
+
+    // ========================================
+    // CAMPOS ADICIONALES PARA DASHBOARDS
+    // ========================================
+
+    /**
+     * ID del profesor (solo si rol = PROFESOR)
+     * Null para otros roles
+     */
+    private Long profesorId;
+
+    /**
+     * ID del estudiante (solo si rol = ESTUDIANTE)
+     * Null para otros roles
+     */
+    private Long estudianteId;
 }

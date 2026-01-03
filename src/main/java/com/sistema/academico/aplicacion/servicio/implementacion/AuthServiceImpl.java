@@ -3,8 +3,12 @@ package com.sistema.academico.aplicacion.servicio.implementacion;
 import com.sistema.academico.aplicacion.dto.request.LoginRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.LoginResponseDTO;
 import com.sistema.academico.aplicacion.servicio.IAuthService;
+import com.sistema.academico.dominio.entidad.Estudiante;
+import com.sistema.academico.dominio.entidad.Profesor;
 import com.sistema.academico.dominio.entidad.Usuario;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
+import com.sistema.academico.infraestructura.repositorio.EstudianteRepository;
+import com.sistema.academico.infraestructura.repositorio.ProfesorRepository;
 import com.sistema.academico.infraestructura.repositorio.UsuarioRepository;
 import com.sistema.academico.infraestructura.seguridad.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +39,20 @@ public class AuthServiceImpl implements IAuthService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private ProfesorRepository profesorRepository;
+
+    @Autowired
+    private EstudianteRepository estudianteRepository;
+
     /**
      * Autentica un usuario y genera un token JWT.
      *
      * Flujo:
      * 1. Valida las credenciales (nombreUsuario + contraseña)
      * 2. Si son correctas, genera un token JWT
-     * 3. Retorna el token y la información del usuario
+     * 3. Busca el profesorId o estudianteId según el rol
+     * 4. Retorna el token y la información del usuario
      *
      * @param loginRequest Credenciales del usuario
      * @return LoginResponseDTO con el token y datos del usuario
@@ -68,7 +79,33 @@ public class AuthServiceImpl implements IAuthService {
             Usuario usuario = usuarioRepository.findByNombreUsuario(loginRequest.getNombreUsuario())
                     .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
 
-            // 5. Construir y retornar la respuesta
+            // 5. Buscar profesorId o estudianteId según el rol
+            Long profesorId = null;
+            Long estudianteId = null;
+
+            switch (usuario.getRol()) {
+                case PROFESOR:
+                    Profesor profesor = profesorRepository.findByUsuarioId(usuario.getId())
+                            .orElse(null);
+                    if (profesor != null) {
+                        profesorId = profesor.getId();
+                    }
+                    break;
+
+                case ESTUDIANTE:
+                    Estudiante estudiante = estudianteRepository.findByUsuarioId(usuario.getId())
+                            .orElse(null);
+                    if (estudiante != null) {
+                        estudianteId = estudiante.getId();
+                    }
+                    break;
+
+                default:
+                    // ADMIN y SUPER_ADMIN no necesitan profesorId ni estudianteId
+                    break;
+            }
+
+            // 6. Construir y retornar la respuesta
             return LoginResponseDTO.builder()
                     .token(token)
                     .type("Bearer")
@@ -76,6 +113,8 @@ public class AuthServiceImpl implements IAuthService {
                     .nombreUsuario(usuario.getNombreUsuario())
                     .email(usuario.getEmail())
                     .rol(usuario.getRol().name())
+                    .profesorId(profesorId)
+                    .estudianteId(estudianteId)
                     .build();
 
         } catch (BadCredentialsException e) {

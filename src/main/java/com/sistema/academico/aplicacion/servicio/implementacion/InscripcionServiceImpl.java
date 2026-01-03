@@ -17,6 +17,7 @@ import com.sistema.academico.infraestructura.repositorio.CursoRepository;
 import com.sistema.academico.infraestructura.repositorio.EstudianteRepository;
 import com.sistema.academico.infraestructura.repositorio.InscripcionRepository;
 import lombok.RequiredArgsConstructor;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -139,5 +140,44 @@ public class InscripcionServiceImpl implements IInscripcionService {
         }
 
         inscripcionRepository.delete(inscripcion);
+
+
+    }
+
+    // ========================================
+    // MÉTODOS PARA DASHBOARDS
+    // ========================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InscripcionResponseDTO> listarPorEstudiante(Long estudianteId) {
+        Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + estudianteId));
+
+        return inscripcionRepository.findByEstudiante(estudiante).stream()
+                .map(inscripcionMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InscripcionResponseDTO> listarActivasPorEstudiante(Long estudianteId) {
+        Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + estudianteId));
+
+        return inscripcionRepository.findByEstudianteAndEstado(estudiante, EstadoInscripcion.ACTIVO).stream()
+                .map(inscripcionMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InscripcionResponseDTO> listarPorCurso(Long cursoId) {
+        Curso curso = cursoRepository.findById(cursoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Curso no encontrado con ID: " + cursoId));
+
+        return inscripcionRepository.findByCurso(curso).stream()
+                .map(inscripcionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 }

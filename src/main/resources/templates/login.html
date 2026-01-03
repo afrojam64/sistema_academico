@@ -99,12 +99,25 @@
                 contrasena: password
             });
 
-            // Guardar datos en localStorage
+            // Guardar datos básicos en localStorage
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('userName', response.data.nombreUsuario);
-            localStorage.setItem('userRole', response.data.rol);  // Ahora guardará: SUPER_ADMIN, ADMIN, etc.
+            localStorage.setItem('userRole', response.data.rol);
             localStorage.setItem('userId', response.data.id);
             localStorage.setItem('userEmail', response.data.email);
+
+            // ========================================
+            // GUARDAR profesorId o estudianteId
+            // ========================================
+            if (response.data.profesorId) {
+                localStorage.setItem('profesorId', response.data.profesorId);
+                console.log('✅ Profesor ID guardado:', response.data.profesorId);
+            }
+
+            if (response.data.estudianteId) {
+                localStorage.setItem('estudianteId', response.data.estudianteId);
+                console.log('✅ Estudiante ID guardado:', response.data.estudianteId);
+            }
 
             // Mostrar mensaje de éxito
             Swal.fire({
@@ -117,7 +130,7 @@
                 // Obtener el rol para redireccionar
                 const rol = response.data.rol;
 
-                // Normalizar el rol recibido (ahora viene como SUPER_ADMIN, ADMIN, etc.)
+                // Normalizar el rol recibido
                 const rolNormalizado = rol.toUpperCase().trim();
 
                 console.log('Usuario:', response.data.nombreUsuario);

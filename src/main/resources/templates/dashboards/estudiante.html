@@ -4,120 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Estudiante - Sistema Académico</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
         body {
-            background: #f0fdf4;
+            background: #f8fafc;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .navbar {
-            background: linear-gradient(135deg, #059669, #10b981);
+            background: linear-gradient(135deg, #10b981, #34d399);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .navbar-brand {
-            color: white !important;
-            font-weight: 700;
-        }
-        .user-info {
-            color: white;
-        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+        .content-wrapper { padding: 30px; }
         .stat-card {
             background: white;
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            transition: transform 0.3s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
         }
         .stat-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
+            font-size: 2.5em;
+            color: #10b981;
         }
         .stat-number {
-            font-size: 32px;
+            font-size: 2em;
             font-weight: 700;
+            color: #1f2937;
         }
         .stat-label {
-            color: #64748b;
-            font-size: 14px;
+            color: #6b7280;
+            font-size: 0.9em;
         }
-        .welcome-banner {
-            background: linear-gradient(135deg, #059669, #10b981);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
-        .course-card {
+        .curso-card {
             background: white;
-            border-left: 4px solid #10b981;
             padding: 20px;
-            margin-bottom: 15px;
-            border-radius: 10px;
+            border-radius: 15px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-left: 4px solid #10b981;
         }
-        .course-title {
-            font-weight: 600;
-            color: #059669;
+        .curso-header {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #1f2937;
             margin-bottom: 10px;
         }
-        .course-info {
-            color: #64748b;
-            font-size: 14px;
+        .curso-info {
+            color: #6b7280;
+            font-size: 0.9em;
         }
-        .grade-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-            margin: 5px;
+        .promedio-destacado {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #10b981;
         }
-        .grade-excellent {
-            background: #dcfce7;
-            color: #059669;
+        .promedio-aprobado { color: #10b981; }
+        .promedio-reprobado { color: #ef4444; }
+        .btn-green {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border: none;
+            color: white;
         }
-        .grade-good {
-            background: #dbeafe;
-            color: #2563eb;
-        }
-        .grade-pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        .badge-estudiante {
+        .btn-green:hover {
             background: linear-gradient(135deg, #059669, #10b981);
             color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
         }
-        .info-section {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
+        .section-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1f2937;
             margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #10b981;
+        }
+        .calificacion-item {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #10b981;
+        }
+        .badge-aprobada {
+            background: #10b981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .badge-reprobada {
+            background: #ef4444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-<!-- Navbar -->
+
 <nav class="navbar navbar-dark">
     <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">
-                <i class="fas fa-user-graduate"></i> Sistema Académico - Estudiante
-            </span>
+        <span class="navbar-brand mb-0 h1">
+            <i class="fas fa-user-graduate"></i> Dashboard Estudiante
+        </span>
         <div class="user-info">
-            <span class="badge-estudiante">ESTUDIANTE</span>
-            <i class="fas fa-user-circle ms-3"></i>
-            <span id="userName">Cargando...</span>
+            <i class="fas fa-user"></i>
+            <span id="userName">Estudiante</span>
             <button class="btn btn-sm btn-light ms-3" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i> Salir
             </button>
@@ -125,213 +118,64 @@
     </div>
 </nav>
 
-<div class="container-fluid mt-4">
-    <!-- Banner de Bienvenida -->
-    <div class="welcome-banner">
-        <h1>
-            <i class="fas fa-graduation-cap"></i>
-            ¡Bienvenido <span id="studentName">Estudiante</span>!
-        </h1>
-        <p class="mb-0">
-            Matrícula: <strong id="studentId">2024-XXXX</strong> |
-            Carrera: <strong>Ingeniería de Sistemas</strong>
-        </p>
-    </div>
-
-    <!-- Estadísticas Principales -->
-    <div class="row">
-        <div class="col-lg-3 col-md-6">
+<div class="content-wrapper">
+    <!-- ESTADÍSTICAS -->
+    <div class="row mb-4">
+        <div class="col-md-3">
             <div class="stat-card">
-                <div class="stat-icon text-success">
-                    <i class="fas fa-book-open"></i>
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" id="totalCursos">0</div>
+                        <div class="stat-label">Cursos Inscritos</div>
+                    </div>
                 </div>
-                <div class="stat-number text-success" id="totalCursos">0</div>
-                <div class="stat-label">Cursos Inscritos</div>
             </div>
         </div>
-
-        <div class="col-lg-3 col-md-6">
+        <div class="col-md-3">
             <div class="stat-card">
-                <div class="stat-icon text-primary">
-                    <i class="fas fa-star"></i>
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" id="totalCalificaciones">0</div>
+                        <div class="stat-label">Calificaciones</div>
+                    </div>
                 </div>
-                <div class="stat-number text-primary" id="promedioGeneral">0.0</div>
-                <div class="stat-label">Promedio General</div>
             </div>
         </div>
-
-        <div class="col-lg-3 col-md-6">
+        <div class="col-md-3">
             <div class="stat-card">
-                <div class="stat-icon text-info">
-                    <i class="fas fa-clipboard-check"></i>
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" id="promedioGeneral">0.0</div>
+                        <div class="stat-label">Promedio General</div>
+                    </div>
                 </div>
-                <div class="stat-number text-info" id="totalCalificaciones">0</div>
-                <div class="stat-label">Calificaciones</div>
             </div>
         </div>
-
-        <div class="col-lg-3 col-md-6">
-            <div class="stat-card">
-                <div class="stat-icon text-warning">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stat-number text-warning" id="avanceCarrera">0%</div>
-                <div class="stat-label">Avance de Carrera</div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <button class="btn btn-green w-100" onclick="verCursosDisponibles()">
+                    <i class="fas fa-plus-circle"></i> Inscribir Curso
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <!-- Mis Cursos Inscritos -->
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <i class="fas fa-book"></i> Mis Cursos - Período 2024-1
-                </div>
-                <div class="card-body" id="misCursos">
-                    <!-- Curso 1 -->
-                    <div class="course-card">
-                        <div class="course-title">
-                            <i class="fas fa-code"></i> Programación I
-                        </div>
-                        <div class="course-info">
-                            <i class="fas fa-user-tie"></i> Prof. Carlos Rodríguez |
-                            <i class="fas fa-clock"></i> Lun-Mie 8:00-10:00 |
-                            <i class="fas fa-map-marker-alt"></i> Aula 301
-                        </div>
-                        <div class="mt-2">
-                            <span class="grade-badge grade-excellent">P1: 4.5</span>
-                            <span class="grade-badge grade-good">P2: 4.0</span>
-                            <span class="grade-badge grade-pending">P3: Pendiente</span>
-                        </div>
-                    </div>
-
-                    <!-- Curso 2 -->
-                    <div class="course-card">
-                        <div class="course-title">
-                            <i class="fas fa-database"></i> Base de Datos
-                        </div>
-                        <div class="course-info">
-                            <i class="fas fa-user-tie"></i> Prof. María López |
-                            <i class="fas fa-clock"></i> Mar-Jue 14:00-16:00 |
-                            <i class="fas fa-map-marker-alt"></i> Aula 205
-                        </div>
-                        <div class="mt-2">
-                            <span class="grade-badge grade-excellent">P1: 5.0</span>
-                            <span class="grade-badge grade-excellent">P2: 4.8</span>
-                            <span class="grade-badge grade-pending">P3: Pendiente</span>
-                        </div>
-                    </div>
-
-                    <!-- Curso 3 -->
-                    <div class="course-card">
-                        <div class="course-title">
-                            <i class="fas fa-calculator"></i> Matemáticas III
-                        </div>
-                        <div class="course-info">
-                            <i class="fas fa-user-tie"></i> Prof. Juan Pérez |
-                            <i class="fas fa-clock"></i> Vie 10:00-14:00 |
-                            <i class="fas fa-map-marker-alt"></i> Aula 102
-                        </div>
-                        <div class="mt-2">
-                            <span class="grade-badge grade-good">P1: 3.8</span>
-                            <span class="grade-badge grade-good">P2: 4.2</span>
-                            <span class="grade-badge grade-pending">P3: Pendiente</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Panel Lateral -->
-        <div class="col-lg-4">
-            <!-- Mi Rendimiento -->
-            <div class="info-section">
-                <h5 class="text-success">
-                    <i class="fas fa-chart-bar"></i> Mi Rendimiento
-                </h5>
-                <hr>
-                <div class="mb-3">
-                    <strong>Promedio Actual:</strong>
-                    <div class="progress mt-2">
-                        <div class="progress-bar bg-success" role="progressbar"
-                             style="width: 86%">4.3</div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <strong>Créditos Aprobados:</strong> 45/160
-                </div>
-                <div class="mb-3">
-                    <strong>Semestre Actual:</strong> 3
-                </div>
-                <div>
-                    <strong>Estado:</strong>
-                    <span class="badge bg-success">Activo</span>
-                </div>
-            </div>
-
-            <!-- Próximas Fechas -->
-            <div class="info-section">
-                <h5 class="text-primary">
-                    <i class="fas fa-calendar-alt"></i> Próximas Fechas
-                </h5>
-                <hr>
-                <div class="mb-2">
-                    <i class="fas fa-exclamation-circle text-danger"></i>
-                    <strong>Examen Final Programación I</strong>
-                    <br>
-                    <small class="text-muted">15 Enero 2025</small>
-                </div>
-                <div class="mb-2">
-                    <i class="fas fa-exclamation-circle text-warning"></i>
-                    <strong>Proyecto Final Base de Datos</strong>
-                    <br>
-                    <small class="text-muted">22 Enero 2025</small>
-                </div>
-                <div class="mb-2">
-                    <i class="fas fa-info-circle text-info"></i>
-                    <strong>Inscripciones Período 2024-2</strong>
-                    <br>
-                    <small class="text-muted">1 Febrero 2025</small>
-                </div>
-            </div>
-
-            <!-- Acciones Rápidas -->
-            <div class="info-section">
-                <h5 class="text-secondary">
-                    <i class="fas fa-bolt"></i> Acciones Rápidas
-                </h5>
-                <hr>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-success" onclick="verHistorial()">
-                        <i class="fas fa-history"></i> Ver Historial Completo
-                    </button>
-                    <button class="btn btn-outline-primary" onclick="descargarCertificado()">
-                        <i class="fas fa-download"></i> Descargar Certificado
-                    </button>
-                    <button class="btn btn-outline-info" onclick="verHorarios()">
-                        <i class="fas fa-calendar"></i> Ver Horarios
-                    </button>
-                </div>
-            </div>
-        </div>
+    <!-- MIS CURSOS -->
+    <div class="section-title">
+        <i class="fas fa-list"></i> Mis Cursos Activos
     </div>
 
-    <!-- Información de Autenticación -->
-    <div class="row mt-4 mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <i class="fas fa-key"></i> Información de Sesión
-                </div>
-                <div class="card-body">
-                    <p><strong>Token JWT:</strong> <code id="tokenDisplay">...</code></p>
-                    <p><strong>Usuario:</strong> <span id="userNameDisplay">...</span></p>
-                    <p><strong>Email:</strong> <span id="userEmailDisplay">...</span></p>
-                    <p class="mb-0"><strong>Rol:</strong> <span class="badge bg-success">ESTUDIANTE</span></p>
-                </div>
-            </div>
-        </div>
+    <div id="cursosContainer">
+        <!-- Los cursos se cargarán aquí -->
     </div>
 </div>
 
@@ -339,84 +183,223 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // Obtener datos del localStorage
     const token = localStorage.getItem('token');
     const userName = localStorage.getItem('userName');
-    const userEmail = localStorage.getItem('userEmail');
+    const estudianteId = localStorage.getItem('estudianteId'); // Debe guardarse al hacer login
 
-    // Verificar si hay sesión
     if (!token) {
         window.location.href = '/login';
     }
 
-    // Mostrar información del usuario
     document.getElementById('userName').textContent = userName || 'Estudiante';
-    document.getElementById('studentName').textContent = userName || 'Estudiante';
-    document.getElementById('userNameDisplay').textContent = userName || 'N/A';
-    document.getElementById('userEmailDisplay').textContent = userEmail || 'N/A';
-    document.getElementById('tokenDisplay').textContent =
-        token ? token.substring(0, 40) + '...' : 'N/A';
 
-    // Simular ID de estudiante (temporal)
-    document.getElementById('studentId').textContent = '2024-' + Math.floor(1000 + Math.random() * 9000);
+    let inscripcionesData = [];
+    let calificacionesData = [];
 
-    // Función para cerrar sesión
-    function logout() {
-        Swal.fire({
-            title: '¿Cerrar sesión?',
-            text: '¿Estás seguro que deseas salir?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, salir',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#059669'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                localStorage.clear();
-                window.location.href = '/login';
+    async function cargarDashboard() {
+        if (!estudianteId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo identificar al estudiante. Por favor inicie sesión nuevamente.',
+                confirmButtonColor: '#10b981'
+            }).then(() => {
+                logout();
+            });
+            return;
+        }
+
+        try {
+            // Cargar inscripciones activas del estudiante
+            const inscripcionesResponse = await axios.get(`http://localhost:8080/api/inscripciones/estudiante/${estudianteId}/activas`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            inscripcionesData = inscripcionesResponse.data;
+            document.getElementById('totalCursos').textContent = inscripcionesData.length;
+
+            // Cargar todas las calificaciones del estudiante
+            const calificacionesResponse = await axios.get(`http://localhost:8080/api/calificaciones/estudiante/${estudianteId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            calificacionesData = calificacionesResponse.data;
+            document.getElementById('totalCalificaciones').textContent = calificacionesData.length;
+
+            // Calcular promedio general (simplificado)
+            if (calificacionesData.length > 0) {
+                const promedioGeneral = calificacionesData.reduce((sum, calif) => {
+                    return sum + parseFloat(calif.notaPonderada);
+                }, 0) / calificacionesData.length;
+
+                const promedioElement = document.getElementById('promedioGeneral');
+                promedioElement.textContent = promedioGeneral.toFixed(2);
+                promedioElement.className = promedioGeneral >= 3.0 ? 'stat-number promedio-aprobado' : 'stat-number promedio-reprobado';
             }
-        });
+
+            // Mostrar cursos con sus calificaciones
+            await mostrarCursosConCalificaciones();
+
+        } catch (error) {
+            console.error('Error cargando dashboard:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo cargar la información del dashboard',
+                confirmButtonColor: '#10b981'
+            });
+        }
     }
 
-    // Cargar estadísticas
-    function cargarEstadisticas() {
-        // Datos de ejemplo (temporal)
-        document.getElementById('totalCursos').textContent = '3';
-        document.getElementById('promedioGeneral').textContent = '4.3';
-        document.getElementById('totalCalificaciones').textContent = '6';
-        document.getElementById('avanceCarrera').textContent = '28%';
+    async function mostrarCursosConCalificaciones() {
+        const container = document.getElementById('cursosContainer');
+        container.innerHTML = '';
+
+        if (inscripcionesData.length === 0) {
+            container.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No tienes cursos inscritos actualmente.
+                    <button class="btn btn-sm btn-green ms-2" onclick="verCursosDisponibles()">
+                        <i class="fas fa-plus"></i> Inscribir Curso
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        for (const inscripcion of inscripcionesData) {
+            try {
+                // Obtener calificaciones de esta inscripción
+                const califsResponse = await axios.get(`http://localhost:8080/api/calificaciones/inscripcion/${inscripcion.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const calificaciones = califsResponse.data;
+
+                // Calcular promedio ponderado del curso
+                const promedioCurso = calificaciones.reduce((sum, c) => sum + parseFloat(c.notaPonderada), 0);
+                const porcentajeTotal = calificaciones.reduce((sum, c) => sum + c.porcentaje, 0);
+
+                const promedioClass = promedioCurso >= 3.0 ? 'promedio-aprobado' : 'promedio-reprobado';
+
+                let calificacionesHTML = '';
+                if (calificaciones.length === 0) {
+                    calificacionesHTML = '<p class="text-muted mb-0"><i class="fas fa-info-circle"></i> Sin calificaciones registradas</p>';
+                } else {
+                    calificaciones.forEach(calif => {
+                        const estadoBadge = calif.esAprobada ? 'badge-aprobada' : 'badge-reprobada';
+                        calificacionesHTML += `
+                            <div class="calificacion-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>${calif.nombreEvaluacion}</strong>
+                                        <span class="${estadoBadge} ms-2">${calif.nota}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted">${calif.porcentaje}%</span>
+                                        <span class="ms-2 fw-bold">Ponderada: ${calif.notaPonderada}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                const card = `
+                    <div class="curso-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="curso-header">
+                                <i class="fas fa-book-open"></i> ${inscripcion.curso}
+                            </div>
+                            <div class="text-end">
+                                <div class="promedio-destacado ${promedioClass}">
+                                    ${promedioCurso.toFixed(2)}
+                                </div>
+                                <small class="text-muted">${porcentajeTotal}% completado</small>
+                            </div>
+                        </div>
+                        <div class="curso-info mb-3">
+                            <p class="mb-1"><strong>Fecha de inscripción:</strong> ${inscripcion.fechaInscripcion}</p>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Calificaciones:</strong>
+                            <div class="mt-2">
+                                ${calificacionesHTML}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+
+            } catch (error) {
+                console.error('Error cargando calificaciones:', error);
+            }
+        }
     }
 
-    // Funciones de acciones rápidas
-    function verHistorial() {
-        Swal.fire({
-            icon: 'info',
-            title: 'Historial Académico',
-            text: 'Módulo de historial próximamente...',
-            confirmButtonColor: '#059669'
-        });
+    async function verCursosDisponibles() {
+        try {
+            const response = await axios.get('http://localhost:8080/api/cursos/con-cupos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const cursosDisponibles = response.data;
+
+            if (cursosDisponibles.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sin cursos disponibles',
+                    text: 'No hay cursos con cupos disponibles en este momento',
+                    confirmButtonColor: '#10b981'
+                });
+                return;
+            }
+
+            let html = '<div class="text-start" style="max-height: 500px; overflow-y: auto;">';
+            html += '<table class="table table-sm table-hover">';
+            html += '<thead><tr><th>Curso</th><th>Materia</th><th>Profesor</th><th>Cupos</th><th>Periodo</th></tr></thead><tbody>';
+
+            cursosDisponibles.forEach(curso => {
+                html += `
+                    <tr>
+                        <td><strong>${curso.codigo}</strong><br><small>${curso.nombre}</small></td>
+                        <td>${curso.materia}</td>
+                        <td>${curso.profesor}</td>
+                        <td><span class="badge bg-success">${curso.cuposDisponibles} disponibles</span></td>
+                        <td>${curso.periodo}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+
+            Swal.fire({
+                title: '📚 Cursos Disponibles',
+                html: html,
+                width: 900,
+                confirmButtonColor: '#10b981',
+                confirmButtonText: 'Cerrar',
+                footer: '<a href="/inscripciones/nuevo" class="btn btn-green btn-sm"><i class="fas fa-plus"></i> Ir a Inscribir Curso</a>'
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar los cursos disponibles',
+                confirmButtonColor: '#10b981'
+            });
+        }
     }
 
-    function descargarCertificado() {
-        Swal.fire({
-            icon: 'info',
-            title: 'Descargar Certificado',
-            text: 'Módulo de certificados próximamente...',
-            confirmButtonColor: '#059669'
-        });
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
     }
 
-    function verHorarios() {
-        Swal.fire({
-            icon: 'info',
-            title: 'Ver Horarios',
-            text: 'Módulo de horarios próximamente...',
-            confirmButtonColor: '#059669'
-        });
-    }
-
-    // Cargar estadísticas al iniciar
-    cargarEstadisticas();
+    cargarDashboard();
 </script>
+
 </body>
 </html>
