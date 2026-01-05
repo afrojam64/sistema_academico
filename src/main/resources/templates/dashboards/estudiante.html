@@ -169,6 +169,17 @@
         </div>
     </div>
 
+    <button class="btn btn-primary" onclick="verReporteCalificaciones()">
+        <i class="fas fa-file-alt"></i> Ver Reporte Completo
+    </button>
+
+    <script>
+        function verReporteCalificaciones() {
+            const estudianteId = localStorage.getItem('estudianteId');
+            window.open(`/reportes/calificaciones-estudiante.html?estudianteId=${estudianteId}`, '_blank');
+        }
+    </script>
+
     <!-- MIS CURSOS -->
     <div class="section-title">
         <i class="fas fa-list"></i> Mis Cursos Activos

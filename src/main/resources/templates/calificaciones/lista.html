@@ -94,6 +94,16 @@
         </div>
     </div>
 
+    <button onclick="verReporte(${calif.estudianteId})" class="btn btn-sm btn-info">
+        <i class="fas fa-file-alt"></i> Reporte
+    </button>
+
+    <script>
+        function verReporte(estudianteId) {
+            window.open(`/reportes/calificaciones-estudiante.html?estudianteId=${estudianteId}`, '_blank');
+        }
+    </script>
+
     <div class="table-container">
         <table id="tablaCalificaciones" class="table table-hover table-striped">
             <thead class="table-success">

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Reportes - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+
+        .page-header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+        }
+
+        .category-section {
+            margin-bottom: 50px;
+        }
+
+        .category-title {
+            color: #1e3a8a;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3b82f6;
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            border-color: #3b82f6;
+        }
+
+        .report-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .icon-calificaciones { background: linear-gradient(135deg, #059669, #10b981); color: white; }
+        .icon-cursos { background: linear-gradient(135deg, #f59e0b, #fb923c); color: white; }
+        .icon-inscripciones { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; }
+        .icon-estudiantes { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white; }
+        .icon-profesores { background: linear-gradient(135deg, #ef4444, #f87171); color: white; }
+        .icon-estadisticas { background: linear-gradient(135deg, #06b6d4, #22d3ee); color: white; }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .report-description {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+
+        .report-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-disponible { background: #dcfce7; color: #166534; }
+        .badge-proximamente { background: #fee2e2; color: #991b1b; }
+
+        .quick-actions {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="volverDashboard()">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-bar"></i> Centro de Reportes
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Admin</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="mb-2"><i class="fas fa-chart-line"></i> Centro de Reportes</h1>
+        <p class="mb-0">Genera informes detallados y estadísticas del sistema académico</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    <!-- Acciones Rápidas -->
+    <div class="quick-actions">
+        <h5 class="mb-3"><i class="fas fa-bolt"></i> Acciones Rápidas</h5>
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <label class="form-label">Generar reporte de estudiante específico:</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="estudianteIdInput" placeholder="ID del estudiante">
+                    <button class="btn btn-primary" onclick="generarReporteEstudiante()">
+                        <i class="fas fa-file-alt"></i> Generar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CATEGORÍA 1: Reportes de Calificaciones -->
+    <div class="category-section">
+        <h2 class="category-title"><i class="fas fa-graduation-cap"></i> Reportes de Calificaciones</h2>
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="report-card" onclick="abrirReporteEstudiante()">
+                    <div class="report-icon icon-calificaciones">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="report-title">Calificaciones por Estudiante</div>
+                    <div class="report-description">
+                        Historial académico completo con todas las calificaciones, promedios y estado
+                    </div>
+                    <span class="report-badge badge-disponible">
+                        <i class="fas fa-check"></i> Disponible
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-calificaciones">
+                        <i class="fas fa-chalkboard"></i>
+                    </div>
+                    <div class="report-title">Calificaciones por Curso</div>
+                    <div class="report-description">
+                        Estadísticas completas de un curso: promedio, aprobados, reprobados
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-calificaciones">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="report-title">Estudiantes en Riesgo</div>
+                    <div class="report-description">
+                        Lista de estudiantes con promedio inferior a 3.0
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CATEGORÍA 2: Reportes de Cursos -->
+    <div class="category-section">
+        <h2 class="category-title"><i class="fas fa-book"></i> Reportes de Cursos</h2>
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-cursos">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="report-title">Cursos Activos</div>
+                    <div class="report-description">
+                        Lista completa de cursos activos con ocupación y cupos disponibles
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-cursos">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="report-title">Ocupación de Cursos</div>
+                    <div class="report-description">
+                        Porcentaje de ocupación y análisis de cupos por curso
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-cursos">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="report-title">Cursos por Profesor</div>
+                    <div class="report-description">
+                        Carga académica y estadísticas de desempeño por profesor
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CATEGORÍA 3: Reportes de Inscripciones -->
+    <div class="category-section">
+        <h2 class="category-title"><i class="fas fa-clipboard-list"></i> Reportes de Inscripciones</h2>
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-inscripciones">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="report-title">Inscripciones por Curso</div>
+                    <div class="report-description">
+                        Lista detallada de estudiantes inscritos en cada curso
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-inscripciones">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="report-title">Inscripciones por Periodo</div>
+                    <div class="report-description">
+                        Estadísticas de inscripciones agrupadas por periodo académico
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-inscripciones">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                    <div class="report-title">Estudiantes sin Inscripciones</div>
+                    <div class="report-description">
+                        Estudiantes activos que no están inscritos en ningún curso
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CATEGORÍA 4: Reportes Estadísticos -->
+    <div class="category-section">
+        <h2 class="category-title"><i class="fas fa-chart-line"></i> Reportes Estadísticos</h2>
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-estadisticas">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="report-title">Dashboard Ejecutivo</div>
+                    <div class="report-description">
+                        Resumen general del sistema con indicadores clave
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-estadisticas">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="report-title">Distribución de Calificaciones</div>
+                    <div class="report-description">
+                        Gráficos estadísticos de distribución de notas
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                    <div class="report-icon icon-estadisticas">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="report-title">Tasa de Aprobación</div>
+                    <div class="report-description">
+                        Porcentajes de aprobación por materia, curso y periodo
+                    </div>
+                    <span class="report-badge badge-proximamente">
+                        <i class="fas fa-clock"></i> Próximamente
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!token) window.location.href = '/login';
+    document.getElementById('userName').textContent = userName || 'Admin';
+
+    // Validar que solo ADMIN y SUPER_ADMIN accedan
+    if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Acceso Denegado',
+            text: 'No tienes permisos para acceder a esta sección',
+            confirmButtonColor: '#3b82f6'
+        }).then(() => {
+            window.location.href = '/';
+        });
+    }
+
+    function abrirReporteEstudiante() {
+        Swal.fire({
+            title: 'Ingresar ID del Estudiante',
+            input: 'number',
+            inputLabel: 'ID del estudiante',
+            inputPlaceholder: 'Ej: 1',
+            showCancelButton: true,
+            confirmButtonText: 'Generar Reporte',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#3b82f6',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Debes ingresar un ID válido';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.open(`/reportes/calificaciones-estudiante.html?estudianteId=${result.value}`, '_blank');
+            }
+        });
+    }
+
+    function generarReporteEstudiante() {
+        const estudianteId = document.getElementById('estudianteIdInput').value;
+
+        if (!estudianteId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Vacío',
+                text: 'Ingresa el ID del estudiante',
+                confirmButtonColor: '#3b82f6'
+            });
+            return;
+        }
+
+        window.open(`/reportes/calificaciones-estudiante.html?estudianteId=${estudianteId}`, '_blank');
+    }
+
+    function volverDashboard() {
+        if (userRole === 'SUPER_ADMIN') {
+            window.location.href = '/dashboard-super-admin.html';
+        } else {
+            window.location.href = '/dashboard-admin.html';
+        }
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>

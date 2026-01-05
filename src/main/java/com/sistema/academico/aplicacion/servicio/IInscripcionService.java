@@ -49,4 +49,11 @@ public interface IInscripcionService {
      * @return Lista de inscripciones del curso
      */
     List<InscripcionResponseDTO> listarPorCurso(Long cursoId);
+
+    /**
+     * Listar inscripciones activas de todos los cursos de un profesor
+     * @param profesorId ID del profesor
+     * @return Lista de inscripciones activas de los cursos del profesor
+     */
+    List<InscripcionResponseDTO> listarActivasPorProfesor(Long profesorId);
 }

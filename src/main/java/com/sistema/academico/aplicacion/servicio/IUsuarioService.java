@@ -67,4 +67,11 @@ public interface IUsuarioService {
      * @param rolUsuarioActual Rol del usuario que ejecuta la acción
      */
     void eliminar(Long id, Rol rolUsuarioActual);
+
+    /**
+     * Cambiar contraseña de un usuario
+     * @param id ID del usuario
+     * @param nuevaContrasena Nueva contraseña (se encriptará automáticamente)
+     */
+    void cambiarContrasena(Long id, String nuevaContrasena);
 }

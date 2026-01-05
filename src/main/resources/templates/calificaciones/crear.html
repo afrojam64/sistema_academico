@@ -180,6 +180,8 @@
 <script>
     const token = localStorage.getItem('token');
     const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+    const profesorId = localStorage.getItem('profesorId');
 
     if (!token) window.location.href = '/login';
     document.getElementById('userName').textContent = userName || 'Admin';
@@ -188,12 +190,49 @@
 
     async function cargarInscripciones() {
         try {
-            // Cargar inscripciones activas
-            const response = await axios.get('http://localhost:8080/api/inscripciones/activas', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            let response;
+
+            // Si es PROFESOR, cargar solo inscripciones de sus cursos
+            if (userRole === 'PROFESOR') {
+                if (!profesorId) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo identificar al profesor. Por favor inicie sesión nuevamente.',
+                        confirmButtonColor: '#059669'
+                    }).then(() => {
+                        localStorage.clear();
+                        window.location.href = '/login';
+                    });
+                    return;
+                }
+
+                // Endpoint específico para profesor
+                response = await axios.get(`http://localhost:8080/api/inscripciones/profesor/${profesorId}/activas`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } else {
+                // ADMIN y SUPER_ADMIN ven todas las inscripciones activas
+                response = await axios.get('http://localhost:8080/api/inscripciones/activas', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            }
 
             const select = document.getElementById('inscripcionId');
+
+            if (response.data.length === 0) {
+                select.innerHTML = '<option value="">No hay inscripciones disponibles</option>';
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sin inscripciones',
+                    text: userRole === 'PROFESOR'
+                        ? 'No tienes estudiantes inscritos en tus cursos activos'
+                        : 'No hay inscripciones activas en el sistema',
+                    confirmButtonColor: '#059669'
+                });
+                return;
+            }
+
             response.data.forEach(inscripcion => {
                 const option = document.createElement('option');
                 option.value = inscripcion.id;

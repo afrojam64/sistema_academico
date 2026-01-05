@@ -2,6 +2,7 @@ package com.sistema.academico.infraestructura.controlador;
 
 import com.sistema.academico.aplicacion.dto.request.CalificacionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.CalificacionResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.CalificacionesEstudianteReporteDTO;
 import com.sistema.academico.aplicacion.servicio.ICalificacionService;
 import com.sistema.academico.dominio.enumeracion.Rol;
 import jakarta.validation.Valid;
@@ -100,5 +101,17 @@ public class CalificacionController {
             @RequestParam Rol rolUsuario) {
         calificacionService.eliminar(id, rolUsuario);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Generar reporte de calificaciones por estudiante
+     * Ruta: GET /api/calificaciones/reporte/estudiante/{estudianteId}
+     */
+    @GetMapping("/reporte/estudiante/{estudianteId}")
+    public ResponseEntity<CalificacionesEstudianteReporteDTO> generarReporteEstudiante(
+            @PathVariable Long estudianteId) {
+
+        CalificacionesEstudianteReporteDTO reporte = calificacionService.generarReporteEstudiante(estudianteId);
+        return ResponseEntity.ok(reporte);
     }
 }

@@ -7,6 +7,7 @@ import com.sistema.academico.aplicacion.servicio.IInscripcionService;
 import com.sistema.academico.dominio.entidad.Curso;
 import com.sistema.academico.dominio.entidad.Estudiante;
 import com.sistema.academico.dominio.entidad.Inscripcion;
+import com.sistema.academico.dominio.entidad.Profesor;
 import com.sistema.academico.dominio.enumeracion.EstadoInscripcion;
 import com.sistema.academico.dominio.enumeracion.Rol;
 import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
@@ -16,7 +17,10 @@ import com.sistema.academico.infraestructura.excepcion.ValidacionNegocioExceptio
 import com.sistema.academico.infraestructura.repositorio.CursoRepository;
 import com.sistema.academico.infraestructura.repositorio.EstudianteRepository;
 import com.sistema.academico.infraestructura.repositorio.InscripcionRepository;
+import com.sistema.academico.infraestructura.repositorio.ProfesorRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +36,7 @@ public class InscripcionServiceImpl implements IInscripcionService {
     private final EstudianteRepository estudianteRepository;
     private final CursoRepository cursoRepository;
     private final InscripcionMapper inscripcionMapper;
+    private final ProfesorRepository profesorRepository;
 
     @Override
     @Transactional
@@ -177,6 +182,38 @@ public class InscripcionServiceImpl implements IInscripcionService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Curso no encontrado con ID: " + cursoId));
 
         return inscripcionRepository.findByCurso(curso).stream()
+                .map(inscripcionMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Listar inscripciones activas de todos los cursos de un profesor
+     * @param profesorId ID del profesor
+     * @return Lista de inscripciones activas de los cursos del profesor
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<InscripcionResponseDTO> listarActivasPorProfesor(Long profesorId) {
+        // Validar que el profesor existe
+        Profesor profesor = profesorRepository.findById(profesorId)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Profesor no encontrado con ID: " + profesorId));
+
+        // Obtener todos los cursos del profesor
+        List<Curso> cursos = cursoRepository.findByProfesor(profesor);
+
+        // Obtener todas las inscripciones activas de esos cursos
+        List<Inscripcion> inscripciones = new ArrayList<>();
+        for (Curso curso : cursos) {
+            List<Inscripcion> inscripcionesCurso = inscripcionRepository.findByCurso(curso);
+            // Filtrar solo las activas
+            inscripcionesCurso.stream()
+                    .filter(i -> i.getEstado() == EstadoInscripcion.ACTIVO)
+                    .forEach(inscripciones::add);
+        }
+
+        // Mapear a DTOs
+        return inscripciones.stream()
                 .map(inscripcionMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }

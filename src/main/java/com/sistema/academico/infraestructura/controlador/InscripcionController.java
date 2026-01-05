@@ -124,4 +124,16 @@ public class InscripcionController {
         inscripcionService.eliminar(id, rolUsuario);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Listar inscripciones activas de todos los cursos de un profesor
+     * Ruta: GET /api/inscripciones/profesor/{profesorId}/activas
+     */
+    @GetMapping("/profesor/{profesorId}/activas")
+    public ResponseEntity<List<InscripcionResponseDTO>> listarActivasPorProfesor(
+            @PathVariable Long profesorId) {
+
+        List<InscripcionResponseDTO> inscripciones = inscripcionService.listarActivasPorProfesor(profesorId);
+        return ResponseEntity.ok(inscripciones);
+    }
 }

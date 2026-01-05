@@ -1,5 +1,6 @@
 package com.sistema.academico.infraestructura.controlador;
 
+import com.sistema.academico.aplicacion.dto.request.CambiarContrasenaRequestDTO;
 import com.sistema.academico.aplicacion.dto.request.UsuarioRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.UsuarioResponseDTO;
 import com.sistema.academico.aplicacion.servicio.IUsuarioService;
@@ -157,6 +158,19 @@ public class UsuarioController {
             @PathVariable Long id,
             @RequestParam Rol rolUsuario) {
         usuarioService.eliminar(id, rolUsuario);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Cambiar contraseña de un usuario
+     * Ruta: PATCH /api/usuarios/{id}/cambiar-contrasena
+     */
+    @PatchMapping("/{id}/cambiar-contrasena")
+    public ResponseEntity<Void> cambiarContrasena(
+            @PathVariable Long id,
+            @Valid @RequestBody CambiarContrasenaRequestDTO request) {
+
+        usuarioService.cambiarContrasena(id, request.getNuevaContrasena());
         return ResponseEntity.noContent().build();
     }
 }

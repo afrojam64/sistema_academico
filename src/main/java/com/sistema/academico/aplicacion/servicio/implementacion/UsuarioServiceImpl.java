@@ -171,4 +171,23 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         usuarioRepository.delete(usuario);
     }
+
+    /**
+     * Cambiar la contraseña de un usuario
+     * @param id ID del usuario
+     * @param nuevaContrasena Nueva contraseña (se encriptará automáticamente)
+     */
+    @Override
+    @Transactional
+    public void cambiarContrasena(Long id, String nuevaContrasena) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Usuario no encontrado con ID: " + id));
+
+        // Encriptar la nueva contraseña
+        usuario.setContrasena(passwordEncoder.encode(nuevaContrasena));
+
+        // Guardar el usuario actualizado
+        usuarioRepository.save(usuario);
+    }
 }

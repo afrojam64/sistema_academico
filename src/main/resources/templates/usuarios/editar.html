@@ -389,31 +389,24 @@
             document.getElementById('telefono').value = usuario.telefono || '';
             document.getElementById('direccion').value = usuario.direccion || '';
 
-            // Fecha de nacimiento
             // Fecha de nacimiento - VALIDACIÓN MEJORADA
             if (usuario.fechaNacimiento) {
                 try {
-                    // Intentar diferentes formatos
                     let fecha;
                     if (usuario.fechaNacimiento.includes('T')) {
-                        // Formato ISO: 2000-01-15T00:00:00
                         fecha = new Date(usuario.fechaNacimiento);
                     } else if (usuario.fechaNacimiento.includes('/')) {
-                        // Formato: 15/01/2000
                         const [dia, mes, anio] = usuario.fechaNacimiento.split('/');
                         fecha = new Date(anio, mes - 1, dia);
                     } else {
-                        // Formato: 2000-01-15
                         fecha = new Date(usuario.fechaNacimiento);
                     }
 
-                    // Verificar que la fecha sea válida
                     if (!isNaN(fecha.getTime())) {
                         document.getElementById('fechaNacimiento').value = fecha.toISOString().split('T')[0];
                     }
                 } catch (error) {
                     console.warn('Fecha de nacimiento inválida:', usuario.fechaNacimiento);
-                    // Dejar el campo vacío si la fecha es inválida
                 }
             }
 
@@ -424,7 +417,7 @@
             // Ocultar loading
             document.getElementById('loadingOverlay').style.display = 'none';
 
-            // ✅ NUEVO: Bloquear cambio de rol si es PROFESOR o ESTUDIANTE
+            // Bloquear cambio de rol si es PROFESOR o ESTUDIANTE
             if (usuario.rol === 'PROFESOR' || usuario.rol === 'ESTUDIANTE') {
                 const rolSelect = document.getElementById('rol');
                 rolSelect.disabled = true;
@@ -475,7 +468,7 @@
 
         // Email
         const email = document.getElementById('email');
-        if (!email.value || !validarEmail(email.value)) {
+        if (!validarEmail(email.value)) {
             email.classList.add('is-invalid');
             valido = false;
         } else {
@@ -565,13 +558,12 @@
             return;
         }
 
-        // Construir objeto con datos actualizados
-        // Obtener rol aunque esté deshabilitado
+        // Construir objeto con datos actualizados (SIN contraseña)
         const rolSelect = document.getElementById('rol');
         const datosActualizados = {
             nombreUsuario: document.getElementById('nombreUsuario').value,
             email: document.getElementById('email').value,
-            rol: rolSelect.value,  // Funciona aunque esté deshabilitado
+            rol: rolSelect.value,
             estado: document.getElementById('estado').value,
             nombre: document.getElementById('nombre').value,
             apellido: document.getElementById('apellido').value,
@@ -581,35 +573,30 @@
             fechaNacimiento: document.getElementById('fechaNacimiento').value || null
         };
 
-        // Si se marca "Cambiar contraseña", agregar la nueva contraseña
-        // Si NO se marca, enviar string vacío para que el backend la ignore
-        if (document.getElementById('checkCambiarPassword').checked) {
-            datosActualizados.contrasena = document.getElementById('nuevaPassword').value;
-        } else {
-            datosActualizados.contrasena = '';  // String vacío = NO cambiar
-        }
-
-// Si se marca "Cambiar contraseña", agregar la nueva contraseña
-        if (document.getElementById('checkCambiarPassword').checked) {
-            datosActualizados.contrasena = document.getElementById('nuevaPassword').value;
-        }
-
-        // Si se marca "Cambiar contraseña", agregar la nueva contraseña
-        if (document.getElementById('checkCambiarPassword').checked) {
-            datosActualizados.contrasena = document.getElementById('nuevaPassword').value;
-        }
-
         try {
+            // 1. Actualizar datos del usuario (sin contraseña)
             await axios.put(
                 `http://localhost:8080/api/usuarios/${usuarioId}`,
                 datosActualizados,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
+            // 2. Si se marcó cambiar contraseña, hacer petición separada
+            if (document.getElementById('checkCambiarPassword').checked) {
+                const nuevaContrasena = document.getElementById('nuevaPassword').value;
+
+                await axios.patch(
+                    `http://localhost:8080/api/usuarios/${usuarioId}/cambiar-contrasena`,
+                    { nuevaContrasena: nuevaContrasena },
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+            }
+
             Swal.fire({
                 icon: 'success',
                 title: '¡Usuario actualizado!',
-                text: 'Los cambios se guardaron correctamente',
+                text: 'Los cambios se guardaron correctamente' +
+                    (document.getElementById('checkCambiarPassword').checked ? ' (incluyendo la contraseña)' : ''),
                 confirmButtonColor: '#3b82f6'
             }).then(() => {
                 window.location.href = '/usuarios';

@@ -2,6 +2,7 @@ package com.sistema.academico.aplicacion.servicio;
 
 import com.sistema.academico.aplicacion.dto.request.CalificacionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.CalificacionResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.CalificacionesEstudianteReporteDTO;
 import com.sistema.academico.dominio.enumeracion.Rol;
 
 import java.util.List;
@@ -40,4 +41,11 @@ public interface ICalificacionService {
      * @return Lista de calificaciones del curso
      */
     List<CalificacionResponseDTO> listarPorCurso(Long cursoId);
+
+    /**
+     * Generar reporte de calificaciones de un estudiante
+     * @param estudianteId ID del estudiante
+     * @return DTO con todas las calificaciones agrupadas por curso
+     */
+    CalificacionesEstudianteReporteDTO generarReporteEstudiante(Long estudianteId);
 }
