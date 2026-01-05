@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -208,5 +209,36 @@ public class EstudianteServiceImpl implements IEstudianteService {
 
         // Eliminar estudiante (el usuario se mantiene)
         estudianteRepository.delete(estudiante);
+    }
+
+    /**
+     * Buscar estudiantes por nombre, apellido o cédula
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<EstudianteResponseDTO> buscarPorTermino(String termino) {
+        // Convertir término a minúsculas para búsqueda insensible a mayúsculas
+        String terminoBusqueda = termino.toLowerCase().trim();
+
+        // Obtener todos los estudiantes activos
+        List<Estudiante> todosEstudiantes = estudianteRepository.findAll();
+
+        // Filtrar por nombre, apellido o cédula (solo estudiantes activos)
+        List<Estudiante> resultados = todosEstudiantes.stream()
+                .filter(estudiante -> estudiante.getEstado() == Estado.ACTIVO)
+                .filter(estudiante -> {
+                    String nombreCompleto = (estudiante.getUsuario().getNombre() + " " +
+                            estudiante.getUsuario().getApellido()).toLowerCase();
+                    String cedula = estudiante.getUsuario().getCedula().toLowerCase();
+
+                    return nombreCompleto.contains(terminoBusqueda) ||
+                            cedula.contains(terminoBusqueda);
+                })
+                .collect(Collectors.toList());
+
+        // Mapear a DTOs
+        return resultados.stream()
+                .map(estudianteMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 }

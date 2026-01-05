@@ -26,4 +26,11 @@ public interface IEstudianteService {
     void activar(Long id, Rol rolUsuarioActual);
 
     void eliminar(Long id, Rol rolUsuarioActual);
+
+    /**
+     * Buscar estudiantes por nombre, apellido o cédula
+     * @param termino Término de búsqueda
+     * @return Lista de estudiantes que coinciden con el término
+     */
+    List<EstudianteResponseDTO> buscarPorTermino(String termino);
 }

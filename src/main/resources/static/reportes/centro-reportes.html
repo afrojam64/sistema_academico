@@ -110,7 +110,7 @@
 <nav class="navbar navbar-dark">
     <div class="container-fluid">
         <div>
-            <button class="btn btn-outline-light me-2" onclick="volverDashboard()">
+            <button class="btn btn-outline-light" onclick="volverDashboard()">
                 <i class="fas fa-arrow-left"></i> Volver al Dashboard
             </button>
             <span class="navbar-brand mb-0 h1">
@@ -137,7 +137,7 @@
 <div class="container pb-5">
 
     <!-- Acciones Rápidas -->
-    <div class="quick-actions">
+    <!-- <div class="quick-actions">
         <h5 class="mb-3"><i class="fas fa-bolt"></i> Acciones Rápidas</h5>
         <div class="row">
             <div class="col-md-6 mb-2">
@@ -150,7 +150,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
 
     <!-- CATEGORÍA 1: Reportes de Calificaciones -->
     <div class="category-section">
@@ -389,26 +389,88 @@
         });
     }
 
-    function abrirReporteEstudiante() {
-        Swal.fire({
-            title: 'Ingresar ID del Estudiante',
-            input: 'number',
-            inputLabel: 'ID del estudiante',
-            inputPlaceholder: 'Ej: 1',
+    async function abrirReporteEstudiante() {
+        const { value: termino } = await Swal.fire({
+            title: 'Buscar Estudiante',
+            input: 'text',
+            inputLabel: 'Busca por nombre o cédula',
+            inputPlaceholder: 'Ej: Carlos López o 1234567890',
             showCancelButton: true,
-            confirmButtonText: 'Generar Reporte',
+            confirmButtonText: 'Buscar',
             cancelButtonText: 'Cancelar',
             confirmButtonColor: '#3b82f6',
             inputValidator: (value) => {
-                if (!value) {
-                    return 'Debes ingresar un ID válido';
+                if (!value || value.length < 3) {
+                    return 'Ingresa al menos 3 caracteres';
                 }
             }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.open(`/reportes/calificaciones-estudiante.html?estudianteId=${result.value}`, '_blank');
-            }
         });
+
+        if (termino) {
+            Swal.fire({
+                title: 'Buscando...',
+                text: 'Por favor espera',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
+                const response = await axios.get(
+                    `http://localhost:8080/api/estudiantes/buscar?termino=${encodeURIComponent(termino)}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                const estudiantes = response.data;
+
+                if (estudiantes.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Sin resultados',
+                        text: 'No se encontraron estudiantes',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                    return;
+                }
+
+                if (estudiantes.length === 1) {
+                    Swal.close();
+                    window.open(`/reportes/calificaciones-estudiante.html?estudianteId=${estudiantes[0].id}`, '_blank');
+                    return;
+                }
+
+                const opciones = {};
+                estudiantes.forEach(est => {
+                    opciones[est.id] = `${est.nombreCompleto} (Cédula: ${est.cedula})`;
+                });
+
+                const { value: estudianteId } = await Swal.fire({
+                    title: 'Selecciona el estudiante',
+                    input: 'select',
+                    inputOptions: opciones,
+                    inputPlaceholder: 'Selecciona un estudiante',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#3b82f6',
+                    inputValidator: (value) => {
+                        if (!value) return 'Debes seleccionar un estudiante';
+                    }
+                });
+
+                if (estudianteId) {
+                    window.open(`/reportes/calificaciones-estudiante.html?estudianteId=${estudianteId}`, '_blank');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo realizar la búsqueda',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
     }
 
     function generarReporteEstudiante() {
@@ -438,6 +500,29 @@
     function logout() {
         localStorage.clear();
         window.location.href = '/login';
+    }
+
+    // Función para volver al dashboard según el rol
+    function volverDashboard() {
+        const userRole = localStorage.getItem('userRole');
+
+        switch(userRole) {
+            case 'SUPER_ADMIN':
+                window.location.href = '/dashboard/super-admin';
+                break;
+            case 'ADMIN':
+                window.location.href = '/dashboard/admin';
+                break;
+            case 'PROFESOR':
+                window.location.href = '/dashboard/profesor';
+                break;
+            case 'ESTUDIANTE':
+                window.location.href = '/dashboard/estudiante';
+                break;
+            default:
+                window.location.href = '/dashboard/admin';
+                break;
+        }
     }
 </script>
 

@@ -87,4 +87,16 @@ public class EstudianteController {
         estudianteService.eliminar(id, rolUsuario);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Buscar estudiantes por nombre, apellido o cédula
+     * Ruta: GET /api/estudiantes/buscar?termino=carlos
+     */
+    @GetMapping("/buscar")
+    public ResponseEntity<List<EstudianteResponseDTO>> buscarEstudiantes(
+            @RequestParam String termino) {
+
+        List<EstudianteResponseDTO> estudiantes = estudianteService.buscarPorTermino(termino);
+        return ResponseEntity.ok(estudiantes);
+    }
 }
