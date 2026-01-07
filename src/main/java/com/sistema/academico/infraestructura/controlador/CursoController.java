@@ -124,4 +124,16 @@ public class CursoController {
         cursoService.eliminar(id, rolUsuario);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Buscar cursos por código, nombre de materia o periodo
+     * Ruta: GET /api/cursos/buscar?termino=calculo
+     */
+    @GetMapping("/buscar")
+    public ResponseEntity<List<CursoResponseDTO>> buscarCursos(
+            @RequestParam String termino) {
+
+        List<CursoResponseDTO> cursos = cursoService.buscarPorTermino(termino);
+        return ResponseEntity.ok(cursos);
+    }
 }

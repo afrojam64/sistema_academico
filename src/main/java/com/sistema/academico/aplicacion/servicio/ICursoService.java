@@ -46,4 +46,11 @@ public interface ICursoService {
      * @return Lista de cursos activos del profesor
      */
     List<CursoResponseDTO> listarCursosActivosPorProfesor(Long profesorId);
+
+    /**
+     * Buscar cursos por código, nombre de materia o periodo
+     * @param termino Término de búsqueda
+     * @return Lista de cursos que coinciden con el término
+     */
+    List<CursoResponseDTO> buscarPorTermino(String termino);
 }

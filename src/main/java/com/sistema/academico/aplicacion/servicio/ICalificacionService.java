@@ -2,9 +2,12 @@ package com.sistema.academico.aplicacion.servicio;
 
 import com.sistema.academico.aplicacion.dto.request.CalificacionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.CalificacionResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.CalificacionesCursoReporteDTO;
 import com.sistema.academico.aplicacion.dto.response.CalificacionesEstudianteReporteDTO;
+import com.sistema.academico.aplicacion.dto.response.EstudiantesEnRiesgoReporteDTO;
 import com.sistema.academico.dominio.enumeracion.Rol;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -48,4 +51,25 @@ public interface ICalificacionService {
      * @return DTO con todas las calificaciones agrupadas por curso
      */
     CalificacionesEstudianteReporteDTO generarReporteEstudiante(Long estudianteId);
+
+    /**
+     * Generar reporte de calificaciones de un curso
+     * @param cursoId ID del curso
+     * @param fechaInicio Fecha inicial del rango (opcional)
+     * @param fechaFin Fecha final del rango (opcional)
+     * @return DTO con todas las calificaciones y estadísticas del curso
+     */
+    CalificacionesCursoReporteDTO generarReporteCurso(
+            Long cursoId,
+            LocalDate fechaInicio,
+            LocalDate fechaFin
+    );
+
+    /**
+     * Generar reporte de estudiantes en riesgo académico
+     * @param estudianteId ID del estudiante específico (opcional)
+     *                     Si es null, devuelve todos los estudiantes en riesgo
+     * @return DTO con estudiantes en riesgo y sus cursos problemáticos
+     */
+    EstudiantesEnRiesgoReporteDTO generarReporteEstudiantesEnRiesgo(Long estudianteId);
 }

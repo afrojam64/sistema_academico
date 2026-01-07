@@ -185,4 +185,39 @@ public class CursoServiceImpl implements ICursoService {
                 .map(cursoMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Buscar cursos por código, nombre de materia o periodo
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CursoResponseDTO> buscarPorTermino(String termino) {
+        // Convertir término a minúsculas para búsqueda insensible a mayúsculas
+        String terminoBusqueda = termino.toLowerCase().trim();
+
+        // Obtener todos los cursos activos
+        List<Curso> todosCursos = cursoRepository.findAll();
+
+        // Filtrar por código, nombre de materia o periodo
+        List<Curso> resultados = todosCursos.stream()
+                .filter(curso -> curso.getEstado() == Estado.ACTIVO)
+                .filter(curso -> {
+                    String codigo = curso.getCodigo().toLowerCase();
+                    String nombreMateria = curso.getMateria().getNombre().toLowerCase();
+                    String periodo = curso.getPeriodo().toLowerCase();
+                    String nombreProfesor = (curso.getProfesor().getUsuario().getNombre() + " " +
+                            curso.getProfesor().getUsuario().getApellido()).toLowerCase();
+
+                    return codigo.contains(terminoBusqueda) ||
+                            nombreMateria.contains(terminoBusqueda) ||
+                            periodo.contains(terminoBusqueda) ||
+                            nombreProfesor.contains(terminoBusqueda);
+                })
+                .collect(Collectors.toList());
+
+        // Mapear a DTOs
+        return resultados.stream()
+                .map(cursoMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 }

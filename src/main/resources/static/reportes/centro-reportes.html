@@ -173,7 +173,7 @@
             </div>
 
             <div class="col-md-4">
-                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="report-card" onclick="abrirReporteCurso()">
                     <div class="report-icon icon-calificaciones">
                         <i class="fas fa-chalkboard"></i>
                     </div>
@@ -181,23 +181,23 @@
                     <div class="report-description">
                         Estadísticas completas de un curso: promedio, aprobados, reprobados
                     </div>
-                    <span class="report-badge badge-proximamente">
-                        <i class="fas fa-clock"></i> Próximamente
+                    <span class="report-badge badge-disponible">
+                        <i class="fas fa-clock"></i> Disponible
                     </span>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="report-card" onclick="abrirReporteEstudiantesRiesgo()">
                     <div class="report-icon icon-calificaciones">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
                     <div class="report-title">Estudiantes en Riesgo</div>
                     <div class="report-description">
-                        Lista de estudiantes con promedio inferior a 3.0
+                        Estudiantes con promedio proyectado inferior a 3.0
                     </div>
-                    <span class="report-badge badge-proximamente">
-                        <i class="fas fa-clock"></i> Próximamente
+                    <span class="report-badge badge-disponible">
+                        <i class="fas fa-check"></i> Disponible
                     </span>
                 </div>
             </div>
@@ -523,6 +523,97 @@
                 window.location.href = '/dashboard/admin';
                 break;
         }
+    }
+
+    // AGREGAR ESTA FUNCIÓN AL FINAL DEL SCRIPT EN centro-reportes.html
+
+    async function abrirReporteCurso() {
+        const { value: termino } = await Swal.fire({
+            title: 'Buscar Curso',
+            input: 'text',
+            inputLabel: 'Busca por código, materia, profesor',
+            inputPlaceholder: 'Ej: MAT101 o Cálculo o 2024-1',
+            showCancelButton: true,
+            confirmButtonText: 'Buscar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#3b82f6',
+            inputValidator: (value) => {
+                if (!value || value.length < 3) {
+                    return 'Ingresa al menos 3 caracteres';
+                }
+            }
+        });
+
+        if (termino) {
+            Swal.fire({
+                title: 'Buscando...',
+                text: 'Por favor espera',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
+                const response = await axios.get(
+                    `http://localhost:8080/api/cursos/buscar?termino=${encodeURIComponent(termino)}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                const cursos = response.data;
+
+                if (cursos.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Sin resultados',
+                        text: 'No se encontraron cursos',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                    return;
+                }
+
+                if (cursos.length === 1) {
+                    Swal.close();
+                    window.open(`/reportes/calificaciones-curso.html?cursoId=${cursos[0].id}`, '_blank');
+                    return;
+                }
+
+                const opciones = {};
+                cursos.forEach(curso => {
+                    opciones[curso.id] = `${curso.materia} - ${curso.codigo} (${curso.periodo})`;
+                });
+
+                const { value: cursoId } = await Swal.fire({
+                    title: 'Selecciona el curso',
+                    input: 'select',
+                    inputOptions: opciones,
+                    inputPlaceholder: 'Selecciona un curso',
+                    showCancelButton: true,
+                    confirmButtonText: 'Generar Reporte',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#3b82f6',
+                    inputValidator: (value) => {
+                        if (!value) return 'Debes seleccionar un curso';
+                    }
+                });
+
+                if (cursoId) {
+                    window.open(`/reportes/calificaciones-curso.html?cursoId=${cursoId}`, '_blank');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo realizar la búsqueda',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+    }
+
+
+    function abrirReporteEstudiantesRiesgo() {
+        window.location.href = '/reportes/estudiantes-riesgo.html';
     }
 </script>
 

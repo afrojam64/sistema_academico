@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte por Curso - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+
+        .reporte-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 30px auto;
+            max-width: 1400px;
+        }
+
+        .header-reporte {
+            text-align: center;
+            border-bottom: 3px solid #f59e0b;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .datos-curso {
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .filtros-section {
+            background: #f0f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 2px solid #3b82f6;
+        }
+
+        .estadisticas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f59e0b, #fb923c);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .stat-card p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .stat-card.aprobados {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+
+        .stat-card.reprobados {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+        }
+
+        .stat-card.riesgo {
+            background: linear-gradient(135deg, #f59e0b, #fb923c);
+        }
+
+        .tabla-estudiantes {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .tabla-estudiantes th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .tabla-estudiantes td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .estudiante-row {
+            cursor: pointer;
+        }
+
+        .estudiante-row:hover {
+            background: #f9fafb;
+        }
+
+        .badge-estado {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-aprobado {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-reprobado {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-encurso {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .distribucion-chart {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            margin-bottom: 30px;
+        }
+
+        .barra-distribucion {
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .barra-rojo {
+            background: #ef4444;
+        }
+
+        .barra-amarillo {
+            background: #f59e0b;
+        }
+
+        .barra-verde {
+            background: #10b981;
+        }
+
+        .calificaciones-detalle {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 5px;
+            display: none;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .reporte-container {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark no-print">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-bar"></i> Reporte por Curso
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Usuario</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="reporte-container">
+        <!-- Header -->
+        <div class="header-reporte">
+            <h1><i class="fas fa-chalkboard-teacher"></i> Reporte de Calificaciones por Curso</h1>
+            <p class="text-muted mb-0">Estadísticas detalladas del desempeño académico</p>
+        </div>
+
+        <!-- Datos del Curso -->
+        <div class="datos-curso">
+            <h4><i class="fas fa-book"></i> Información del Curso</h4>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <p><strong>Materia:</strong> <span id="nombreMateria">-</span></p>
+                    <p><strong>Código:</strong> <span id="codigoCurso">-</span></p>
+                    <p><strong>Periodo:</strong> <span id="periodo">-</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Profesor:</strong> <span id="nombreProfesor">-</span></p>
+                    <p><strong>Cupo Máximo:</strong> <span id="cupoMaximo">-</span></p>
+                    <p><strong>Estudiantes Inscritos:</strong> <span id="estudiantesInscritos">-</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros (opcional por ahora) -->
+        <div class="filtros-section no-print" style="display: none;">
+            <h5><i class="fas fa-filter"></i> Filtros</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Fecha Inicio:</label>
+                    <input type="date" class="form-control" id="fechaInicio">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Fecha Fin:</label>
+                    <input type="date" class="form-control" id="fechaFin">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" onclick="aplicarFiltros()">
+                        <i class="fas fa-search"></i> Aplicar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Generales -->
+        <div class="estadisticas-grid">
+            <div class="stat-card">
+                <h3 id="promedioGeneral">0.0</h3>
+                <p>Promedio General</p>
+            </div>
+            <div class="stat-card aprobados">
+                <h3 id="aprobados">0</h3>
+                <p>Aprobados</p>
+            </div>
+            <div class="stat-card reprobados">
+                <h3 id="reprobados">0</h3>
+                <p>Reprobados</p>
+            </div>
+            <div class="stat-card riesgo">
+                <h3 id="estudiantesRiesgo">0</h3>
+                <p>En Riesgo (<3.0)</p>
+            </div>
+        </div>
+
+        <!-- Distribución de Notas -->
+        <div class="distribucion-chart">
+            <h5><i class="fas fa-chart-pie"></i> Distribución de Calificaciones</h5>
+            <div class="barra-distribucion">
+                <div class="barra-rojo" id="barraRojo" style="width: 0%"></div>
+                <div class="barra-amarillo" id="barraAmarillo" style="width: 0%"></div>
+                <div class="barra-verde" id="barraVerde" style="width: 0%"></div>
+            </div>
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <span class="badge bg-danger" id="rango0a2">0</span>
+                    <p class="mb-0 small mt-1">0.0 - 2.9 (Deficiente)</p>
+                </div>
+                <div class="col-md-4">
+                    <span class="badge bg-warning" id="rango3a3">0</span>
+                    <p class="mb-0 small mt-1">3.0 - 3.9 (Aceptable)</p>
+                </div>
+                <div class="col-md-4">
+                    <span class="badge bg-success" id="rango4a5">0</span>
+                    <p class="mb-0 small mt-1">4.0 - 5.0 (Sobresaliente)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Estudiantes -->
+        <div style="overflow-x: auto;">
+            <h5><i class="fas fa-users"></i> Lista de Estudiantes</h5>
+            <table class="tabla-estudiantes">
+                <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Estudiante</th>
+                    <th>Cédula</th>
+                    <th>Estado Inscripción</th>
+                    <th>Promedio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody id="tablaEstudiantes">
+                <!-- Se llenará dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="text-center mt-4 no-print">
+            <button class="btn btn-primary btn-lg me-2" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir / Guardar PDF
+            </button>
+            <button class="btn btn-success btn-lg" onclick="exportarExcel()">
+                <i class="fas fa-file-excel"></i> Exportar a Excel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!token) window.location.href = '/login';
+    document.getElementById('userName').textContent = userName || 'Usuario';
+
+    // Obtener ID del curso desde la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const cursoId = urlParams.get('cursoId');
+
+    if (!cursoId) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se especificó el curso',
+            confirmButtonColor: '#3b82f6'
+        }).then(() => {
+            window.history.back();
+        });
+    } else {
+        cargarReporte();
+    }
+
+    async function cargarReporte() {
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/api/calificaciones/reporte/curso/${cursoId}`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            const reporte = response.data;
+
+            // Llenar datos del curso
+            document.getElementById('nombreMateria').textContent = reporte.nombreMateria;
+            document.getElementById('codigoCurso').textContent = reporte.codigoCurso;
+            document.getElementById('periodo').textContent = reporte.periodo;
+            document.getElementById('nombreProfesor').textContent = reporte.nombreProfesor;
+            document.getElementById('cupoMaximo').textContent = reporte.cupoMaximo;
+            document.getElementById('estudiantesInscritos').textContent = reporte.estudiantesInscritos;
+
+            // Llenar estadísticas
+            const stats = reporte.estadisticas;
+            document.getElementById('promedioGeneral').textContent = stats.promedioGeneral.toFixed(2);
+            document.getElementById('aprobados').textContent = stats.aprobados;
+            document.getElementById('reprobados').textContent = stats.reprobados;
+            document.getElementById('estudiantesRiesgo').textContent = stats.estudiantesRiesgo;
+
+            // Distribución de notas
+            const total = stats.distribucion.rango0a2 + stats.distribucion.rango3a3 + stats.distribucion.rango4a5;
+            if (total > 0) {
+                const porcRojo = (stats.distribucion.rango0a2 / total) * 100;
+                const porcAmarillo = (stats.distribucion.rango3a3 / total) * 100;
+                const porcVerde = (stats.distribucion.rango4a5 / total) * 100;
+
+                document.getElementById('barraRojo').style.width = porcRojo + '%';
+                document.getElementById('barraAmarillo').style.width = porcAmarillo + '%';
+                document.getElementById('barraVerde').style.width = porcVerde + '%';
+            }
+
+            document.getElementById('rango0a2').textContent = stats.distribucion.rango0a2 + ' estudiantes';
+            document.getElementById('rango3a3').textContent = stats.distribucion.rango3a3 + ' estudiantes';
+            document.getElementById('rango4a5').textContent = stats.distribucion.rango4a5 + ' estudiantes';
+
+            // Llenar tabla de estudiantes
+            const tbody = document.getElementById('tablaEstudiantes');
+            tbody.innerHTML = '';
+
+            if (reporte.estudiantes.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-info-circle"></i> No hay estudiantes inscritos en este curso
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            reporte.estudiantes.forEach(est => {
+                const badgeEstado = est.estado === 'APROBADO' ? 'badge-aprobado' :
+                    est.estado === 'REPROBADO' ? 'badge-reprobado' : 'badge-encurso';
+
+                const row = `
+                    <tr class="estudiante-row" onclick="toggleCalificaciones('est-${est.estudianteId}')">
+                        <td>${est.codigoEstudiante}</td>
+                        <td>${est.nombreCompleto}</td>
+                        <td>${est.cedula}</td>
+                        <td>${est.estadoInscripcion}</td>
+                        <td><strong>${est.promedioFinal.toFixed(2)}</strong></td>
+                        <td><span class="badge-estado ${badgeEstado}">${est.estado}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="event.stopPropagation(); verDetalle(${est.estudianteId})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr id="est-${est.estudianteId}" class="calificaciones-detalle">
+                        <td colspan="7">
+                            <strong>Calificaciones:</strong>
+                            ${est.calificaciones.length > 0 ?
+                    est.calificaciones.map(calif =>
+                        `${calif.nombreEvaluacion}: ${calif.nota} (${calif.porcentaje}%) = ${calif.notaPonderada}`
+                    ).join(' | ')
+                    : 'Sin calificaciones registradas'}
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+        } catch (error) {
+            console.error('Error cargando reporte:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo cargar el reporte',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    }
+
+    function toggleCalificaciones(id) {
+        const element = document.getElementById(id);
+        element.style.display = element.style.display === 'table-row' ? 'none' : 'table-row';
+    }
+
+    function verDetalle(estudianteId) {
+        window.open(`/reportes/calificaciones-estudiante.html?estudianteId=${estudianteId}`, '_blank');
+    }
+
+    function exportarExcel() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Exportar a Excel',
+            text: 'Función en desarrollo',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>

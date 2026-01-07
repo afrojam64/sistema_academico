@@ -2,15 +2,19 @@ package com.sistema.academico.infraestructura.controlador;
 
 import com.sistema.academico.aplicacion.dto.request.CalificacionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.CalificacionResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.CalificacionesCursoReporteDTO;
 import com.sistema.academico.aplicacion.dto.response.CalificacionesEstudianteReporteDTO;
+import com.sistema.academico.aplicacion.dto.response.EstudiantesEnRiesgoReporteDTO;
 import com.sistema.academico.aplicacion.servicio.ICalificacionService;
 import com.sistema.academico.dominio.enumeracion.Rol;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -112,6 +116,42 @@ public class CalificacionController {
             @PathVariable Long estudianteId) {
 
         CalificacionesEstudianteReporteDTO reporte = calificacionService.generarReporteEstudiante(estudianteId);
+        return ResponseEntity.ok(reporte);
+    }
+
+    /**
+     * Generar reporte de calificaciones por curso
+     * Ruta: GET /api/calificaciones/reporte/curso/{cursoId}
+     * Parámetros opcionales: fechaInicio, fechaFin
+     */
+    @GetMapping("/reporte/curso/{cursoId}")
+    public ResponseEntity<CalificacionesCursoReporteDTO> generarReporteCurso(
+            @PathVariable Long cursoId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+
+        CalificacionesCursoReporteDTO reporte =
+                calificacionService.generarReporteCurso(cursoId, fechaInicio, fechaFin);
+
+        return ResponseEntity.ok(reporte);
+    }
+
+    /**
+     * Generar reporte de estudiantes en riesgo académico
+     * Ruta: GET /api/calificaciones/reporte/estudiantes-riesgo
+     * Parámetro opcional: estudianteId (si se busca uno específico)
+     *
+     * Ejemplos:
+     * - GET /api/calificaciones/reporte/estudiantes-riesgo → Todos los estudiantes en riesgo
+     * - GET /api/calificaciones/reporte/estudiantes-riesgo?estudianteId=5 → Estudiante específico
+     */
+    @GetMapping("/reporte/estudiantes-riesgo")
+    public ResponseEntity<EstudiantesEnRiesgoReporteDTO> generarReporteEstudiantesEnRiesgo(
+            @RequestParam(required = false) Long estudianteId) {
+
+        EstudiantesEnRiesgoReporteDTO reporte =
+                calificacionService.generarReporteEstudiantesEnRiesgo(estudianteId);
+
         return ResponseEntity.ok(reporte);
     }
 }
