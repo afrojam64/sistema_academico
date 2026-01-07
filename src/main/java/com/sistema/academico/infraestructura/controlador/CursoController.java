@@ -2,6 +2,8 @@ package com.sistema.academico.infraestructura.controlador;
 
 import com.sistema.academico.aplicacion.dto.request.CursoRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.CursoResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.CursosActivosReporteDTO;
+import com.sistema.academico.aplicacion.dto.response.OcupacionCursosReporteDTO;
 import com.sistema.academico.aplicacion.servicio.ICursoService;
 import com.sistema.academico.dominio.enumeracion.Rol;
 import jakarta.validation.Valid;
@@ -135,5 +137,29 @@ public class CursoController {
 
         List<CursoResponseDTO> cursos = cursoService.buscarPorTermino(termino);
         return ResponseEntity.ok(cursos);
+    }
+
+    /**
+     * Generar reporte de cursos activos
+     * Ruta: GET /api/cursos/reporte/activos
+     */
+    @GetMapping("/reporte/activos")
+    public ResponseEntity<CursosActivosReporteDTO> generarReporteCursosActivos() {
+
+        CursosActivosReporteDTO reporte = cursoService.generarReporteCursosActivos();
+
+        return ResponseEntity.ok(reporte);
+    }
+
+    /**
+     * Generar reporte de análisis de ocupación de cursos
+     * Ruta: GET /api/cursos/reporte/ocupacion
+     */
+    @GetMapping("/reporte/ocupacion")
+    public ResponseEntity<OcupacionCursosReporteDTO> generarReporteOcupacionCursos() {
+
+        OcupacionCursosReporteDTO reporte = cursoService.generarReporteOcupacionCursos();
+
+        return ResponseEntity.ok(reporte);
     }
 }

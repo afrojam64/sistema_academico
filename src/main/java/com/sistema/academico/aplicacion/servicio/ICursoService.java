@@ -2,6 +2,8 @@ package com.sistema.academico.aplicacion.servicio;
 
 import com.sistema.academico.aplicacion.dto.request.CursoRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.CursoResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.CursosActivosReporteDTO;
+import com.sistema.academico.aplicacion.dto.response.OcupacionCursosReporteDTO;
 import com.sistema.academico.dominio.enumeracion.Rol;
 
 import java.util.List;
@@ -53,4 +55,16 @@ public interface ICursoService {
      * @return Lista de cursos que coinciden con el término
      */
     List<CursoResponseDTO> buscarPorTermino(String termino);
+
+    /**
+     * Generar reporte de cursos activos
+     * @return DTO con todos los cursos activos y sus estadísticas
+     */
+    CursosActivosReporteDTO generarReporteCursosActivos();
+
+    /**
+     * Generar reporte de análisis de ocupación de cursos
+     * @return DTO con análisis estadístico de ocupación
+     */
+    OcupacionCursosReporteDTO generarReporteOcupacionCursos();
 }

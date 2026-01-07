@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocupación de Cursos - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+
+        .reporte-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 30px auto;
+            max-width: 1600px;
+        }
+
+        .header-reporte {
+            text-align: center;
+            border-bottom: 3px solid #f59e0b;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f59e0b, #fb923c);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .chart-section {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            color: #1e40af;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .distribucion-bars {
+            margin: 30px 0;
+        }
+
+        .bar-item {
+            margin-bottom: 20px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .bar-container {
+            height: 40px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-left: 15px;
+            color: white;
+            font-weight: 600;
+            transition: width 0.5s ease;
+        }
+
+        .bar-rojo { background: linear-gradient(90deg, #dc2626, #ef4444); }
+        .bar-naranja { background: linear-gradient(90deg, #f59e0b, #fb923c); }
+        .bar-azul { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .bar-verde { background: linear-gradient(90deg, #059669, #10b981); }
+        .bar-morado { background: linear-gradient(90deg, #7c3aed, #8b5cf6); }
+
+        .departamento-card {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .departamento-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .badge-top {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .curso-mini {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            margin-bottom: 10px;
+        }
+
+        .tabs-container {
+            margin-bottom: 30px;
+        }
+
+        .nav-tabs .nav-link {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #3b82f6;
+            border-bottom: 3px solid #3b82f6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .reporte-container {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark no-print">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-pie"></i> Ocupación de Cursos
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Usuario</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="reporte-container">
+
+        <!-- Header -->
+        <div class="header-reporte">
+            <h1><i class="fas fa-chart-pie"></i> Análisis de Ocupación de Cursos</h1>
+            <p class="text-muted mb-0">Estadísticas detalladas y distribución de ocupación</p>
+        </div>
+
+        <!-- Estadísticas Generales -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="totalCursos">0</h3>
+                <p>Total Cursos</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="promedioOcupacion">0%</h3>
+                <p>Ocupación Promedio</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalCuposOfrecidos">0</h3>
+                <p>Cupos Ofrecidos</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalCuposOcupados">0</h3>
+                <p>Cupos Ocupados</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalCuposDisponibles">0</h3>
+                <p>Cupos Disponibles</p>
+            </div>
+        </div>
+
+        <!-- Distribución de Ocupación -->
+        <div class="chart-section">
+            <div class="chart-title">
+                <i class="fas fa-chart-bar"></i>
+                Distribución por Rangos de Ocupación
+            </div>
+            <div class="distribucion-bars">
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>0% - 25% (Muy Baja)</span>
+                        <span id="labelRango0"></span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill bar-rojo" id="barRango0" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>25% - 50% (Baja)</span>
+                        <span id="labelRango25"></span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill bar-naranja" id="barRango25" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>50% - 75% (Media)</span>
+                        <span id="labelRango50"></span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill bar-azul" id="barRango50" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>75% - 100% (Alta)</span>
+                        <span id="labelRango75"></span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill bar-verde" id="barRango75" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span>100% (Completos)</span>
+                        <span id="labelRango100"></span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill bar-morado" id="barRango100" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análisis por Departamento -->
+        <div class="chart-section">
+            <div class="chart-title">
+                <i class="fas fa-building"></i>
+                Ocupación por Departamento
+            </div>
+            <div id="departamentosContainer"></div>
+        </div>
+
+        <!-- Tabs para Tops -->
+        <div class="tabs-container">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#tabCompletos">
+                        <i class="fas fa-check-circle"></i> Cursos Completos (<span id="countCompletos">0</span>)
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#tabDemandados">
+                        <i class="fas fa-fire"></i> Alta Demanda (>90%) (<span id="countDemandados">0</span>)
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#tabBajaDemanda">
+                        <i class="fas fa-exclamation-triangle"></i> Baja Demanda (<25%) (<span id="countBajaDemanda">0</span>)
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content p-4 border border-top-0 rounded-bottom">
+                <div class="tab-pane fade show active" id="tabCompletos">
+                    <div id="cursosCompletos"></div>
+                </div>
+                <div class="tab-pane fade" id="tabDemandados">
+                    <div id="cursosDemandados"></div>
+                </div>
+                <div class="tab-pane fade" id="tabBajaDemanda">
+                    <div id="cursosBajaDemanda"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="text-center mt-4 no-print">
+            <button class="btn btn-primary btn-lg me-2" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir / Guardar PDF
+            </button>
+            <button class="btn btn-success btn-lg" onclick="exportarExcel()">
+                <i class="fas fa-file-excel"></i> Exportar a Excel
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) window.location.href = '/login';
+    document.getElementById('userName').textContent = userName || 'Usuario';
+
+    // Cargar reporte al iniciar
+    cargarReporte();
+
+    async function cargarReporte() {
+        Swal.fire({
+            title: 'Generando análisis...',
+            text: 'Por favor espera',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            const response = await axios.get(
+                'http://localhost:8080/api/cursos/reporte/ocupacion',
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            Swal.close();
+            mostrarResultados(response.data);
+
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo cargar el reporte',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    }
+
+    function mostrarResultados(reporte) {
+        // Estadísticas generales
+        document.getElementById('totalCursos').textContent = reporte.totalCursos;
+        document.getElementById('promedioOcupacion').textContent =
+            reporte.promedioOcupacionGlobal.toFixed(1) + '%';
+        document.getElementById('totalCuposOfrecidos').textContent = reporte.totalCuposOfrecidos;
+        document.getElementById('totalCuposOcupados').textContent = reporte.totalCuposOcupados;
+        document.getElementById('totalCuposDisponibles').textContent = reporte.totalCuposDisponibles;
+
+        // Distribución
+        const dist = reporte.distribucion;
+        mostrarDistribucion(dist);
+
+        // Departamentos
+        mostrarDepartamentos(reporte.departamentos);
+
+        // Tops
+        document.getElementById('countCompletos').textContent = reporte.cursosCompletos.length;
+        document.getElementById('countDemandados').textContent = reporte.cursosMasDemandados.length;
+        document.getElementById('countBajaDemanda').textContent = reporte.cursosMenosDemandados.length;
+
+        mostrarCursosTop(reporte.cursosCompletos, 'cursosCompletos', 'No hay cursos con cupo completo');
+        mostrarCursosTop(reporte.cursosMasDemandados, 'cursosDemandados', 'No hay cursos con alta demanda');
+        mostrarCursosTop(reporte.cursosMenosDemandados, 'cursosBajaDemanda', 'No hay cursos con baja demanda');
+    }
+
+    function mostrarDistribucion(dist) {
+        const ranges = [
+            { id: 'Rango0', count: dist.rango0a25, percent: dist.porcentaje0a25 },
+            { id: 'Rango25', count: dist.rango25a50, percent: dist.porcentaje25a50 },
+            { id: 'Rango50', count: dist.rango50a75, percent: dist.porcentaje50a75 },
+            { id: 'Rango75', count: dist.rango75a100, percent: dist.porcentaje75a100 },
+            { id: 'Rango100', count: dist.rango100, percent: dist.porcentaje100 }
+        ];
+
+        ranges.forEach(range => {
+            document.getElementById('label' + range.id).textContent =
+                `${range.count} cursos (${range.percent.toFixed(1)}%)`;
+
+            setTimeout(() => {
+                document.getElementById('bar' + range.id).style.width = range.percent + '%';
+                document.getElementById('bar' + range.id).textContent =
+                    range.percent > 10 ? `${range.count} cursos` : '';
+            }, 100);
+        });
+    }
+
+    function mostrarDepartamentos(departamentos) {
+        const container = document.getElementById('departamentosContainer');
+
+        if (departamentos.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No hay departamentos</p></div>';
+            return;
+        }
+
+        let html = '';
+        departamentos.forEach((dept, index) => {
+            const topBadge = index === 0 ? '<span class="badge-top ms-2"><i class="fas fa-trophy"></i> Top 1</span>' : '';
+
+            html += `
+                <div class="departamento-card">
+                    <div class="departamento-header">
+                        <div>
+                            <h5 class="mb-1">
+                                <i class="fas fa-building text-primary"></i> ${dept.nombreDepartamento}
+                                ${topBadge}
+                            </h5>
+                        </div>
+                        <div class="text-end">
+                            <h3 class="mb-0 text-warning">${dept.promedioOcupacion.toFixed(1)}%</h3>
+                            <small class="text-muted">Ocupación Promedio</small>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <strong>${dept.totalCursos}</strong><br>
+                            <small class="text-muted">Cursos</small>
+                        </div>
+                        <div class="col-3">
+                            <strong>${dept.cursosCompletos}</strong><br>
+                            <small class="text-muted">Completos</small>
+                        </div>
+                        <div class="col-3">
+                            <strong>${dept.totalEstudiantes}</strong><br>
+                            <small class="text-muted">Estudiantes</small>
+                        </div>
+                        <div class="col-3">
+                            <strong>${dept.totalCupos}</strong><br>
+                            <small class="text-muted">Cupos Totales</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function mostrarCursosTop(cursos, containerId, emptyMessage) {
+        const container = document.getElementById(containerId);
+
+        if (cursos.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>${emptyMessage}</p></div>`;
+            return;
+        }
+
+        let html = '';
+        cursos.forEach(curso => {
+            html += `
+                <div class="curso-mini">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1"><i class="fas fa-book"></i> ${curso.nombreMateria}</h6>
+                            <small class="text-muted">
+                                ${curso.nombreCurso} (${curso.codigoCurso}) |
+                                ${curso.nombreDepartamento} |
+                                Prof. ${curso.nombreProfesor}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <strong class="text-primary">${curso.porcentajeOcupacion.toFixed(1)}%</strong><br>
+                            <small class="text-muted">${curso.cupoActual}/${curso.cupoMaximo}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function exportarExcel() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Exportar a Excel',
+            text: 'Función en desarrollo',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>
