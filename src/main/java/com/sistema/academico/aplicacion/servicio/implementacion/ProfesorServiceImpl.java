@@ -1,9 +1,11 @@
 package com.sistema.academico.aplicacion.servicio.implementacion;
 
 import com.sistema.academico.aplicacion.dto.request.ProfesorRequestDTO;
+import com.sistema.academico.aplicacion.dto.response.CursosPorProfesorReporteDTO;
 import com.sistema.academico.aplicacion.dto.response.ProfesorResponseDTO;
 import com.sistema.academico.aplicacion.mapper.ProfesorMapper;
 import com.sistema.academico.aplicacion.servicio.IProfesorService;
+import com.sistema.academico.dominio.entidad.Curso;
 import com.sistema.academico.dominio.entidad.Departamento;
 import com.sistema.academico.dominio.entidad.Profesor;
 import com.sistema.academico.dominio.entidad.Usuario;
@@ -12,6 +14,7 @@ import com.sistema.academico.dominio.enumeracion.Rol;
 import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
 import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
+import com.sistema.academico.infraestructura.repositorio.CursoRepository;
 import com.sistema.academico.infraestructura.repositorio.DepartamentoRepository;
 import com.sistema.academico.infraestructura.repositorio.ProfesorRepository;
 import com.sistema.academico.infraestructura.repositorio.UsuarioRepository;
@@ -20,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +36,7 @@ public class ProfesorServiceImpl implements IProfesorService {
     private final DepartamentoRepository departamentoRepository;
     private final ProfesorMapper profesorMapper;
     private final PasswordEncoder passwordEncoder;
+    private final CursoRepository cursoRepository;
 
     @Override
     @Transactional
@@ -235,5 +240,174 @@ public class ProfesorServiceImpl implements IProfesorService {
 
         // Guardar el usuario actualizado
         usuarioRepository.save(usuario);
+    }
+
+    /**
+     * Generar reporte de carga académica por profesor
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public CursosPorProfesorReporteDTO generarReporteCursosPorProfesor(Long profesorId) {
+
+        List<Profesor> profesoresAEvaluar;
+
+        // Determinar qué profesores evaluar
+        if (profesorId != null) {
+            // Buscar profesor específico
+            Profesor profesor = profesorRepository.findById(profesorId)
+                    .orElseThrow(() -> new RecursoNoEncontradoException(
+                            "Profesor no encontrado con ID: " + profesorId));
+            profesoresAEvaluar = List.of(profesor);
+        } else {
+            // Buscar todos los profesores activos
+            profesoresAEvaluar = profesorRepository.findByEstado(Estado.ACTIVO);
+        }
+
+        // Variables para estadísticas generales
+        int totalProfesores = profesoresAEvaluar.size();
+        int totalCursosAsignados = 0;
+        int totalEstudiantes = 0;
+        double sumaOcupaciones = 0.0;
+        int contadorOcupaciones = 0;
+
+        // Lista de profesores con sus cursos
+        List<CursosPorProfesorReporteDTO.ProfesorConCursos> profesoresData = new ArrayList<>();
+
+        // Procesar cada profesor
+        for (Profesor profesor : profesoresAEvaluar) {
+            // Obtener cursos activos del profesor
+            List<Curso> cursosProfesor = cursoRepository.findByProfesorAndEstado(
+                    profesor, Estado.ACTIVO);
+
+            // Variables para estadísticas del profesor
+            int totalCursos = cursosProfesor.size();
+            int estudiantesProfesor = 0;
+            double sumaOcupacionesProfesor = 0.0;
+
+            // Lista de cursos asignados
+            List<CursosPorProfesorReporteDTO.CursoAsignado> cursosData = new ArrayList<>();
+
+            for (Curso curso : cursosProfesor) {
+                int cupoMaximo = curso.getCupoMaximo();
+                int cupoActual = curso.getCupoActual();
+                int cuposDisponibles = cupoMaximo - cupoActual;
+                double porcentajeOcupacion = cupoMaximo > 0 ?
+                        (cupoActual * 100.0) / cupoMaximo : 0.0;
+
+                estudiantesProfesor += cupoActual;
+                sumaOcupacionesProfesor += porcentajeOcupacion;
+
+                CursosPorProfesorReporteDTO.CursoAsignado cursoData =
+                        CursosPorProfesorReporteDTO.CursoAsignado.builder()
+                                .cursoId(curso.getId())
+                                .nombreCurso(curso.getNombre())
+                                .codigoCurso(curso.getCodigo())
+                                .nombreMateria(curso.getMateria().getNombre())
+                                .creditos(curso.getMateria().getCreditos())
+                                .periodo(curso.getPeriodo())
+                                .fechaInicio(curso.getFechaInicio().format(
+                                        java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                                .fechaFin(curso.getFechaFin().format(
+                                        java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                                .cupoMaximo(cupoMaximo)
+                                .cupoActual(cupoActual)
+                                .cuposDisponibles(cuposDisponibles)
+                                .porcentajeOcupacion(Math.round(porcentajeOcupacion * 100.0) / 100.0)
+                                .estadoCurso(curso.getEstado().name())
+                                .build();
+
+                cursosData.add(cursoData);
+            }
+
+            // Calcular promedio de ocupación del profesor
+            double promedioOcupacionProfesor = totalCursos > 0 ?
+                    sumaOcupacionesProfesor / totalCursos : 0.0;
+
+            // Determinar carga académica
+            String cargaAcademica;
+            if (totalCursos >= 5) {
+                cargaAcademica = "ALTA";
+            } else if (totalCursos >= 3) {
+                cargaAcademica = "MEDIA";
+            } else if (totalCursos > 0) {
+                cargaAcademica = "BAJA";
+            } else {
+                cargaAcademica = "SIN CARGA";
+            }
+
+            // Acumular estadísticas generales
+            totalCursosAsignados += totalCursos;
+            totalEstudiantes += estudiantesProfesor;
+            sumaOcupaciones += promedioOcupacionProfesor;
+            if (totalCursos > 0) {
+                contadorOcupaciones++;
+            }
+
+            // Crear DTO del profesor
+            CursosPorProfesorReporteDTO.ProfesorConCursos profesorData =
+                    CursosPorProfesorReporteDTO.ProfesorConCursos.builder()
+                            .profesorId(profesor.getId())
+                            .nombreCompleto(profesor.getUsuario().getNombre() + " " +
+                                    profesor.getUsuario().getApellido())
+                            .email(profesor.getUsuario().getEmail())
+                            .telefono(profesor.getTelefono())
+                            .especialidad(profesor.getEspecialidad())
+                            .nombreDepartamento(profesor.getDepartamento().getNombre())
+                            .fechaContratacion(profesor.getFechaContratacion() != null ?
+                                    profesor.getFechaContratacion().format(
+                                            java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "")
+                            .estado(profesor.getEstado().name())
+                            .totalCursosActivos(totalCursos)
+                            .totalEstudiantes(estudiantesProfesor)
+                            .promedioOcupacion(Math.round(promedioOcupacionProfesor * 100.0) / 100.0)
+                            .cargaAcademica(cargaAcademica)
+                            .cursos(cursosData)
+                            .build();
+
+            profesoresData.add(profesorData);
+        }
+
+        // Calcular promedio de ocupación general
+        double promedioOcupacion = contadorOcupaciones > 0 ?
+                sumaOcupaciones / contadorOcupaciones : 0.0;
+
+        // Ordenar profesores por cantidad de cursos (mayor a menor)
+        profesoresData.sort((p1, p2) ->
+                Integer.compare(p2.getTotalCursosActivos(), p1.getTotalCursosActivos()));
+
+        // Construir DTO final
+        return CursosPorProfesorReporteDTO.builder()
+                .totalProfesores(totalProfesores)
+                .totalCursosAsignados(totalCursosAsignados)
+                .totalEstudiantes(totalEstudiantes)
+                .promedioOcupacion(Math.round(promedioOcupacion * 100.0) / 100.0)
+                .profesores(profesoresData)
+                .build();
+    }
+
+    /**
+     * Buscar profesores por término de búsqueda
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProfesorResponseDTO> buscarPorTermino(String termino) {
+        String terminoBusqueda = termino.toLowerCase().trim();
+        List<Profesor> todosProfesores = profesorRepository.findAll();
+
+        List<Profesor> resultados = todosProfesores.stream()
+                .filter(profesor -> profesor.getEstado() == Estado.ACTIVO)
+                .filter(profesor -> {
+                    String nombreCompleto = (profesor.getUsuario().getNombre() + " " +
+                            profesor.getUsuario().getApellido()).toLowerCase();
+                    String email = profesor.getUsuario().getEmail().toLowerCase();
+
+                    return nombreCompleto.contains(terminoBusqueda) ||
+                            email.contains(terminoBusqueda);
+                })
+                .collect(Collectors.toList());
+
+        return resultados.stream()
+                .map(profesorMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 }

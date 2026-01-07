@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursos por Profesor - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+
+        .reporte-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 30px auto;
+            max-width: 1600px;
+        }
+
+        .header-reporte {
+            text-align: center;
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .busqueda-inicial {
+            /*background: #fef2f2;*/
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #0d6efd;
+            text-align: center;
+        }
+
+        .opciones-busqueda {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .opcion-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #e5e7eb;
+        }
+
+        .opcion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            border-color: #0d6efd;
+        }
+
+        .opcion-card i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #0d6efd;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .profesor-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .profesor-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border-color: #ef4444;
+        }
+
+        .profesor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .badge-carga {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .badge-alta {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-media {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-baja {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-sin {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .info-profesor {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .info-item i {
+            color: #ef4444;
+            margin-right: 8px;
+        }
+
+        .cursos-list {
+            margin-top: 20px;
+        }
+
+        .curso-item {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .curso-header-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progreso-bar {
+            height: 25px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progreso-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f87171);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .filtros-section {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-cursos {
+            cursor: pointer;
+            color: #3b82f6;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .toggle-cursos:hover {
+            text-decoration: underline;
+        }
+
+        #resultadosReporte {
+            display: none;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark no-print">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chalkboard-teacher"></i> Cursos por Profesor
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Usuario</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="reporte-container">
+
+        <!-- Búsqueda Inicial -->
+        <div id="busquedaInicial">
+            <div class="header-reporte">
+                <h1><i class="fas fa-chalkboard-teacher"></i> Reporte de Cursos por Profesor</h1>
+                <p class="text-muted mb-0">Carga académica y distribución de cursos</p>
+            </div>
+
+            <div class="busqueda-inicial">
+                <h4 class="mb-4">¿Qué deseas consultar?</h4>
+
+                <div class="opciones-busqueda">
+                    <div class="opcion-card" onclick="buscarProfesorEspecifico()">
+                        <i class="fas fa-user-search"></i>
+                        <h5>Buscar Profesor Específico</h5>
+                        <p class="text-muted mb-0">Busca por nombre o email</p>
+                    </div>
+
+                    <div class="opcion-card" onclick="verTodosProfesores()">
+                        <i class="fas fa-users"></i>
+                        <h5>Ver Todos los Profesores</h5>
+                        <p class="text-muted mb-0">Lista completa con carga académica</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultados del Reporte -->
+        <div id="resultadosReporte">
+
+            <!-- Header con botón volver -->
+            <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+                <h3 id="tituloResultado">Resultados</h3>
+                <button class="btn btn-secondary" onclick="volverBusqueda()">
+                    <i class="fas fa-search"></i> Nueva Búsqueda
+                </button>
+            </div>
+
+            <!-- Estadísticas Generales -->
+            <div class="stats-grid" id="statsCards" style="display: none;">
+                <div class="stat-card">
+                    <h3 id="totalProfesores">0</h3>
+                    <p>Total Profesores</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalCursos">0</h3>
+                    <p>Cursos Asignados</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalEstudiantes">0</h3>
+                    <p>Estudiantes Totales</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="promedioOcupacion">0%</h3>
+                    <p>Ocupación Promedio</p>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filtros-section no-print" id="filtrosSection" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="buscarProfesor"
+                               placeholder="🔍 Buscar por nombre, departamento o especialidad..."
+                               onkeyup="buscarEnProfesores()">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filtroCarga" onchange="aplicarFiltros()">
+                            <option value="TODOS">Todas las cargas</option>
+                            <option value="ALTA">Carga Alta (≥5 cursos)</option>
+                            <option value="MEDIA">Carga Media (3-4 cursos)</option>
+                            <option value="BAJA">Carga Baja (1-2 cursos)</option>
+                            <option value="SIN CARGA">Sin carga</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenedor de Resultados -->
+            <div id="contenedorResultados"></div>
+
+            <!-- Botones de Acción -->
+            <div class="text-center mt-4 no-print">
+                <button class="btn btn-primary btn-lg me-2" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimir / Guardar PDF
+                </button>
+                <button class="btn btn-success btn-lg" onclick="exportarExcel()">
+                    <i class="fas fa-file-excel"></i> Exportar a Excel
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) window.location.href = '/login';
+    document.getElementById('userName').textContent = userName || 'Usuario';
+
+    let profesoresData = [];
+    let esVistaIndividual = false;
+
+    async function buscarProfesorEspecifico() {
+        const { value: termino } = await Swal.fire({
+            title: 'Buscar Profesor',
+            input: 'text',
+            inputLabel: 'Nombre o email del profesor',
+            inputPlaceholder: 'Ej: Juan Pérez o juan@universidad.edu',
+            showCancelButton: true,
+            confirmButtonText: 'Buscar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#ef4444',
+            inputValidator: (value) => {
+                if (!value || value.length < 3) {
+                    return 'Ingresa al menos 3 caracteres';
+                }
+            }
+        });
+
+        if (termino) {
+            Swal.fire({
+                title: 'Buscando...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
+                const response = await axios.get(
+                    `http://localhost:8080/api/profesores/buscar?termino=${encodeURIComponent(termino)}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                const profesores = response.data;
+
+                if (profesores.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Sin resultados',
+                        text: 'No se encontraron profesores',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    return;
+                }
+
+                if (profesores.length === 1) {
+                    Swal.close();
+                    cargarReporte(profesores[0].id);
+                    return;
+                }
+
+                const opciones = {};
+                profesores.forEach(prof => {
+                    opciones[prof.id] = `${prof.nombre} ${prof.apellido} (${prof.email})`;
+                });
+
+                const { value: profesorId } = await Swal.fire({
+                    title: 'Selecciona el profesor',
+                    input: 'select',
+                    inputOptions: opciones,
+                    inputPlaceholder: 'Selecciona',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ver Reporte',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#ef4444',
+                    inputValidator: (value) => {
+                        if (!value) return 'Debes seleccionar un profesor';
+                    }
+                });
+
+                if (profesorId) {
+                    cargarReporte(profesorId);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo realizar la búsqueda',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+    }
+
+    function verTodosProfesores() {
+        cargarReporte(null);
+    }
+
+    async function cargarReporte(profesorId) {
+        Swal.fire({
+            title: 'Generando reporte...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            let url = 'http://localhost:8080/api/profesores/reporte/cursos';
+            if (profesorId) {
+                url += `?profesorId=${profesorId}`;
+                esVistaIndividual = true;
+            } else {
+                esVistaIndividual = false;
+            }
+
+            const response = await axios.get(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            Swal.close();
+            profesoresData = response.data.profesores;
+            mostrarResultados(response.data);
+
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo generar el reporte',
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    }
+
+    function mostrarResultados(reporte) {
+        document.getElementById('busquedaInicial').style.display = 'none';
+        document.getElementById('resultadosReporte').style.display = 'block';
+
+        if (esVistaIndividual) {
+            document.getElementById('statsCards').style.display = 'none';
+            document.getElementById('filtrosSection').style.display = 'none';
+            document.getElementById('tituloResultado').textContent = 'Carga Académica del Profesor';
+        } else {
+            document.getElementById('statsCards').style.display = 'grid';
+            document.getElementById('filtrosSection').style.display = 'block';
+            document.getElementById('tituloResultado').textContent =
+                `Profesores Activos (${reporte.totalProfesores})`;
+
+            document.getElementById('totalProfesores').textContent = reporte.totalProfesores;
+            document.getElementById('totalCursos').textContent = reporte.totalCursosAsignados;
+            document.getElementById('totalEstudiantes').textContent = reporte.totalEstudiantes;
+            document.getElementById('promedioOcupacion').textContent =
+                reporte.promedioOcupacion.toFixed(1) + '%';
+        }
+
+        mostrarProfesores(profesoresData);
+    }
+
+    function mostrarProfesores(profesores) {
+        const contenedor = document.getElementById('contenedorResultados');
+
+        if (profesores.length === 0) {
+            contenedor.innerHTML = `
+                <div class="alert alert-info text-center p-5">
+                    <i class="fas fa-info-circle fa-3x mb-3"></i>
+                    <h4>No hay profesores que coincidan con los criterios</h4>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        profesores.forEach(profesor => {
+            const badgeClass = profesor.cargaAcademica === 'ALTA' ? 'badge-alta' :
+                profesor.cargaAcademica === 'MEDIA' ? 'badge-media' :
+                    profesor.cargaAcademica === 'BAJA' ? 'badge-baja' : 'badge-sin';
+
+            html += `
+                <div class="profesor-card" data-carga="${profesor.cargaAcademica}"
+                     data-searchable="${profesor.nombreCompleto} ${profesor.nombreDepartamento} ${profesor.especialidad}">
+                    <div class="profesor-header">
+                        <div>
+                            <h4 class="mb-1">
+                                <i class="fas fa-user-tie"></i> ${profesor.nombreCompleto}
+                            </h4>
+                            <p class="text-muted mb-0">
+                                ${profesor.nombreDepartamento}
+                                ${profesor.especialidad ? ' | ' + profesor.especialidad : ''}
+                            </p>
+                        </div>
+                        <span class="badge-carga ${badgeClass}">
+                            ${profesor.cargaAcademica}
+                        </span>
+                    </div>
+
+                    <div class="info-profesor">
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <strong>Email:</strong> ${profesor.email}
+                        </div>
+                        ${profesor.telefono ? `
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <strong>Teléfono:</strong> ${profesor.telefono}
+                        </div>
+                        ` : ''}
+                        <div class="info-item">
+                            <i class="fas fa-calendar"></i>
+                            <strong>Contratación:</strong> ${profesor.fechaContratacion}
+                        </div>
+                    </div>
+
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <h4 class="mb-0 text-danger">${profesor.totalCursosActivos}</h4>
+                            <small class="text-muted">Cursos Activos</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="mb-0 text-danger">${profesor.totalEstudiantes}</h4>
+                            <small class="text-muted">Estudiantes</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="mb-0 text-danger">${profesor.promedioOcupacion.toFixed(1)}%</h4>
+                            <small class="text-muted">Ocupación</small>
+                        </div>
+                    </div>
+
+                    ${profesor.cursos.length > 0 ? `
+                        <div class="toggle-cursos" onclick="toggleCursos('cursos-${profesor.profesorId}')">
+                            <i class="fas fa-chevron-down"></i> Ver Cursos (${profesor.cursos.length})
+                        </div>
+                        <div class="cursos-list" id="cursos-${profesor.profesorId}" style="display: none;">
+                            ${generarHtmlCursos(profesor.cursos)}
+                        </div>
+                    ` : '<p class="text-muted text-center mt-3">Sin cursos asignados</p>'}
+                </div>
+            `;
+        });
+
+        contenedor.innerHTML = html;
+    }
+
+    function generarHtmlCursos(cursos) {
+        let html = '';
+        cursos.forEach(curso => {
+            html += `
+                <div class="curso-item">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1"><i class="fas fa-book"></i> ${curso.nombreMateria}</h6>
+                            <small class="text-muted">
+                                ${curso.nombreCurso} (${curso.codigoCurso}) |
+                                ${curso.creditos} créditos |
+                                ${curso.periodo}
+                            </small>
+                        </div>
+                        <strong>${curso.cupoActual}/${curso.cupoMaximo}</strong>
+                    </div>
+                    <div class="progreso-bar">
+                        <div class="progreso-fill" style="width: ${curso.porcentajeOcupacion}%">
+                            ${curso.porcentajeOcupacion.toFixed(1)}%
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        ${curso.fechaInicio} - ${curso.fechaFin}
+                    </small>
+                </div>
+            `;
+        });
+        return html;
+    }
+
+    function toggleCursos(id) {
+        const element = document.getElementById(id);
+        const isVisible = element.style.display !== 'none';
+        element.style.display = isVisible ? 'none' : 'block';
+
+        const toggle = element.previousElementSibling;
+        const icon = toggle.querySelector('i');
+        icon.className = isVisible ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+    }
+
+    function buscarEnProfesores() {
+        aplicarFiltros();
+    }
+
+    function aplicarFiltros() {
+        const textoBusqueda = document.getElementById('buscarProfesor').value.toLowerCase();
+        const filtroCarga = document.getElementById('filtroCarga').value;
+
+        let profesoresFiltrados = profesoresData;
+
+        if (filtroCarga !== 'TODOS') {
+            profesoresFiltrados = profesoresFiltrados.filter(p => p.cargaAcademica === filtroCarga);
+        }
+
+        if (textoBusqueda) {
+            profesoresFiltrados = profesoresFiltrados.filter(p => {
+                const searchText = `${p.nombreCompleto} ${p.nombreDepartamento} ${p.especialidad}`.toLowerCase();
+                return searchText.includes(textoBusqueda);
+            });
+        }
+
+        mostrarProfesores(profesoresFiltrados);
+    }
+
+    function volverBusqueda() {
+        document.getElementById('resultadosReporte').style.display = 'none';
+        document.getElementById('busquedaInicial').style.display = 'block';
+        document.getElementById('buscarProfesor').value = '';
+        document.getElementById('filtroCarga').value = 'TODOS';
+    }
+
+    function exportarExcel() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Exportar a Excel',
+            text: 'Función en desarrollo',
+            confirmButtonColor: '#ef4444'
+        });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>

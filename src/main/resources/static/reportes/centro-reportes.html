@@ -241,7 +241,7 @@
             </div>
 
             <div class="col-md-4">
-                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="report-card" onclick="abrirReporteCursosPorProfesor()">
                     <div class="report-icon icon-cursos">
                         <i class="fas fa-chalkboard-teacher"></i>
                     </div>
@@ -249,8 +249,8 @@
                     <div class="report-description">
                         Carga académica y estadísticas de desempeño por profesor
                     </div>
-                    <span class="report-badge badge-proximamente">
-                        <i class="fas fa-clock"></i> Próximamente
+                    <span class="report-badge badge-disponible">
+                        <i class="fas fa-clock"></i> Disponible
                     </span>
                 </div>
             </div>
@@ -622,6 +622,11 @@
     function abrirReporteOcupacionCursos() {
         window.location.href = '/reportes/ocupacion-cursos.html';
     }
+
+    function abrirReporteCursosPorProfesor() {
+        window.location.href = '/reportes/cursos-por-profesor.html';
+    }
+
 </script>
 </body>
 </html>

@@ -2,6 +2,7 @@ package com.sistema.academico.infraestructura.controlador;
 
 import com.sistema.academico.aplicacion.dto.request.CambiarContrasenaRequestDTO;
 import com.sistema.academico.aplicacion.dto.request.ProfesorRequestDTO;
+import com.sistema.academico.aplicacion.dto.response.CursosPorProfesorReporteDTO;
 import com.sistema.academico.aplicacion.dto.response.ProfesorResponseDTO;
 import com.sistema.academico.aplicacion.servicio.IProfesorService;
 import com.sistema.academico.dominio.enumeracion.Rol;
@@ -100,5 +101,37 @@ public class ProfesorController {
 
         profesorService.cambiarContrasena(id, request.getNuevaContrasena());
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Generar reporte de carga académica por profesor
+     * Ruta: GET /api/profesores/reporte/cursos
+     * Parámetro opcional: profesorId (si se busca uno específico)
+     *
+     * Ejemplos:
+     * - GET /api/profesores/reporte/cursos → Todos los profesores
+     * - GET /api/profesores/reporte/cursos?profesorId=5 → Profesor específico
+     */
+    @GetMapping("/reporte/cursos")
+    public ResponseEntity<CursosPorProfesorReporteDTO> generarReporteCursosPorProfesor(
+            @RequestParam(required = false) Long profesorId) {
+
+        CursosPorProfesorReporteDTO reporte =
+                profesorService.generarReporteCursosPorProfesor(profesorId);
+
+        return ResponseEntity.ok(reporte);
+    }
+
+    /**
+     * Buscar profesores por término
+     * Ruta: GET /api/profesores/buscar?termino=juan
+     */
+    @GetMapping("/buscar")
+    public ResponseEntity<List<ProfesorResponseDTO>> buscarProfesores(
+            @RequestParam String termino) {
+
+        List<ProfesorResponseDTO> profesores = profesorService.buscarPorTermino(termino);
+
+        return ResponseEntity.ok(profesores);
     }
 }
