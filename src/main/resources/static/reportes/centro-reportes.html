@@ -279,7 +279,7 @@
             </div>
 
             <div class="col-md-4">
-                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="report-card" onclick="abrirReporteInscripcionesPorPeriodo()">
                     <div class="report-icon icon-inscripciones">
                         <i class="fas fa-calendar-alt"></i>
                     </div>
@@ -287,8 +287,8 @@
                     <div class="report-description">
                         Estadísticas de inscripciones agrupadas por periodo académico
                     </div>
-                    <span class="report-badge badge-proximamente">
-                        <i class="fas fa-clock"></i> Próximamente
+                    <span class="report-badge badge-disponible">
+                        <i class="fas fa-clock"></i> Disponible
                     </span>
                 </div>
             </div>
@@ -629,6 +629,10 @@
 
     function abrirReporteInscripcionesPorCurso() {
         window.location.href = '/reportes/inscripciones-por-curso.html';
+    }
+
+    function abrirReporteInscripcionesPorPeriodo() {
+        window.location.href = 'inscripciones-por-periodo.html';
     }
 </script>
 </body>

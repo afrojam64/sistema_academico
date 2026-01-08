@@ -3,6 +3,7 @@ package com.sistema.academico.aplicacion.servicio;
 import com.sistema.academico.aplicacion.dto.request.InscripcionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionResponseDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionesPorCursoReporteDTO;
+import com.sistema.academico.aplicacion.dto.response.InscripcionesPorPeriodoReporteDTO;
 import com.sistema.academico.dominio.enumeracion.Rol;
 
 import java.util.List;
@@ -64,4 +65,18 @@ public interface IInscripcionService {
      * @return DTO con información completa del curso y sus inscripciones
      */
     InscripcionesPorCursoReporteDTO generarReporteInscripcionesPorCurso(Long cursoId);
+
+    /**
+     * Genera un reporte completo de inscripciones para un periodo académico específico
+     *
+     * @param periodo El periodo académico (ej: "2026-1", "2025-2")
+     * @return DTO con estadísticas y lista detallada de inscripciones
+     */
+    InscripcionesPorPeriodoReporteDTO generarReporteInscripcionesPorPeriodo(String periodo);
+
+    /**
+     * Obtener lista de periodos académicos disponibles en el sistema
+     * @return Lista de periodos ordenados descendentemente
+     */
+    List<String> obtenerPeriodosDisponibles();
 }

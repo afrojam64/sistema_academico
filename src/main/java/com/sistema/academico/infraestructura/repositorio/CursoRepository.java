@@ -42,4 +42,11 @@ public interface CursoRepository extends JpaRepository<Curso, Long> {
     // Buscar cursos con cupos disponibles
     @Query("SELECT c FROM Curso c WHERE c.cupoActual < c.cupoMaximo AND c.estado = 'ACTIVO'")
     List<Curso> findCursosConCuposDisponibles();
+
+    /**
+     * Obtiene la lista de periodos únicos disponibles en el sistema
+     * Ordenados descendentemente (más reciente primero)
+     */
+    @Query("SELECT DISTINCT c.periodo FROM Curso c WHERE c.periodo IS NOT NULL ORDER BY c.periodo DESC")
+    List<String> findDistinctPeriodos();
 }

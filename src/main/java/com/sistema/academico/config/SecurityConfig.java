@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers("/cursos/**").permitAll()
                         .requestMatchers("/inscripciones/**").permitAll()
                         .requestMatchers("/dashboard-**").permitAll()
+                        .requestMatchers("/api/inscripciones/periodos").permitAll()
+                        .requestMatchers("/api/inscripciones/reporte/periodo/**").permitAll()
 
                         // Recursos estáticos
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()

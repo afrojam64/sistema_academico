@@ -3,6 +3,7 @@ package com.sistema.academico.aplicacion.servicio.implementacion;
 import com.sistema.academico.aplicacion.dto.request.InscripcionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionResponseDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionesPorCursoReporteDTO;
+import com.sistema.academico.aplicacion.dto.response.InscripcionesPorPeriodoReporteDTO;
 import com.sistema.academico.aplicacion.mapper.InscripcionMapper;
 import com.sistema.academico.aplicacion.servicio.IInscripcionService;
 import com.sistema.academico.dominio.entidad.*;
@@ -16,6 +17,8 @@ import com.sistema.academico.infraestructura.repositorio.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -328,6 +331,171 @@ public class InscripcionServiceImpl implements IInscripcionService {
                 .cuposDisponibles(cuposDisponibles)
                 .porcentajeOcupacion(Math.round(porcentajeOcupacion * 100.0) / 100.0)
                 .estudiantes(estudiantesData)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InscripcionesPorPeriodoReporteDTO generarReporteInscripcionesPorPeriodo(String periodo) {
+
+        // 1. Obtener todos los cursos del periodo
+        List<Curso> cursosDelPeriodo = cursoRepository.findByPeriodo(periodo);
+
+        if (cursosDelPeriodo.isEmpty()) {
+            throw new RecursoNoEncontradoException("No existen cursos para el periodo: " + periodo);
+        }
+
+        // 2. Obtener todas las inscripciones de esos cursos
+        List<Inscripcion> inscripciones = new ArrayList<>();
+        for (Curso curso : cursosDelPeriodo) {
+            inscripciones.addAll(inscripcionRepository.findByCurso(curso));
+        }
+
+        // 3. Calcular estadísticas generales
+        InscripcionesPorPeriodoReporteDTO.EstadisticasGenerales estadisticas = calcularEstadisticasPeriodo(inscripciones, cursosDelPeriodo);
+
+        // 4. Construir detalles de inscripciones
+        List<InscripcionesPorPeriodoReporteDTO.InscripcionDetalle> detalles = inscripciones.stream()
+                .map(this::construirInscripcionDetallePeriodo)
+                .sorted(Comparator
+                        .comparing(InscripcionesPorPeriodoReporteDTO.InscripcionDetalle::getCarrera)
+                        .thenComparing(InscripcionesPorPeriodoReporteDTO.InscripcionDetalle::getCodigoEstudiante))
+                .collect(Collectors.toList());
+
+        // 5. Construir y retornar el reporte completo
+        return InscripcionesPorPeriodoReporteDTO.builder()
+                .periodo(periodo)
+                .estadisticas(estadisticas)
+                .inscripciones(detalles)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> obtenerPeriodosDisponibles() {
+        return cursoRepository.findDistinctPeriodos();
+    }
+
+    private InscripcionesPorPeriodoReporteDTO.EstadisticasGenerales calcularEstadisticasPeriodo(List<Inscripcion> inscripciones, List<Curso> cursos) {
+
+        // Contar por estado
+        long activas = inscripciones.stream()
+                .filter(i -> i.getEstado() == EstadoInscripcion.ACTIVO)
+                .count();
+
+        long retiradas = inscripciones.stream()
+                .filter(i -> i.getEstado() == EstadoInscripcion.RETIRADO)
+                .count();
+
+        long completadas = inscripciones.stream()
+                .filter(i -> i.getEstado() == EstadoInscripcion.COMPLETADO)
+                .count();
+
+        // Estudiantes únicos
+        long estudiantesUnicos = inscripciones.stream()
+                .map(i -> i.getEstudiante().getId())
+                .distinct()
+                .count();
+
+        // Cupos
+        int cuposTotales = cursos.stream()
+                .mapToInt(Curso::getCupoMaximo)
+                .sum();
+
+        int cuposOcupados = cursos.stream()
+                .mapToInt(Curso::getCupoActual)
+                .sum();
+
+        int cuposDisponibles = cuposTotales - cuposOcupados;
+
+        double porcentajeOcupacion = cuposTotales > 0
+                ? (cuposOcupados * 100.0 / cuposTotales)
+                : 0.0;
+
+        // Distribución por carrera
+        Map<String, List<Inscripcion>> porCarrera = inscripciones.stream()
+                .collect(Collectors.groupingBy(i -> i.getEstudiante().getCarrera()));
+
+        List<InscripcionesPorPeriodoReporteDTO.CarreraDistribucion> distribucionCarreras = porCarrera.entrySet().stream()
+                .map(entry -> InscripcionesPorPeriodoReporteDTO.CarreraDistribucion.builder()
+                        .carrera(entry.getKey())
+                        .totalInscripciones(entry.getValue().size())
+                        .estudiantesUnicos((int) entry.getValue().stream()
+                                .map(i -> i.getEstudiante().getId())
+                                .distinct()
+                                .count())
+                        .build())
+                .sorted(Comparator.comparing(InscripcionesPorPeriodoReporteDTO.CarreraDistribucion::getTotalInscripciones).reversed())
+                .collect(Collectors.toList());
+
+        return InscripcionesPorPeriodoReporteDTO.EstadisticasGenerales.builder()
+                .totalInscripciones(inscripciones.size())
+                .estudiantesUnicos((int) estudiantesUnicos)
+                .cursosOfertados(cursos.size())
+                .cuposTotales(cuposTotales)
+                .cuposOcupados(cuposOcupados)
+                .cuposDisponibles(cuposDisponibles)
+                .porcentajeOcupacion(Math.round(porcentajeOcupacion * 100.0) / 100.0)
+                .inscripcionesActivas((int) activas)
+                .inscripcionesRetiradas((int) retiradas)
+                .inscripcionesCompletadas((int) completadas)
+                .distribucionCarreras(distribucionCarreras)
+                .build();
+    }
+
+    private InscripcionesPorPeriodoReporteDTO.InscripcionDetalle construirInscripcionDetallePeriodo(Inscripcion inscripcion) {
+
+        Estudiante estudiante = inscripcion.getEstudiante();
+        Curso curso = inscripcion.getCurso();
+
+        // Obtener calificaciones de esta inscripción
+        List<Calificacion> calificaciones = calificacionRepository.findByInscripcion(inscripcion);
+
+        // Calcular datos de calificaciones
+        int numeroEvaluaciones = calificaciones.size();
+
+        double promedioActual = 0.0;
+        double porcentajeEvaluado = 0.0;
+
+        if (!calificaciones.isEmpty()) {
+            double sumaNotas = 0.0;
+            int sumaPorcentajes = 0;
+
+            for (Calificacion cal : calificaciones) {
+                sumaNotas += cal.getNota().doubleValue() * cal.getPorcentaje() / 100.0;
+                sumaPorcentajes += cal.getPorcentaje();
+            }
+
+            promedioActual = Math.round(sumaNotas * 100.0) / 100.0;
+            porcentajeEvaluado = sumaPorcentajes;
+        }
+
+        return InscripcionesPorPeriodoReporteDTO.InscripcionDetalle.builder()
+                // Datos del estudiante
+                .estudianteId(estudiante.getId())
+                .codigoEstudiante(estudiante.getCodigoEstudiante())
+                .nombreEstudiante(estudiante.getUsuario().getNombre())
+                .apellidoEstudiante(estudiante.getUsuario().getApellido())
+                .emailEstudiante(estudiante.getUsuario().getEmail())
+                .carrera(estudiante.getCarrera())
+                .semestre(estudiante.getSemestre())
+                // Datos del curso
+                .cursoId(curso.getId())
+                .codigoCurso(curso.getCodigo())
+                .nombreCurso(curso.getNombre())
+                .nombreMateria(curso.getMateria().getNombre())
+                .nombreProfesor(curso.getProfesor().getUsuario().getNombre() + " " +
+                        curso.getProfesor().getUsuario().getApellido())
+                .departamento(curso.getMateria().getDepartamento().getNombre())
+                .creditos(curso.getMateria().getCreditos())
+                // Datos de la inscripción
+                .inscripcionId(inscripcion.getId())
+                .fechaInscripcion(inscripcion.getFechaInscripcion())
+                .estado(inscripcion.getEstado().name())
+                // Datos de calificaciones
+                .numeroEvaluaciones(numeroEvaluaciones)
+                .promedioActual(numeroEvaluaciones > 0 ? promedioActual : null)
+                .porcentajeEvaluado(numeroEvaluaciones > 0 ? porcentajeEvaluado : null)
                 .build();
     }
 }

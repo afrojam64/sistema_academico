@@ -3,6 +3,7 @@ package com.sistema.academico.infraestructura.controlador;
 import com.sistema.academico.aplicacion.dto.request.InscripcionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionResponseDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionesPorCursoReporteDTO;
+import com.sistema.academico.aplicacion.dto.response.InscripcionesPorPeriodoReporteDTO;
 import com.sistema.academico.aplicacion.servicio.IInscripcionService;
 import com.sistema.academico.dominio.enumeracion.Rol;
 import jakarta.validation.Valid;
@@ -150,5 +151,30 @@ public class InscripcionController {
                 inscripcionService.generarReporteInscripcionesPorCurso(cursoId);
 
         return ResponseEntity.ok(reporte);
+    }
+
+    /**
+     * Generar reporte completo de inscripciones por periodo académico
+     * Ruta: GET /api/inscripciones/reporte/periodo/{periodo}
+     * Ejemplo: /api/inscripciones/reporte/periodo/2026-1
+     */
+    @GetMapping("/reporte/periodo/{periodo}")
+    public ResponseEntity<InscripcionesPorPeriodoReporteDTO> generarReporteInscripcionesPorPeriodo(
+            @PathVariable String periodo) {
+
+        InscripcionesPorPeriodoReporteDTO reporte =
+                inscripcionService.generarReporteInscripcionesPorPeriodo(periodo);
+
+        return ResponseEntity.ok(reporte);
+    }
+
+    /**
+     * Obtener la lista de periodos académicos disponibles en el sistema
+     * Ruta: GET /api/inscripciones/periodos
+     */
+    @GetMapping("/periodos")
+    public ResponseEntity<List<String>> obtenerPeriodosDisponibles() {
+        List<String> periodos = inscripcionService.obtenerPeriodosDisponibles();
+        return ResponseEntity.ok(periodos);
     }
 }
