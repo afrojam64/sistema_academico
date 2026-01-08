@@ -2,6 +2,7 @@ package com.sistema.academico.aplicacion.servicio;
 
 import com.sistema.academico.aplicacion.dto.request.InscripcionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.InscripcionesPorCursoReporteDTO;
 import com.sistema.academico.dominio.enumeracion.Rol;
 
 import java.util.List;
@@ -56,4 +57,11 @@ public interface IInscripcionService {
      * @return Lista de inscripciones activas de los cursos del profesor
      */
     List<InscripcionResponseDTO> listarActivasPorProfesor(Long profesorId);
+
+    /**
+     * Generar reporte detallado de inscripciones por curso
+     * @param cursoId ID del curso
+     * @return DTO con información completa del curso y sus inscripciones
+     */
+    InscripcionesPorCursoReporteDTO generarReporteInscripcionesPorCurso(Long cursoId);
 }

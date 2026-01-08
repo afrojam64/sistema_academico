@@ -2,22 +2,17 @@ package com.sistema.academico.aplicacion.servicio.implementacion;
 
 import com.sistema.academico.aplicacion.dto.request.InscripcionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.InscripcionesPorCursoReporteDTO;
 import com.sistema.academico.aplicacion.mapper.InscripcionMapper;
 import com.sistema.academico.aplicacion.servicio.IInscripcionService;
-import com.sistema.academico.dominio.entidad.Curso;
-import com.sistema.academico.dominio.entidad.Estudiante;
-import com.sistema.academico.dominio.entidad.Inscripcion;
-import com.sistema.academico.dominio.entidad.Profesor;
+import com.sistema.academico.dominio.entidad.*;
 import com.sistema.academico.dominio.enumeracion.EstadoInscripcion;
 import com.sistema.academico.dominio.enumeracion.Rol;
 import com.sistema.academico.infraestructura.excepcion.RecursoDuplicadoException;
 import com.sistema.academico.infraestructura.excepcion.OperacionNoPermitidaException;
 import com.sistema.academico.infraestructura.excepcion.RecursoNoEncontradoException;
 import com.sistema.academico.infraestructura.excepcion.ValidacionNegocioException;
-import com.sistema.academico.infraestructura.repositorio.CursoRepository;
-import com.sistema.academico.infraestructura.repositorio.EstudianteRepository;
-import com.sistema.academico.infraestructura.repositorio.InscripcionRepository;
-import com.sistema.academico.infraestructura.repositorio.ProfesorRepository;
+import com.sistema.academico.infraestructura.repositorio.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -37,6 +32,7 @@ public class InscripcionServiceImpl implements IInscripcionService {
     private final CursoRepository cursoRepository;
     private final InscripcionMapper inscripcionMapper;
     private final ProfesorRepository profesorRepository;
+    private final CalificacionRepository calificacionRepository;
 
     @Override
     @Transactional
@@ -216,5 +212,122 @@ public class InscripcionServiceImpl implements IInscripcionService {
         return inscripciones.stream()
                 .map(inscripcionMapper::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Generar reporte detallado de inscripciones por curso
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public InscripcionesPorCursoReporteDTO generarReporteInscripcionesPorCurso(Long cursoId) {
+
+        // Obtener el curso
+        Curso curso = cursoRepository.findById(cursoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Curso no encontrado con ID: " + cursoId));
+
+        // Obtener todas las inscripciones del curso
+        List<Inscripcion> inscripciones = inscripcionRepository.findByCurso(curso);
+
+        // Contadores por estado
+        int inscripcionesActivas = 0;
+        int inscripcionesRetiradas = 0;
+        int inscripcionesCompletadas = 0;
+
+        // Lista de estudiantes inscritos
+        List<InscripcionesPorCursoReporteDTO.EstudianteInscrito> estudiantesData = new ArrayList<>();
+
+        for (Inscripcion inscripcion : inscripciones) {
+            // Contar por estado
+            switch (inscripcion.getEstado()) {
+                case ACTIVO -> inscripcionesActivas++;
+                case RETIRADO -> inscripcionesRetiradas++;
+                case COMPLETADO -> inscripcionesCompletadas++;
+            }
+
+            Estudiante estudiante = inscripcion.getEstudiante();
+
+            // Obtener calificaciones del estudiante en este curso
+            List<Calificacion> calificaciones = calificacionRepository.findByInscripcion(inscripcion);
+
+            boolean tieneCalificaciones = !calificaciones.isEmpty();
+            int numeroCalificaciones = calificaciones.size();
+            double promedioActual = 0.0;
+            int porcentajeEvaluado = 0;
+
+            if (tieneCalificaciones) {
+                // Calcular promedio simple de las notas
+                double sumaNotas = calificaciones.stream()
+                        .mapToDouble(c -> c.getNota().doubleValue())
+                        .sum();
+                promedioActual = sumaNotas / numeroCalificaciones;
+
+                // Calcular porcentaje evaluado
+                porcentajeEvaluado = calificaciones.stream()
+                        .mapToInt(Calificacion::getPorcentaje)
+                        .sum();
+            }
+
+            InscripcionesPorCursoReporteDTO.EstudianteInscrito estudianteData =
+                    InscripcionesPorCursoReporteDTO.EstudianteInscrito.builder()
+                            .estudianteId(estudiante.getId())
+                            .codigoEstudiante(estudiante.getCodigoEstudiante())
+                            .nombreCompleto(estudiante.getUsuario().getNombre() + " " +
+                                    estudiante.getUsuario().getApellido())
+                            .cedula(estudiante.getUsuario().getCedula())
+                            .email(estudiante.getUsuario().getEmail())
+                            .telefono(estudiante.getUsuario().getTelefono())
+                            .inscripcionId(inscripcion.getId())
+                            .fechaInscripcion(inscripcion.getFechaInscripcion().format(
+                                    java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                            .estadoInscripcion(inscripcion.getEstado().name())
+                            .fechaActualizacion(inscripcion.getFechaActualizacion() != null ?
+                                    inscripcion.getFechaActualizacion().format(
+                                            java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "")
+                            .tieneCalificaciones(tieneCalificaciones)
+                            .numeroCalificaciones(numeroCalificaciones)
+                            .promedioActual(Math.round(promedioActual * 100.0) / 100.0)
+                            .porcentajeEvaluado(porcentajeEvaluado)
+                            .build();
+
+            estudiantesData.add(estudianteData);
+        }
+
+        // Ordenar estudiantes por nombre
+        estudiantesData.sort((e1, e2) -> e1.getNombreCompleto().compareTo(e2.getNombreCompleto()));
+
+        // Calcular estadísticas
+        int totalInscripciones = inscripciones.size();
+        int cupoMaximo = curso.getCupoMaximo();
+        int cuposDisponibles = cupoMaximo - inscripcionesActivas;
+        double porcentajeOcupacion = cupoMaximo > 0 ?
+                (inscripcionesActivas * 100.0) / cupoMaximo : 0.0;
+
+        // Construir DTO final
+        return InscripcionesPorCursoReporteDTO.builder()
+                .cursoId(curso.getId())
+                .codigoCurso(curso.getCodigo())
+                .nombreCurso(curso.getNombre())
+                .nombreMateria(curso.getMateria().getNombre())
+                .codigoMateria(curso.getMateria().getCodigo())
+                .creditos(curso.getMateria().getCreditos())
+                .periodo(curso.getPeriodo())
+                .fechaInicio(curso.getFechaInicio().format(
+                        java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .fechaFin(curso.getFechaFin().format(
+                        java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .nombreProfesor(curso.getProfesor().getUsuario().getNombre() + " " +
+                        curso.getProfesor().getUsuario().getApellido())
+                .emailProfesor(curso.getProfesor().getUsuario().getEmail())
+                .nombreDepartamento(curso.getMateria().getDepartamento().getNombre())
+                .cupoMaximo(cupoMaximo)
+                .totalInscripciones(totalInscripciones)
+                .inscripcionesActivas(inscripcionesActivas)
+                .inscripcionesRetiradas(inscripcionesRetiradas)
+                .inscripcionesCompletadas(inscripcionesCompletadas)
+                .cuposDisponibles(cuposDisponibles)
+                .porcentajeOcupacion(Math.round(porcentajeOcupacion * 100.0) / 100.0)
+                .estudiantes(estudiantesData)
+                .build();
     }
 }

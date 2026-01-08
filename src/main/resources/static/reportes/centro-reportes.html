@@ -264,17 +264,17 @@
         <div class="row g-4">
 
             <div class="col-md-4">
-                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="report-card" onclick="abrirReporteInscripcionesPorCurso()">
                     <div class="report-icon icon-inscripciones">
-                        <i class="fas fa-users"></i>
+                        <i class="fas fa-clipboard-list"></i>
                     </div>
                     <div class="report-title">Inscripciones por Curso</div>
                     <div class="report-description">
-                        Lista detallada de estudiantes inscritos en cada curso
+                        Lista de estudiantes inscritos con estado y calificaciones
                     </div>
-                    <span class="report-badge badge-proximamente">
-                        <i class="fas fa-clock"></i> Próximamente
-                    </span>
+                    <span class="report-badge badge-disponible">
+            <i class="fas fa-check"></i> Disponible
+        </span>
                 </div>
             </div>
 
@@ -627,6 +627,9 @@
         window.location.href = '/reportes/cursos-por-profesor.html';
     }
 
+    function abrirReporteInscripcionesPorCurso() {
+        window.location.href = '/reportes/inscripciones-por-curso.html';
+    }
 </script>
 </body>
 </html>

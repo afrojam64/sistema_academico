@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscripciones por Curso - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+
+        .reporte-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 30px auto;
+            max-width: 1600px;
+        }
+
+        .header-reporte {
+            text-align: center;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .busqueda-inicial {
+            background: #ecfdf5;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #10b981;
+            text-align: center;
+        }
+
+        .busqueda-inicial i {
+            font-size: 4rem;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+
+        .curso-info-section {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #10b981;
+        }
+
+        .curso-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #065f46;
+            margin-bottom: 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #10b981;
+        }
+
+        .info-item i {
+            color: #10b981;
+            margin-right: 8px;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f59e0b, #fb923c);
+        }
+
+        .stat-card.danger {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+        }
+
+        .tabla-estudiantes {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .tabla-estudiantes th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .tabla-estudiantes td {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: middle;
+        }
+
+        .tabla-estudiantes tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge-estado {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-activo {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-retirado {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-completado {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .progreso-mini {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progreso-mini-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+
+        .filtros-section {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        #resultadosReporte {
+            display: none;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .reporte-container {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark no-print">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-clipboard-list"></i> Inscripciones por Curso
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Usuario</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="reporte-container">
+
+        <!-- Búsqueda Inicial -->
+        <div id="busquedaInicial">
+            <div class="header-reporte">
+                <h1><i class="fas fa-clipboard-list"></i> Reporte de Inscripciones por Curso</h1>
+                <p class="text-muted mb-0">Lista detallada de estudiantes inscritos en un curso</p>
+            </div>
+
+            <div class="busqueda-inicial">
+                <i class="fas fa-search"></i>
+                <h4 class="mb-3">Buscar Curso</h4>
+                <p class="text-muted mb-4">Ingresa el código o nombre del curso para ver sus inscripciones</p>
+                <button class="btn btn-success btn-lg" onclick="buscarCurso()">
+                    <i class="fas fa-search"></i> Buscar Curso
+                </button>
+            </div>
+        </div>
+
+        <!-- Resultados del Reporte -->
+        <div id="resultadosReporte">
+
+            <!-- Botón Volver -->
+            <div class="text-end mb-3 no-print">
+                <button class="btn btn-secondary" onclick="volverBusqueda()">
+                    <i class="fas fa-search"></i> Buscar Otro Curso
+                </button>
+            </div>
+
+            <!-- Información del Curso -->
+            <div class="curso-info-section">
+                <div class="curso-title">
+                    <i class="fas fa-book"></i> <span id="nombreMateria"></span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <i class="fas fa-code"></i>
+                        <strong>Código Curso:</strong> <span id="codigoCurso"></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <strong>Profesor:</strong> <span id="nombreProfesor"></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-building"></i>
+                        <strong>Departamento:</strong> <span id="nombreDepartamento"></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar"></i>
+                        <strong>Periodo:</strong> <span id="periodo"></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-star"></i>
+                        <strong>Créditos:</strong> <span id="creditos"></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <strong>Duración:</strong> <span id="duracion"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <h3 id="totalInscripciones">0</h3>
+                    <p>Total Inscripciones</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="inscripcionesActivas">0</h3>
+                    <p>Activas</p>
+                </div>
+                <div class="stat-card warning">
+                    <h3 id="inscripcionesRetiradas">0</h3>
+                    <p>Retiradas</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="inscripcionesCompletadas">0</h3>
+                    <p>Completadas</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="porcentajeOcupacion">0%</h3>
+                    <p>Ocupación</p>
+                </div>
+                <div class="stat-card" id="cuposCard">
+                    <h3 id="cuposDisponibles">0</h3>
+                    <p>Cupos Disponibles</p>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filtros-section no-print">
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="buscarEstudiante"
+                               placeholder="🔍 Buscar estudiante por nombre, código o cédula..."
+                               onkeyup="buscarEnTabla()">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filtroEstado" onchange="aplicarFiltros()">
+                            <option value="TODOS">Todos los estados</option>
+                            <option value="ACTIVO">Activos</option>
+                            <option value="RETIRADO">Retirados</option>
+                            <option value="COMPLETADO">Completados</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filtroCalificaciones" onchange="aplicarFiltros()">
+                            <option value="TODOS">Todos</option>
+                            <option value="CON_CALIF">Con calificaciones</option>
+                            <option value="SIN_CALIF">Sin calificaciones</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Estudiantes -->
+            <div class="table-responsive">
+                <table class="tabla-estudiantes">
+                    <thead>
+                    <tr>
+                        <th style="width: 10%">Código</th>
+                        <th style="width: 20%">Estudiante</th>
+                        <th style="width: 12%">Cédula</th>
+                        <th style="width: 15%">Email</th>
+                        <th style="width: 10%">F. Inscripción</th>
+                        <th style="width: 10%">Estado</th>
+                        <th style="width: 12%">Calificaciones</th>
+                        <th style="width: 11%">Promedio</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tablaEstudiantes">
+                    <!-- Se llenará dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="text-center mt-4 no-print">
+                <button class="btn btn-primary btn-lg me-2" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimir / Guardar PDF
+                </button>
+                <button class="btn btn-success btn-lg" onclick="exportarExcel()">
+                    <i class="fas fa-file-excel"></i> Exportar a Excel
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) window.location.href = '/login';
+    document.getElementById('userName').textContent = userName || 'Usuario';
+
+    let estudiantesData = [];
+
+    async function buscarCurso() {
+        const { value: termino } = await Swal.fire({
+            title: 'Buscar Curso',
+            input: 'text',
+            inputLabel: 'Código o nombre del curso',
+            inputPlaceholder: 'Ej: MAT-101 o Cálculo',
+            showCancelButton: true,
+            confirmButtonText: 'Buscar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#10b981',
+            inputValidator: (value) => {
+                if (!value || value.length < 3) {
+                    return 'Ingresa al menos 3 caracteres';
+                }
+            }
+        });
+
+        if (termino) {
+            Swal.fire({
+                title: 'Buscando...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
+                const response = await axios.get(
+                    `http://localhost:8080/api/cursos/buscar?termino=${encodeURIComponent(termino)}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                const cursos = response.data;
+
+                if (cursos.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Sin resultados',
+                        text: 'No se encontraron cursos',
+                        confirmButtonColor: '#10b981'
+                    });
+                    return;
+                }
+
+                if (cursos.length === 1) {
+                    Swal.close();
+                    cargarReporte(cursos[0].id);
+                    return;
+                }
+
+                const opciones = {};
+                cursos.forEach(curso => {
+                    opciones[curso.id] = `${curso.materia} - ${curso.codigo} (${curso.periodo})`;
+                });
+
+                const { value: cursoId } = await Swal.fire({
+                    title: 'Selecciona el curso',
+                    input: 'select',
+                    inputOptions: opciones,
+                    inputPlaceholder: 'Selecciona',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ver Reporte',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#10b981',
+                    inputValidator: (value) => {
+                        if (!value) return 'Debes seleccionar un curso';
+                    }
+                });
+
+                if (cursoId) {
+                    cargarReporte(cursoId);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo realizar la búsqueda',
+                    confirmButtonColor: '#10b981'
+                });
+            }
+        }
+    }
+
+    async function cargarReporte(cursoId) {
+        Swal.fire({
+            title: 'Cargando inscripciones...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/api/inscripciones/reporte/curso/${cursoId}`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            Swal.close();
+            estudiantesData = response.data.estudiantes;
+            mostrarResultados(response.data);
+
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo cargar el reporte',
+                confirmButtonColor: '#10b981'
+            });
+        }
+    }
+
+    function mostrarResultados(reporte) {
+        document.getElementById('busquedaInicial').style.display = 'none';
+        document.getElementById('resultadosReporte').style.display = 'block';
+
+        // Información del curso
+        document.getElementById('nombreMateria').textContent = reporte.nombreMateria;
+        document.getElementById('codigoCurso').textContent = reporte.codigoCurso;
+        document.getElementById('nombreProfesor').textContent = reporte.nombreProfesor;
+        document.getElementById('nombreDepartamento').textContent = reporte.nombreDepartamento;
+        document.getElementById('periodo').textContent = reporte.periodo;
+        document.getElementById('creditos').textContent = reporte.creditos;
+        document.getElementById('duracion').textContent =
+            `${reporte.fechaInicio} - ${reporte.fechaFin}`;
+
+        // Estadísticas
+        document.getElementById('totalInscripciones').textContent = reporte.totalInscripciones;
+        document.getElementById('inscripcionesActivas').textContent = reporte.inscripcionesActivas;
+        document.getElementById('inscripcionesRetiradas').textContent = reporte.inscripcionesRetiradas;
+        document.getElementById('inscripcionesCompletadas').textContent = reporte.inscripcionesCompletadas;
+        document.getElementById('porcentajeOcupacion').textContent =
+            reporte.porcentajeOcupacion.toFixed(1) + '%';
+        document.getElementById('cuposDisponibles').textContent = reporte.cuposDisponibles;
+
+        // Color del card de cupos
+        const cuposCard = document.getElementById('cuposCard');
+        if (reporte.cuposDisponibles === 0) {
+            cuposCard.className = 'stat-card danger';
+        } else if (reporte.cuposDisponibles < 5) {
+            cuposCard.className = 'stat-card warning';
+        } else {
+            cuposCard.className = 'stat-card';
+        }
+
+        // Mostrar estudiantes
+        mostrarEstudiantes(estudiantesData);
+    }
+
+    function mostrarEstudiantes(estudiantes) {
+        const tbody = document.getElementById('tablaEstudiantes');
+
+        if (estudiantes.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <i class="fas fa-info-circle"></i> No hay estudiantes inscritos
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        let html = '';
+        estudiantes.forEach(est => {
+            const badgeClass = est.estadoInscripcion === 'ACTIVO' ? 'badge-activo' :
+                est.estadoInscripcion === 'RETIRADO' ? 'badge-retirado' : 'badge-completado';
+
+            html += `
+                <tr data-estado="${est.estadoInscripcion}"
+                    data-calif="${est.tieneCalificaciones ? 'CON_CALIF' : 'SIN_CALIF'}"
+                    data-searchable="${est.nombreCompleto} ${est.codigoEstudiante} ${est.cedula}">
+                    <td><strong>${est.codigoEstudiante}</strong></td>
+                    <td>${est.nombreCompleto}</td>
+                    <td>${est.cedula}</td>
+                    <td><small>${est.email}</small></td>
+                    <td>${est.fechaInscripcion}</td>
+                    <td><span class="badge-estado ${badgeClass}">${est.estadoInscripcion}</span></td>
+                    <td>
+                        ${est.tieneCalificaciones ?
+                `<div>
+                                <small>${est.numeroCalificaciones} evaluaciones</small>
+                                <div class="progreso-mini">
+                                    <div class="progreso-mini-fill" style="width: ${est.porcentajeEvaluado}%"></div>
+                                </div>
+                                <small class="text-muted">${est.porcentajeEvaluado}% evaluado</small>
+                            </div>` :
+                '<small class="text-muted">Sin calificaciones</small>'}
+                    </td>
+                    <td>
+                        ${est.tieneCalificaciones ?
+                `<strong class="${est.promedioActual >= 3.0 ? 'text-success' : 'text-danger'}">${est.promedioActual}</strong>` :
+                '-'}
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    function buscarEnTabla() {
+        aplicarFiltros();
+    }
+
+    function aplicarFiltros() {
+        const textoBusqueda = document.getElementById('buscarEstudiante').value.toLowerCase();
+        const filtroEstado = document.getElementById('filtroEstado').value;
+        const filtroCalif = document.getElementById('filtroCalificaciones').value;
+
+        let estudiantesFiltrados = estudiantesData;
+
+        // Filtrar por estado
+        if (filtroEstado !== 'TODOS') {
+            estudiantesFiltrados = estudiantesFiltrados.filter(e =>
+                e.estadoInscripcion === filtroEstado);
+        }
+
+        // Filtrar por calificaciones
+        if (filtroCalif === 'CON_CALIF') {
+            estudiantesFiltrados = estudiantesFiltrados.filter(e => e.tieneCalificaciones);
+        } else if (filtroCalif === 'SIN_CALIF') {
+            estudiantesFiltrados = estudiantesFiltrados.filter(e => !e.tieneCalificaciones);
+        }
+
+        // Filtrar por texto
+        if (textoBusqueda) {
+            estudiantesFiltrados = estudiantesFiltrados.filter(e => {
+                const searchText = `${e.nombreCompleto} ${e.codigoEstudiante} ${e.cedula}`.toLowerCase();
+                return searchText.includes(textoBusqueda);
+            });
+        }
+
+        mostrarEstudiantes(estudiantesFiltrados);
+    }
+
+    function volverBusqueda() {
+        document.getElementById('resultadosReporte').style.display = 'none';
+        document.getElementById('busquedaInicial').style.display = 'block';
+        document.getElementById('buscarEstudiante').value = '';
+        document.getElementById('filtroEstado').value = 'TODOS';
+        document.getElementById('filtroCalificaciones').value = 'TODOS';
+    }
+
+    function exportarExcel() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Exportar a Excel',
+            text: 'Función en desarrollo',
+            confirmButtonColor: '#10b981'
+        });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>

@@ -2,6 +2,7 @@ package com.sistema.academico.infraestructura.controlador;
 
 import com.sistema.academico.aplicacion.dto.request.InscripcionRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.InscripcionesPorCursoReporteDTO;
 import com.sistema.academico.aplicacion.servicio.IInscripcionService;
 import com.sistema.academico.dominio.enumeracion.Rol;
 import jakarta.validation.Valid;
@@ -135,5 +136,19 @@ public class InscripcionController {
 
         List<InscripcionResponseDTO> inscripciones = inscripcionService.listarActivasPorProfesor(profesorId);
         return ResponseEntity.ok(inscripciones);
+    }
+
+    /**
+     * Generar reporte de inscripciones por curso
+     * Ruta: GET /api/inscripciones/reporte/curso/{cursoId}
+     */
+    @GetMapping("/reporte/curso/{cursoId}")
+    public ResponseEntity<InscripcionesPorCursoReporteDTO> generarReporteInscripcionesPorCurso(
+            @PathVariable Long cursoId) {
+
+        InscripcionesPorCursoReporteDTO reporte =
+                inscripcionService.generarReporteInscripcionesPorCurso(cursoId);
+
+        return ResponseEntity.ok(reporte);
     }
 }
