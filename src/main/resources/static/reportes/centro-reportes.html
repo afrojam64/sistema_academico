@@ -294,7 +294,7 @@
             </div>
 
             <div class="col-md-4">
-                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="report-card" onclick="abrirReporteEstudiantesSinInscripciones()">
                     <div class="report-icon icon-inscripciones">
                         <i class="fas fa-user-times"></i>
                     </div>
@@ -302,8 +302,8 @@
                     <div class="report-description">
                         Estudiantes activos que no están inscritos en ningún curso
                     </div>
-                    <span class="report-badge badge-proximamente">
-                        <i class="fas fa-clock"></i> Próximamente
+                    <span class="report-badge badge-disponible">
+                        <i class="fas fa-clock"></i> Disponible
                     </span>
                 </div>
             </div>
@@ -633,6 +633,10 @@
 
     function abrirReporteInscripcionesPorPeriodo() {
         window.location.href = 'inscripciones-por-periodo.html';
+    }
+
+    function abrirReporteEstudiantesSinInscripciones() {
+        window.location.href = 'estudiantes-sin-inscripciones.html';
     }
 </script>
 </body>

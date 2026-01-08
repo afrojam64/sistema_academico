@@ -2,6 +2,7 @@ package com.sistema.academico.aplicacion.servicio;
 
 import com.sistema.academico.aplicacion.dto.request.EstudianteRequestDTO;
 import com.sistema.academico.aplicacion.dto.response.EstudianteResponseDTO;
+import com.sistema.academico.aplicacion.dto.response.EstudiantesSinInscripcionesReporteDTO;
 import com.sistema.academico.dominio.enumeracion.Rol;
 
 import java.util.List;
@@ -33,4 +34,10 @@ public interface IEstudianteService {
      * @return Lista de estudiantes que coinciden con el término
      */
     List<EstudianteResponseDTO> buscarPorTermino(String termino);
+
+    /**
+     * Genera un reporte de estudiantes activos sin inscripciones activas
+     * @return DTO con estadísticas y lista detallada de estudiantes sin inscripciones
+     */
+    EstudiantesSinInscripcionesReporteDTO generarReporteEstudiantesSinInscripciones();
 }

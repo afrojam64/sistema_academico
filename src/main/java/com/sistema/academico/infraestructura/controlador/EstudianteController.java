@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.sistema.academico.aplicacion.dto.response.EstudiantesSinInscripcionesReporteDTO;
 
 import java.util.List;
 
@@ -98,5 +99,18 @@ public class EstudianteController {
 
         List<EstudianteResponseDTO> estudiantes = estudianteService.buscarPorTermino(termino);
         return ResponseEntity.ok(estudiantes);
+    }
+
+    /**
+     * Generar reporte de estudiantes activos sin inscripciones activas
+     * Ruta: GET /api/estudiantes/reporte/sin-inscripciones
+     */
+    @GetMapping("/reporte/sin-inscripciones")
+    public ResponseEntity<EstudiantesSinInscripcionesReporteDTO> generarReporteEstudiantesSinInscripciones() {
+
+        EstudiantesSinInscripcionesReporteDTO reporte =
+                estudianteService.generarReporteEstudiantesSinInscripciones();
+
+        return ResponseEntity.ok(reporte);
     }
 }

@@ -18,6 +18,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sistema.academico.aplicacion.dto.response.EstudiantesSinInscripcionesReporteDTO;
+import com.sistema.academico.aplicacion.dto.response.EstudiantesSinInscripcionesReporteDTO.EstadisticasGenerales;
+import com.sistema.academico.aplicacion.dto.response.EstudiantesSinInscripcionesReporteDTO.CarreraDistribucion;
+import com.sistema.academico.aplicacion.dto.response.EstudiantesSinInscripcionesReporteDTO.SemestreDistribucion;
+import com.sistema.academico.aplicacion.dto.response.EstudiantesSinInscripcionesReporteDTO.EstudianteSinInscripcion;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.Map;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -240,5 +250,110 @@ public class EstudianteServiceImpl implements IEstudianteService {
         return resultados.stream()
                 .map(estudianteMapper::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EstudiantesSinInscripcionesReporteDTO generarReporteEstudiantesSinInscripciones() {
+
+        // 1. Obtener todos los estudiantes activos
+        List<Estudiante> todosEstudiantesActivos = estudianteRepository.findByEstado(Estado.ACTIVO);
+
+        // 2. Obtener estudiantes sin inscripciones activas
+        List<Estudiante> estudiantesSinInscripciones =
+                estudianteRepository.findEstudiantesActivosSinInscripcionesActivas();
+
+        // 3. Calcular estadísticas
+        EstadisticasGenerales estadisticas = calcularEstadisticasSinInscripciones(
+                todosEstudiantesActivos, estudiantesSinInscripciones);
+
+        // 4. Construir lista de estudiantes sin inscripciones
+        List<EstudianteSinInscripcion> detalles = estudiantesSinInscripciones.stream()
+                .map(this::construirEstudianteSinInscripcion)
+                .sorted(Comparator.comparing(EstudianteSinInscripcion::getFechaIngreso).reversed())
+                .collect(Collectors.toList());
+
+        // 5. Construir y retornar el reporte
+        return EstudiantesSinInscripcionesReporteDTO.builder()
+                .estadisticas(estadisticas)
+                .estudiantes(detalles)
+                .build();
+    }
+
+    private EstadisticasGenerales calcularEstadisticasSinInscripciones(
+            List<Estudiante> todosActivos, List<Estudiante> sinInscripciones) {
+
+        int totalEstudiantes = todosActivos.size();
+        int estudiantesSinInscripciones = sinInscripciones.size();
+
+        double porcentajeSinInscripciones = totalEstudiantes > 0
+                ? (estudiantesSinInscripciones * 100.0 / totalEstudiantes)
+                : 0.0;
+
+        // Distribución por carrera
+        Map<String, Long> porCarrera = sinInscripciones.stream()
+                .filter(e -> e.getCarrera() != null && !e.getCarrera().isEmpty())
+                .collect(Collectors.groupingBy(Estudiante::getCarrera, Collectors.counting()));
+
+        List<CarreraDistribucion> distribucionCarreras = porCarrera.entrySet().stream()
+                .map(entry -> CarreraDistribucion.builder()
+                        .carrera(entry.getKey())
+                        .totalEstudiantes(entry.getValue().intValue())
+                        .build())
+                .sorted(Comparator.comparing(CarreraDistribucion::getTotalEstudiantes).reversed())
+                .collect(Collectors.toList());
+
+        // Distribución por semestre
+        Map<Integer, Long> porSemestre = sinInscripciones.stream()
+                .filter(e -> e.getSemestre() != null)
+                .collect(Collectors.groupingBy(Estudiante::getSemestre, Collectors.counting()));
+
+        List<SemestreDistribucion> distribucionSemestres = porSemestre.entrySet().stream()
+                .map(entry -> SemestreDistribucion.builder()
+                        .semestre(entry.getKey())
+                        .totalEstudiantes(entry.getValue().intValue())
+                        .build())
+                .sorted(Comparator.comparing(SemestreDistribucion::getSemestre))
+                .collect(Collectors.toList());
+
+        return EstadisticasGenerales.builder()
+                .totalEstudiantes(totalEstudiantes)
+                .estudiantesActivos(todosActivos.size())
+                .estudiantesSinInscripciones(estudiantesSinInscripciones)
+                .porcentajeSinInscripciones(Math.round(porcentajeSinInscripciones * 100.0) / 100.0)
+                .distribucionCarreras(distribucionCarreras)
+                .distribucionSemestres(distribucionSemestres)
+                .build();
+    }
+
+    private EstudianteSinInscripcion construirEstudianteSinInscripcion(Estudiante estudiante) {
+        Usuario usuario = estudiante.getUsuario();
+
+        // Calcular días desde el ingreso
+        long diasDesdeIngreso = 0;
+        boolean esNuevoIngreso = false;
+
+        if (estudiante.getFechaIngreso() != null) {
+            diasDesdeIngreso = ChronoUnit.DAYS.between(estudiante.getFechaIngreso(), LocalDate.now());
+            esNuevoIngreso = diasDesdeIngreso <= 30;
+        }
+
+        return EstudianteSinInscripcion.builder()
+                .estudianteId(estudiante.getId())
+                .codigoEstudiante(estudiante.getCodigoEstudiante())
+                .nombreCompleto(usuario.getNombre() + " " + usuario.getApellido())
+                .cedula(usuario.getCedula())
+                .email(usuario.getEmail())
+                .telefono(usuario.getTelefono())
+                .carrera(estudiante.getCarrera())
+                .semestre(estudiante.getSemestre())
+                .fechaIngreso(estudiante.getFechaIngreso() != null
+                        ? estudiante.getFechaIngreso().toString()
+                        : "")
+                .nombreUsuario(usuario.getNombreUsuario())
+                .estadoUsuario(usuario.getEstado().name())
+                .diasDesdeIngreso((int) diasDesdeIngreso)
+                .esNuevoIngreso(esNuevoIngreso)
+                .build();
     }
 }
