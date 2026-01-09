@@ -51,4 +51,7 @@ public interface ProfesorRepository extends JpaRepository<Profesor, Long> {
      */
     @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Profesor p WHERE p.usuario.email = :email")
     boolean existsByUsuarioEmail(@Param("email") String email);
+
+    // Contar profesores por estado
+    Long countByEstado(Estado estado);
 }

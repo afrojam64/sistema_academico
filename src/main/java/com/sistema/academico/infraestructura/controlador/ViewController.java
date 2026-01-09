@@ -363,4 +363,13 @@ public class ViewController {
     public String verInscripcion(@PathVariable Long id) {
         return "inscripciones/ver";
     }
+
+    /**
+     * Dashboard Ejecutivo
+     * Ruta: http://localhost:8080/reportes/dashboard-ejecutivo
+     */
+    @GetMapping("/reportes/dashboard-ejecutivo")
+    public String dashboardEjecutivo() {
+        return "reportes/dashboard-ejecutivo";
+    }
 }

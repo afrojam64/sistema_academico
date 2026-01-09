@@ -38,4 +38,51 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Long> 
     // Contar inscripciones activas de un curso
     @Query("SELECT COUNT(i) FROM Inscripcion i WHERE i.curso = :curso AND i.estado = 'ACTIVO'")
     Long countInscripcionesActivasByCurso(@Param("curso") Curso curso);
+
+    /**
+     * Queries adicionales para Dashboard Ejecutivo
+     * Agregar estas queries al final del archivo InscripcionRepository.java
+     */
+
+// Contar inscripciones activas por periodo
+    @Query("SELECT COUNT(i) FROM Inscripcion i " +
+            "WHERE i.estado = 'ACTIVO' AND i.curso.periodo = :periodo")
+    Long countInscripcionesActivasPorPeriodo(@Param("periodo") String periodo);
+
+    // Contar estudiantes únicos inscritos en un periodo
+    @Query("SELECT COUNT(DISTINCT i.estudiante.id) FROM Inscripcion i " +
+            "WHERE i.estado = 'ACTIVO' AND i.curso.periodo = :periodo")
+    Long countEstudiantesUnicosPorPeriodo(@Param("periodo") String periodo);
+
+    // Contar inscripciones por departamento
+    @Query("SELECT d.nombre, COUNT(i) FROM Inscripcion i " +
+            "JOIN i.curso c " +
+            "JOIN c.materia m " +
+            "JOIN m.departamento d " +
+            "WHERE i.estado = 'ACTIVO' " +
+            "GROUP BY d.nombre " +
+            "ORDER BY COUNT(i) DESC")
+    List<Object[]> countInscripcionesPorDepartamento();
+
+    // Contar estudiantes únicos por departamento
+    @Query("SELECT d.nombre, COUNT(DISTINCT i.estudiante.id) FROM Inscripcion i " +
+            "JOIN i.curso c " +
+            "JOIN c.materia m " +
+            "JOIN m.departamento d " +
+            "WHERE i.estado = 'ACTIVO' " +
+            "GROUP BY d.nombre " +
+            "ORDER BY COUNT(DISTINCT i.estudiante.id) DESC")
+    List<Object[]> countEstudiantesUnicosPorDepartamento();
+
+    // Contar cursos activos por departamento
+    @Query("SELECT d.nombre, COUNT(DISTINCT c.id) FROM Curso c " +
+            "JOIN c.materia m " +
+            "JOIN m.departamento d " +
+            "WHERE c.estado = 'ACTIVO' " +
+            "GROUP BY d.nombre " +
+            "ORDER BY COUNT(DISTINCT c.id) DESC")
+    List<Object[]> countCursosActivosPorDepartamento();
+
+    // Contar inscripciones por estado
+    Long countByEstado(EstadoInscripcion estado);
 }

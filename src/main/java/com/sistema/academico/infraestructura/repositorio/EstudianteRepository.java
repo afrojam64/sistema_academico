@@ -62,4 +62,7 @@ public interface EstudianteRepository extends JpaRepository<Estudiante, Long> {
             "WHERE e.estado = 'ACTIVO' AND i.id IS NULL",
             nativeQuery = true)
     Long countEstudiantesActivosSinInscripcionesActivas();
+
+    // Contar estudiantes por estado
+    Long countByEstado(Estado estado);
 }

@@ -46,4 +46,7 @@ public interface MateriaRepository extends JpaRepository<Materia, Long> {
      * Buscar materias activas por ID de departamento
      */
     List<Materia> findByDepartamentoIdAndEstado(Long departamentoId, Estado estado);
+
+    // Contar materias por estado
+    Long countByEstado(Estado estado);
 }

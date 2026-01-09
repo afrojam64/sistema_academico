@@ -317,7 +317,7 @@
         <div class="row g-4">
 
             <div class="col-md-4">
-                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="report-card" onclick="abrirDashboardEjecutivo()">
                     <div class="report-icon icon-estadisticas">
                         <i class="fas fa-tachometer-alt"></i>
                     </div>
@@ -325,9 +325,9 @@
                     <div class="report-description">
                         Resumen general del sistema con indicadores clave
                     </div>
-                    <span class="report-badge badge-proximamente">
-                        <i class="fas fa-clock"></i> Próximamente
-                    </span>
+                    <span class="report-badge badge-disponible">
+            <i class="fas fa-check"></i> Disponible
+        </span>
                 </div>
             </div>
 
@@ -637,6 +637,10 @@
 
     function abrirReporteEstudiantesSinInscripciones() {
         window.location.href = 'estudiantes-sin-inscripciones.html';
+    }
+
+    function abrirDashboardEjecutivo() {
+        window.location.href = 'dashboard-ejecutivo.html';
     }
 </script>
 </body>

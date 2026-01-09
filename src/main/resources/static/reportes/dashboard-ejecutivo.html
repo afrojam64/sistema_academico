@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Ejecutivo - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+
+        .reporte-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 30px auto;
+            max-width: 1400px;
+        }
+
+        .header-reporte {
+            text-align: center;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #1e3a8a;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .section-title i {
+            color: #3b82f6;
+            margin-right: 10px;
+        }
+
+        /* Estadísticas Cards */
+        .estadisticas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .stat-card.verde {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+
+        .stat-card.naranja {
+            background: linear-gradient(135deg, #f59e0b, #fb923c);
+        }
+
+        .stat-card.morado {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+        }
+
+        .stat-card.rojo {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+        }
+
+        .stat-card.cyan {
+            background: linear-gradient(135deg, #06b6d4, #22d3ee);
+        }
+
+        /* Ocupación Cards */
+        .ocupacion-container {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .ocupacion-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .ocupacion-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .ocupacion-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .badge-completo { background: #dcfce7; color: #166534; }
+        .badge-alta { background: #dbeafe; color: #1e40af; }
+        .badge-media { background: #fed7aa; color: #9a3412; }
+        .badge-baja { background: #fee2e2; color: #991b1b; }
+
+        /* Departamentos */
+        .departamento-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .departamento-item:hover {
+            background: #f3f4f6;
+            transform: translateX(5px);
+        }
+
+        .departamento-rank {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .departamento-info {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .departamento-nombre {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .departamento-stats {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .departamento-valor {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        /* Alertas */
+        .alert-card {
+            background: white;
+            border-left: 4px solid;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-card.warning { border-color: #f59e0b; }
+        .alert-card.danger { border-color: #ef4444; }
+
+        .alert-icon {
+            font-size: 2rem;
+            margin-right: 20px;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 5px 0;
+        }
+
+        .alert-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* Tabla de métricas adicionales */
+        .metrics-table {
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .metrics-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .metrics-table td:first-child {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .metrics-table td:last-child {
+            text-align: right;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .reporte-container {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .estadisticas {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark no-print">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.location.href='centro-reportes.html'">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-line"></i> Dashboard Ejecutivo
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Usuario</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="reporte-container">
+        <!-- Header -->
+        <div class="header-reporte">
+            <h1><i class="fas fa-tachometer-alt"></i> Dashboard Ejecutivo</h1>
+            <p class="text-muted mb-0">Resumen General del Sistema Académico</p>
+            <small class="text-muted">Fecha: <span id="fechaReporte">-</span></small>
+        </div>
+
+        <!-- SECCIÓN 1: RESUMEN GENERAL -->
+        <h4 class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            Resumen General del Sistema
+        </h4>
+        <div class="estadisticas" id="resumenGeneral">
+            <!-- Se llenará dinámicamente -->
+        </div>
+
+        <!-- SECCIÓN 2: PERIODO ACTUAL -->
+        <h4 class="section-title">
+            <i class="fas fa-calendar-alt"></i>
+            Periodo Académico Actual
+        </h4>
+        <div class="estadisticas" id="periodoActual">
+            <!-- Se llenará dinámicamente -->
+        </div>
+
+        <!-- SECCIÓN 3: OCUPACIÓN DE CURSOS -->
+        <h4 class="section-title">
+            <i class="fas fa-users"></i>
+            Ocupación de Cursos
+        </h4>
+        <div class="ocupacion-container" id="ocupacionCursos">
+            <!-- Se llenará dinámicamente -->
+        </div>
+
+        <!-- SECCIÓN 4: TOP 5 DEPARTAMENTOS -->
+        <h4 class="section-title">
+            <i class="fas fa-trophy"></i>
+            Top 5 Departamentos por Inscripciones
+        </h4>
+        <div id="topDepartamentos">
+            <!-- Se llenará dinámicamente -->
+        </div>
+
+        <!-- SECCIÓN 5: ALERTAS DEL SISTEMA -->
+        <h4 class="section-title">
+            <i class="fas fa-exclamation-triangle"></i>
+            Alertas del Sistema
+        </h4>
+        <div id="alertas">
+            <!-- Se llenará dinámicamente -->
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="text-center mt-4 no-print">
+            <button class="btn btn-primary btn-lg me-2" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir / Guardar PDF
+            </button>
+            <button class="btn btn-success btn-lg" onclick="actualizarDatos()">
+                <i class="fas fa-sync-alt"></i> Actualizar Datos
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    document.getElementById('userName').textContent = userName || 'Usuario';
+    document.getElementById('fechaReporte').textContent = new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    // Función para formatear números con separadores de miles
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Cargar dashboard al iniciar
+    cargarDashboard();
+
+    async function cargarDashboard() {
+        try {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Cargando Dashboard...',
+                text: 'Por favor espera',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const response = await axios.get(
+                'http://localhost:8080/api/dashboard/ejecutivo',
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            const data = response.data;
+            console.log('Dashboard data:', data);
+
+            // Cerrar loading
+            Swal.close();
+
+            // Renderizar secciones
+            renderResumenGeneral(data.resumenGeneral);
+            renderPeriodoActual(data.periodoActual);
+            renderOcupacionCursos(data.ocupacionCursos);
+            renderTopDepartamentos(data.topDepartamentos);
+            renderAlertas(data.alertas);
+
+        } catch (error) {
+            console.error('Error cargando dashboard:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.mensaje || 'No se pudo cargar el dashboard',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    }
+
+    // Renderizar Resumen General
+    function renderResumenGeneral(data) {
+        const container = document.getElementById('resumenGeneral');
+
+        const items = [
+            { icon: 'fa-user-graduate', color: '', label: 'Estudiantes Activos', value: data.totalEstudiantes },
+            { icon: 'fa-chalkboard-teacher', color: 'verde', label: 'Profesores Activos', value: data.totalProfesores },
+            { icon: 'fa-book', color: 'morado', label: 'Cursos Activos', value: data.totalCursos },
+            { icon: 'fa-book-open', color: 'naranja', label: 'Materias Activas', value: data.totalMaterias },
+            { icon: 'fa-building', color: 'cyan', label: 'Departamentos', value: data.totalDepartamentos },
+            { icon: 'fa-clipboard-list', color: 'rojo', label: 'Inscripciones Activas', value: data.totalInscripciones }
+        ];
+
+        container.innerHTML = items.map(item => `
+            <div class="stat-card ${item.color}">
+                <h3>${formatNumber(item.value)}</h3>
+                <p><i class="fas ${item.icon}"></i> ${item.label}</p>
+            </div>
+        `).join('');
+    }
+
+    // Renderizar Periodo Actual
+    function renderPeriodoActual(data) {
+        const container = document.getElementById('periodoActual');
+
+        const items = [
+            { icon: 'fa-calendar', color: 'morado', label: 'Periodo Académico', value: data.periodo, isText: true },
+            { icon: 'fa-book', color: '', label: 'Cursos Ofertados', value: data.cursosOfertados },
+            { icon: 'fa-users', color: 'verde', label: 'Estudiantes Inscritos', value: data.estudiantesInscritos },
+            { icon: 'fa-list-check', color: 'naranja', label: 'Inscripciones Totales', value: data.inscripcionesTotales },
+            { icon: 'fa-chair', color: 'cyan', label: 'Cupos Disponibles', value: data.cuposDisponibles },
+            { icon: 'fa-chart-line', color: 'rojo', label: 'Promedio Inscripciones', value: data.promedioInscripcionesPorEstudiante.toFixed(2) }
+        ];
+
+        container.innerHTML = items.map(item => `
+            <div class="stat-card ${item.color}">
+                <h3>${item.isText ? item.value : formatNumber(item.value)}</h3>
+                <p><i class="fas ${item.icon}"></i> ${item.label}</p>
+            </div>
+        `).join('');
+    }
+
+    // Renderizar Ocupación de Cursos
+    function renderOcupacionCursos(data) {
+        const container = document.getElementById('ocupacionCursos');
+
+        const totalCursos = data.cursosCompletos + data.cursosAltaOcupacion +
+            data.cursosMediaOcupacion + data.cursosBajaOcupacion;
+
+        const items = [
+            { label: 'Cursos Completos (100%)', value: data.cursosCompletos, badge: 'completo', icon: 'fa-check-circle', color: '#10b981' },
+            { label: 'Alta Ocupación (>80%)', value: data.cursosAltaOcupacion, badge: 'alta', icon: 'fa-arrow-up', color: '#3b82f6' },
+            { label: 'Media Ocupación (50-80%)', value: data.cursosMediaOcupacion, badge: 'media', icon: 'fa-minus', color: '#f59e0b' },
+            { label: 'Baja Ocupación (<50%)', value: data.cursosBajaOcupacion, badge: 'baja', icon: 'fa-arrow-down', color: '#ef4444' }
+        ];
+
+        let html = items.map(item => {
+            const porcentaje = totalCursos > 0 ? (item.value / totalCursos * 100).toFixed(1) : 0;
+            return `
+                <div class="ocupacion-item">
+                    <div class="ocupacion-label">
+                        <i class="fas ${item.icon}" style="color: ${item.color}; font-size: 1.5rem;"></i>
+                        <span>${item.label}</span>
+                    </div>
+                    <span class="ocupacion-badge badge-${item.badge}">
+                        ${item.value} cursos (${porcentaje}%)
+                    </span>
+                </div>
+            `;
+        }).join('');
+
+        // Agregar tabla de métricas adicionales
+        html += `
+            <table class="metrics-table mt-3">
+                <tr>
+                    <td><i class="fas fa-percentage"></i> Ocupación Promedio</td>
+                    <td>${data.ocupacionPromedio.toFixed(1)}%</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-list-ol"></i> Total Cupos Ofrecidos</td>
+                    <td>${formatNumber(data.totalCuposOfrecidos)}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-check"></i> Total Cupos Ocupados</td>
+                    <td>${formatNumber(data.totalCuposOcupados)}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-chair"></i> Cupos Disponibles</td>
+                    <td>${formatNumber(data.cuposDisponibles)}</td>
+                </tr>
+            </table>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    // Renderizar Top Departamentos
+    function renderTopDepartamentos(data) {
+        const container = document.getElementById('topDepartamentos');
+
+        const html = data.map((dept, index) => `
+            <div class="departamento-item">
+                <div class="departamento-rank">${index + 1}</div>
+                <div class="departamento-info">
+                    <div class="departamento-nombre">${dept.nombreDepartamento}</div>
+                    <div class="departamento-stats">
+                        <i class="fas fa-book"></i> ${dept.totalCursos} cursos •
+                        <i class="fas fa-users"></i> ${dept.totalEstudiantes} estudiantes •
+                        <i class="fas fa-percentage"></i> ${dept.porcentaje.toFixed(1)}% del total
+                    </div>
+                </div>
+                <div class="departamento-valor">${formatNumber(dept.totalInscripciones)}</div>
+            </div>
+        `).join('');
+
+        container.innerHTML = html;
+    }
+
+    // Renderizar Alertas
+    function renderAlertas(data) {
+        const container = document.getElementById('alertas');
+
+        const alertas = [
+            {
+                type: 'danger',
+                icon: 'fa-exclamation-circle',
+                color: '#ef4444',
+                label: 'Estudiantes Sin Inscripciones',
+                value: data.estudiantesSinInscripciones,
+                description: 'Estudiantes activos que no tienen inscripciones vigentes'
+            },
+            {
+                type: 'warning',
+                icon: 'fa-chart-line',
+                color: '#f59e0b',
+                label: 'Cursos con Baja Ocupación',
+                value: data.cursosConBajaOcupacion,
+                description: 'Cursos con menos del 50% de ocupación'
+            }
+        ];
+
+        if (data.estudiantesEnRiesgo > 0) {
+            alertas.unshift({
+                type: 'danger',
+                icon: 'fa-user-slash',
+                color: '#ef4444',
+                label: 'Estudiantes en Riesgo Académico',
+                value: data.estudiantesEnRiesgo,
+                description: 'Estudiantes con promedio inferior a 3.0'
+            });
+        }
+
+        container.innerHTML = alertas.map(alerta => `
+            <div class="alert-card ${alerta.type}">
+                <i class="fas ${alerta.icon} alert-icon" style="color: ${alerta.color};"></i>
+                <div class="alert-content">
+                    <div class="alert-value" style="color: ${alerta.color};">${formatNumber(alerta.value)}</div>
+                    <div class="alert-label"><strong>${alerta.label}</strong></div>
+                    <div class="alert-label">${alerta.description}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Función para actualizar datos
+    function actualizarDatos() {
+        cargarDashboard();
+    }
+
+    // Función de logout
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>
