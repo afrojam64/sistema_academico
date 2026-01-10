@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distribución de Calificaciones - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+
+        .reporte-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 30px auto;
+            max-width: 1400px;
+        }
+
+        .header-reporte {
+            text-align: center;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #1e3a8a;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .section-title i {
+            color: #3b82f6;
+            margin-right: 10px;
+        }
+
+        /* Estadísticas Cards */
+        .estadisticas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .stat-card.verde {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+
+        .stat-card.naranja {
+            background: linear-gradient(135deg, #f59e0b, #fb923c);
+        }
+
+        .stat-card.rojo {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+        }
+
+        /* Gráfico Container */
+        .grafico-container {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .grafico-container canvas {
+            max-height: 400px;
+        }
+
+        /* Tabla de datos */
+        .tabla-distribucion {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .tabla-distribucion th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tabla-distribucion td {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .tabla-distribucion tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge-rango {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-reprobado { background: #fee2e2; color: #991b1b; }
+        .badge-aceptable { background: #fed7aa; color: #9a3412; }
+        .badge-sobresaliente { background: #dcfce7; color: #166534; }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 25px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .progress-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: width 0.5s ease;
+        }
+
+        .segment-rojo { background: #ef4444; }
+        .segment-naranja { background: #f59e0b; }
+        .segment-verde { background: #10b981; }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .reporte-container {
+                box-shadow: none;
+                margin: 0;
+            }
+            .grafico-container {
+                page-break-inside: avoid;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .estadisticas {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark no-print">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.location.href='centro-reportes.html'">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-bar"></i> Distribución de Calificaciones
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Usuario</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="reporte-container">
+        <!-- Header -->
+        <div class="header-reporte">
+            <h1><i class="fas fa-chart-bar"></i> Distribución de Calificaciones</h1>
+            <p class="text-muted mb-0">Gráficos estadísticos de distribución de notas</p>
+            <small class="text-muted">Fecha: <span id="fechaReporte">-</span></small>
+        </div>
+
+        <!-- SECCIÓN 1: ESTADÍSTICAS GENERALES -->
+        <h4 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            Estadísticas Generales del Sistema
+        </h4>
+        <div class="estadisticas" id="estadisticasGenerales">
+            <!-- Se llenará dinámicamente -->
+        </div>
+
+        <!-- SECCIÓN 2: DISTRIBUCIÓN POR RANGOS -->
+        <h4 class="section-title">
+            <i class="fas fa-chart-pie"></i>
+            Distribución por Rangos de Notas
+        </h4>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="grafico-container">
+                    <canvas id="graficoPastel"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="grafico-container">
+                    <canvas id="graficoBarrasRangos"></canvas>
+                </div>
+            </div>
+        </div>
+        <div id="tablaRangos"></div>
+
+        <!-- SECCIÓN 3: DISTRIBUCIÓN POR DEPARTAMENTO -->
+        <h4 class="section-title">
+            <i class="fas fa-building"></i>
+            Distribución por Departamento
+        </h4>
+        <div class="grafico-container">
+            <canvas id="graficoDepartamentos"></canvas>
+        </div>
+        <div id="tablaDepartamentos"></div>
+
+        <!-- SECCIÓN 4: TOP 10 MATERIAS -->
+        <h4 class="section-title">
+            <i class="fas fa-book"></i>
+            Top 10 Materias con Más Calificaciones
+        </h4>
+        <div class="grafico-container">
+            <canvas id="graficoMaterias"></canvas>
+        </div>
+        <div id="tablaMaterias"></div>
+
+        <!-- SECCIÓN 5: DISTRIBUCIÓN POR PERIODO -->
+        <h4 class="section-title">
+            <i class="fas fa-calendar-alt"></i>
+            Distribución por Periodo Académico
+        </h4>
+        <div class="grafico-container">
+            <canvas id="graficoPeriodos"></canvas>
+        </div>
+        <div id="tablaPeriodos"></div>
+
+        <!-- Botones de Acción -->
+        <div class="text-center mt-4 no-print">
+            <button class="btn btn-primary btn-lg me-2" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir / Guardar PDF
+            </button>
+            <button class="btn btn-success btn-lg" onclick="actualizarDatos()">
+                <i class="fas fa-sync-alt"></i> Actualizar Datos
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    document.getElementById('userName').textContent = userName || 'Usuario';
+    document.getElementById('fechaReporte').textContent = new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    // Variables globales para los gráficos
+    let graficoPastel, graficoBarrasRangos, graficoDepartamentos, graficoMaterias, graficoPeriodos;
+
+    // Función para formatear números
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Cargar reporte al iniciar
+    cargarReporte();
+
+    async function cargarReporte() {
+        try {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Cargando Reporte...',
+                text: 'Por favor espera',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const response = await axios.get(
+                'http://localhost:8080/api/reportes/distribucion-calificaciones',
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            const data = response.data;
+            console.log('Distribución data:', data);
+
+            // Cerrar loading
+            Swal.close();
+
+            // Renderizar secciones
+            renderEstadisticasGenerales(data.estadisticasGenerales);
+            renderDistribucionRangos(data.distribucionRangos);
+            renderDistribucionDepartamentos(data.distribucionPorDepartamento);
+            renderTopMaterias(data.topMaterias);
+            renderDistribucionPeriodos(data.distribucionPorPeriodo);
+
+        } catch (error) {
+            console.error('Error cargando reporte:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.mensaje || 'No se pudo cargar el reporte',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    }
+
+    // Renderizar Estadísticas Generales
+    function renderEstadisticasGenerales(data) {
+        const container = document.getElementById('estadisticasGenerales');
+
+        container.innerHTML = `
+            <div class="stat-card">
+                <h3>${formatNumber(data.totalCalificaciones)}</h3>
+                <p><i class="fas fa-clipboard-list"></i> Total Calificaciones</p>
+            </div>
+            <div class="stat-card verde">
+                <h3>${data.promedioGeneral.toFixed(2)}</h3>
+                <p><i class="fas fa-chart-line"></i> Promedio General</p>
+            </div>
+            <div class="stat-card naranja">
+                <h3>${data.notaMasAlta.toFixed(1)}</h3>
+                <p><i class="fas fa-arrow-up"></i> Nota Más Alta</p>
+            </div>
+            <div class="stat-card rojo">
+                <h3>${data.notaMasBaja.toFixed(1)}</h3>
+                <p><i class="fas fa-arrow-down"></i> Nota Más Baja</p>
+            </div>
+        `;
+    }
+
+    // Renderizar Distribución por Rangos
+    function renderDistribucionRangos(data) {
+        const rangos = [data.rango0a2, data.rango3a3, data.rango4a5];
+
+        // Gráfico de pastel
+        const ctxPastel = document.getElementById('graficoPastel').getContext('2d');
+        if (graficoPastel) graficoPastel.destroy();
+
+        graficoPastel = new Chart(ctxPastel, {
+            type: 'doughnut',
+            data: {
+                labels: rangos.map(r => `${r.categoria} (${r.rangoLabel})`),
+                datasets: [{
+                    data: rangos.map(r => r.cantidad),
+                    backgroundColor: rangos.map(r => r.color),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12 } }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Distribución por Rangos',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de barras
+        const ctxBarras = document.getElementById('graficoBarrasRangos').getContext('2d');
+        if (graficoBarrasRangos) graficoBarrasRangos.destroy();
+
+        graficoBarrasRangos = new Chart(ctxBarras, {
+            type: 'bar',
+            data: {
+                labels: rangos.map(r => r.categoria),
+                datasets: [{
+                    label: 'Cantidad',
+                    data: rangos.map(r => r.cantidad),
+                    backgroundColor: rangos.map(r => r.color),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Cantidad por Rango',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        });
+
+        // Tabla de rangos
+        const tablaHTML = `
+            <table class="tabla-distribucion">
+                <thead>
+                    <tr>
+                        <th>Rango</th>
+                        <th>Categoría</th>
+                        <th>Cantidad</th>
+                        <th>Porcentaje</th>
+                        <th>Visualización</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rangos.map(r => `
+                        <tr>
+                            <td><strong>${r.rangoLabel}</strong></td>
+                            <td><span class="badge-rango badge-${r.categoria.toLowerCase()}">${r.categoria}</span></td>
+                            <td>${formatNumber(r.cantidad)}</td>
+                            <td><strong>${r.porcentaje.toFixed(1)}%</strong></td>
+                            <td>
+                                <div style="width: 100%; height: 20px; background: #e5e7eb; border-radius: 10px; overflow: hidden;">
+                                    <div style="width: ${r.porcentaje}%; height: 100%; background: ${r.color};"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('tablaRangos').innerHTML = tablaHTML;
+    }
+
+    // Renderizar Distribución por Departamentos
+    function renderDistribucionDepartamentos(data) {
+        const ctx = document.getElementById('graficoDepartamentos').getContext('2d');
+        if (graficoDepartamentos) graficoDepartamentos.destroy();
+
+        graficoDepartamentos = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.nombreDepartamento),
+                datasets: [
+                    {
+                        label: 'Reprobado (0.0-2.9)',
+                        data: data.map(d => d.cantidadRango0a2),
+                        backgroundColor: '#ef4444'
+                    },
+                    {
+                        label: 'Aceptable (3.0-3.9)',
+                        data: data.map(d => d.cantidadRango3a3),
+                        backgroundColor: '#f59e0b'
+                    },
+                    {
+                        label: 'Sobresaliente (4.0-5.0)',
+                        data: data.map(d => d.cantidadRango4a5),
+                        backgroundColor: '#10b981'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Distribución por Departamento',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                },
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+
+        // Tabla de departamentos
+        const tablaHTML = `
+            <table class="tabla-distribucion">
+                <thead>
+                    <tr>
+                        <th>Departamento</th>
+                        <th>Total</th>
+                        <th>Promedio</th>
+                        <th>Reprobado</th>
+                        <th>Aceptable</th>
+                        <th>Sobresaliente</th>
+                        <th>% Aprobación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(d => `
+                        <tr>
+                            <td><strong>${d.nombreDepartamento}</strong></td>
+                            <td>${formatNumber(d.totalCalificaciones)}</td>
+                            <td><strong>${d.promedioNotas.toFixed(2)}</strong></td>
+                            <td style="color: #ef4444;">${formatNumber(d.cantidadRango0a2)}</td>
+                            <td style="color: #f59e0b;">${formatNumber(d.cantidadRango3a3)}</td>
+                            <td style="color: #10b981;">${formatNumber(d.cantidadRango4a5)}</td>
+                            <td><strong>${d.porcentajeAprobacion.toFixed(1)}%</strong></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('tablaDepartamentos').innerHTML = tablaHTML;
+    }
+
+    // Renderizar Top Materias
+    function renderTopMaterias(data) {
+        const ctx = document.getElementById('graficoMaterias').getContext('2d');
+        if (graficoMaterias) graficoMaterias.destroy();
+
+        graficoMaterias = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(m => m.nombreMateria),
+                datasets: [
+                    {
+                        label: 'Reprobado',
+                        data: data.map(m => m.cantidadRango0a2),
+                        backgroundColor: '#ef4444'
+                    },
+                    {
+                        label: 'Aceptable',
+                        data: data.map(m => m.cantidadRango3a3),
+                        backgroundColor: '#f59e0b'
+                    },
+                    {
+                        label: 'Sobresaliente',
+                        data: data.map(m => m.cantidadRango4a5),
+                        backgroundColor: '#10b981'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Top 10 Materias',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                },
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+
+        // Tabla de materias
+        const tablaHTML = `
+            <table class="tabla-distribucion">
+                <thead>
+                    <tr>
+                        <th>Materia</th>
+                        <th>Departamento</th>
+                        <th>Total</th>
+                        <th>Promedio</th>
+                        <th>% Aprobación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(m => `
+                        <tr>
+                            <td><strong>${m.nombreMateria}</strong></td>
+                            <td>${m.nombreDepartamento}</td>
+                            <td>${formatNumber(m.totalCalificaciones)}</td>
+                            <td><strong>${m.promedioNotas.toFixed(2)}</strong></td>
+                            <td><strong>${m.porcentajeAprobacion.toFixed(1)}%</strong></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('tablaMaterias').innerHTML = tablaHTML;
+    }
+
+    // Renderizar Distribución por Periodos
+    function renderDistribucionPeriodos(data) {
+        const ctx = document.getElementById('graficoPeriodos').getContext('2d');
+        if (graficoPeriodos) graficoPeriodos.destroy();
+
+        graficoPeriodos = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(p => p.periodo),
+                datasets: [
+                    {
+                        label: 'Promedio',
+                        data: data.map(p => p.promedioNotas),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Evolución del Promedio por Periodo',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5,
+                        ticks: { stepSize: 0.5 }
+                    }
+                }
+            }
+        });
+
+        // Tabla de periodos
+        const tablaHTML = `
+            <table class="tabla-distribucion">
+                <thead>
+                    <tr>
+                        <th>Periodo</th>
+                        <th>Total</th>
+                        <th>Promedio</th>
+                        <th>Reprobado</th>
+                        <th>Aceptable</th>
+                        <th>Sobresaliente</th>
+                        <th>% Aprobación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(p => `
+                        <tr>
+                            <td><strong>${p.periodo}</strong></td>
+                            <td>${formatNumber(p.totalCalificaciones)}</td>
+                            <td><strong>${p.promedioNotas.toFixed(2)}</strong></td>
+                            <td style="color: #ef4444;">${formatNumber(p.cantidadRango0a2)}</td>
+                            <td style="color: #f59e0b;">${formatNumber(p.cantidadRango3a3)}</td>
+                            <td style="color: #10b981;">${formatNumber(p.cantidadRango4a5)}</td>
+                            <td><strong>${p.porcentajeAprobacion.toFixed(1)}%</strong></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('tablaPeriodos').innerHTML = tablaHTML;
+    }
+
+    // Función para actualizar datos
+    function actualizarDatos() {
+        cargarReporte();
+    }
+
+    // Función de logout
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>

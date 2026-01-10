@@ -332,7 +332,7 @@
             </div>
 
             <div class="col-md-4">
-                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="report-card" onclick="abrirDistribucionCalificaciones()">
                     <div class="report-icon icon-estadisticas">
                         <i class="fas fa-chart-bar"></i>
                     </div>
@@ -340,14 +340,14 @@
                     <div class="report-description">
                         Gráficos estadísticos de distribución de notas
                     </div>
-                    <span class="report-badge badge-proximamente">
-                        <i class="fas fa-clock"></i> Próximamente
+                    <span class="report-badge badge-disponible">
+                        <i class="fas fa-check"></i> Disponible
                     </span>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="report-card" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="report-card" onclick="abrirTasaAprobacion()">
                     <div class="report-icon icon-estadisticas">
                         <i class="fas fa-percentage"></i>
                     </div>
@@ -355,8 +355,8 @@
                     <div class="report-description">
                         Porcentajes de aprobación por materia, curso y periodo
                     </div>
-                    <span class="report-badge badge-proximamente">
-                        <i class="fas fa-clock"></i> Próximamente
+                    <span class="report-badge badge-disponible">
+                        <i class="fas fa-check"></i> Disponible
                     </span>
                 </div>
             </div>
@@ -641,6 +641,14 @@
 
     function abrirDashboardEjecutivo() {
         window.location.href = 'dashboard-ejecutivo.html';
+    }
+
+    function abrirDistribucionCalificaciones() {
+        window.location.href = 'distribucion-calificaciones.html';
+    }
+
+    function abrirTasaAprobacion() {
+        window.location.href = 'tasa-aprobacion.html';
     }
 </script>
 </body>

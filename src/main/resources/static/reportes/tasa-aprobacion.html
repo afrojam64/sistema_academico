@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasa de Aprobación - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .user-info { color: white; }
+
+        .reporte-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 30px auto;
+            max-width: 1400px;
+        }
+
+        .header-reporte {
+            text-align: center;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #1e3a8a;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .section-title i {
+            color: #3b82f6;
+            margin-right: 10px;
+        }
+
+        .estadisticas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .stat-card.verde {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+
+        .stat-card.rojo {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+        }
+
+        .stat-card.naranja {
+            background: linear-gradient(135deg, #f59e0b, #fb923c);
+        }
+
+        .grafico-container {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .grafico-container canvas {
+            max-height: 400px;
+        }
+
+        .tabla-tasa {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .tabla-tasa th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+            font-size: 0.9rem;
+        }
+
+        .tabla-tasa td {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.9rem;
+        }
+
+        .tabla-tasa tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge-tasa {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-excelente { background: #dcfce7; color: #166534; }
+        .badge-buena { background: #dbeafe; color: #1e40af; }
+        .badge-regular { background: #fed7aa; color: #9a3412; }
+        .badge-baja { background: #fee2e2; color: #991b1b; }
+
+        .tendencia-badge {
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .tendencia-mejora { background: #dcfce7; color: #166534; }
+        .tendencia-estable { background: #e0e7ff; color: #3730a3; }
+        .tendencia-disminuye { background: #fee2e2; color: #991b1b; }
+
+        .ranking-badge {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar-horizontal {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .fill-verde { background: #10b981; }
+        .fill-azul { background: #3b82f6; }
+        .fill-naranja { background: #f59e0b; }
+        .fill-rojo { background: #ef4444; }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .reporte-container {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .estadisticas {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark no-print">
+    <div class="container-fluid">
+        <div>
+            <button class="btn btn-outline-light me-2" onclick="window.location.href='centro-reportes.html'">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-percentage"></i> Tasa de Aprobación
+            </span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            <span id="userName">Usuario</span>
+            <button class="btn btn-sm btn-light ms-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="reporte-container">
+        <!-- Header -->
+        <div class="header-reporte">
+            <h1><i class="fas fa-percentage"></i> Tasa de Aprobación</h1>
+            <p class="text-muted mb-0">Porcentajes de aprobación por materia, curso y periodo</p>
+            <small class="text-muted">Fecha: <span id="fechaReporte">-</span></small>
+        </div>
+
+        <!-- SECCIÓN 1: RESUMEN GENERAL -->
+        <h4 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            Resumen General de Aprobación
+        </h4>
+        <div class="estadisticas" id="resumenGeneral">
+            <!-- Se llenará dinámicamente -->
+        </div>
+
+        <!-- SECCIÓN 2: TASA POR MATERIA -->
+        <h4 class="section-title">
+            <i class="fas fa-book"></i>
+            Tasa de Aprobación por Materia
+        </h4>
+        <div class="grafico-container">
+            <canvas id="graficoMaterias"></canvas>
+        </div>
+        <div id="tablaMaterias"></div>
+
+        <!-- SECCIÓN 3: TASA POR CURSO -->
+        <h4 class="section-title">
+            <i class="fas fa-chalkboard"></i>
+            Tasa de Aprobación por Curso
+        </h4>
+        <div id="tablaCursos"></div>
+
+        <!-- SECCIÓN 4: TASA POR PERIODO -->
+        <h4 class="section-title">
+            <i class="fas fa-calendar-alt"></i>
+            Tasa de Aprobación por Periodo Académico
+        </h4>
+        <div class="grafico-container">
+            <canvas id="graficoPeriodos"></canvas>
+        </div>
+        <div id="tablaPeriodos"></div>
+
+        <!-- SECCIÓN 5: TASA POR DEPARTAMENTO -->
+        <h4 class="section-title">
+            <i class="fas fa-building"></i>
+            Tasa de Aprobación por Departamento
+        </h4>
+        <div class="grafico-container">
+            <canvas id="graficoDepartamentos"></canvas>
+        </div>
+        <div id="tablaDepartamentos"></div>
+
+        <!-- Botones de Acción -->
+        <div class="text-center mt-4 no-print">
+            <button class="btn btn-primary btn-lg me-2" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir / Guardar PDF
+            </button>
+            <button class="btn btn-success btn-lg" onclick="actualizarDatos()">
+                <i class="fas fa-sync-alt"></i> Actualizar Datos
+            </button>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) {
+        window.location.href = '/login';
+    }
+
+    document.getElementById('userName').textContent = userName || 'Usuario';
+    document.getElementById('fechaReporte').textContent = new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let graficoMaterias, graficoPeriodos, graficoDepartamentos;
+
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function getBadgeTasa(tasa) {
+        if (tasa >= 85) return 'badge-excelente';
+        if (tasa >= 70) return 'badge-buena';
+        if (tasa >= 60) return 'badge-regular';
+        return 'badge-baja';
+    }
+
+    function getColorTasa(tasa) {
+        if (tasa >= 85) return '#10b981';
+        if (tasa >= 70) return '#3b82f6';
+        if (tasa >= 60) return '#f59e0b';
+        return '#ef4444';
+    }
+
+    cargarReporte();
+
+    async function cargarReporte() {
+        try {
+            Swal.fire({
+                title: 'Cargando Reporte...',
+                text: 'Por favor espera',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const response = await axios.get(
+                'http://localhost:8080/api/reportes/tasa-aprobacion',
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            const data = response.data;
+            console.log('Tasa Aprobación data:', data);
+
+            Swal.close();
+
+            renderResumenGeneral(data.resumenGeneral);
+            renderTasaPorMateria(data.tasaPorMateria);
+            renderTasaPorCurso(data.tasaPorCurso);
+            renderTasaPorPeriodo(data.tasaPorPeriodo);
+            renderTasaPorDepartamento(data.tasaPorDepartamento);
+
+        } catch (error) {
+            console.error('Error cargando reporte:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.mensaje || 'No se pudo cargar el reporte',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    }
+
+    function renderResumenGeneral(data) {
+        const container = document.getElementById('resumenGeneral');
+
+        container.innerHTML = `
+            <div class="stat-card">
+                <h3>${formatNumber(data.totalEstudiantesEvaluados)}</h3>
+                <p><i class="fas fa-users"></i> Estudiantes Evaluados</p>
+            </div>
+            <div class="stat-card verde">
+                <h3>${formatNumber(data.estudiantesAprobados)}</h3>
+                <p><i class="fas fa-check-circle"></i> Aprobados</p>
+            </div>
+            <div class="stat-card rojo">
+                <h3>${formatNumber(data.estudiantesReprobados)}</h3>
+                <p><i class="fas fa-times-circle"></i> Reprobados</p>
+            </div>
+            <div class="stat-card naranja">
+                <h3>${data.tasaAprobacionGeneral.toFixed(1)}%</h3>
+                <p><i class="fas fa-percentage"></i> Tasa General</p>
+            </div>
+            <div class="stat-card">
+                <h3>${data.promedioGeneralSistema.toFixed(2)}</h3>
+                <p><i class="fas fa-chart-line"></i> Promedio General</p>
+            </div>
+        `;
+    }
+
+    function renderTasaPorMateria(data) {
+        const top10 = data.slice(0, 10);
+
+        const ctx = document.getElementById('graficoMaterias').getContext('2d');
+        if (graficoMaterias) graficoMaterias.destroy();
+
+        graficoMaterias = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: top10.map(m => m.nombreMateria),
+                datasets: [{
+                    label: 'Tasa de Aprobación (%)',
+                    data: top10.map(m => m.tasaAprobacion),
+                    backgroundColor: top10.map(m => getColorTasa(m.tasaAprobacion)),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Top 10 Materias por Tasa de Aprobación',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { callback: value => value + '%' }
+                    }
+                }
+            }
+        });
+
+        const tablaHTML = `
+            <table class="tabla-tasa">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Materia</th>
+                        <th>Código</th>
+                        <th>Departamento</th>
+                        <th>Total</th>
+                        <th>Aprobados</th>
+                        <th>Reprobados</th>
+                        <th>Tasa</th>
+                        <th>Promedio</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(m => `
+                        <tr>
+                            <td><span class="ranking-badge">${m.ranking}</span></td>
+                            <td><strong>${m.nombreMateria}</strong></td>
+                            <td>${m.codigoMateria}</td>
+                            <td>${m.nombreDepartamento}</td>
+                            <td>${formatNumber(m.totalEstudiantes)}</td>
+                            <td style="color: #10b981;">${formatNumber(m.aprobados)}</td>
+                            <td style="color: #ef4444;">${formatNumber(m.reprobados)}</td>
+                            <td><strong>${m.tasaAprobacion.toFixed(1)}%</strong></td>
+                            <td>${m.promedioGeneral.toFixed(2)}</td>
+                            <td><span class="badge-tasa ${getBadgeTasa(m.tasaAprobacion)}">${
+            m.tasaAprobacion >= 85 ? 'Excelente' :
+                m.tasaAprobacion >= 70 ? 'Buena' :
+                    m.tasaAprobacion >= 60 ? 'Regular' : 'Baja'
+        }</span></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('tablaMaterias').innerHTML = tablaHTML;
+    }
+
+    function renderTasaPorCurso(data) {
+        const tablaHTML = `
+            <table class="tabla-tasa">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Materia</th>
+                        <th>Profesor</th>
+                        <th>Periodo</th>
+                        <th>Total</th>
+                        <th>Aprobados</th>
+                        <th>Tasa</th>
+                        <th>Barra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(c => `
+                        <tr>
+                            <td><strong>${c.codigoCurso}</strong></td>
+                            <td>${c.nombreMateria}</td>
+                            <td>${c.nombreProfesor}</td>
+                            <td>${c.periodo}</td>
+                            <td>${formatNumber(c.totalEstudiantes)}</td>
+                            <td style="color: #10b981;">${formatNumber(c.aprobados)}</td>
+                            <td><strong>${c.tasaAprobacion.toFixed(1)}%</strong></td>
+                            <td>
+                                <div class="progress-bar-horizontal">
+                                    <div class="progress-fill" style="width: ${c.tasaAprobacion}%; background: ${getColorTasa(c.tasaAprobacion)};">
+                                        ${c.tasaAprobacion.toFixed(0)}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('tablaCursos').innerHTML = tablaHTML;
+    }
+
+    function renderTasaPorPeriodo(data) {
+        const ctx = document.getElementById('graficoPeriodos').getContext('2d');
+        if (graficoPeriodos) graficoPeriodos.destroy();
+
+        graficoPeriodos = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(p => p.periodo),
+                datasets: [{
+                    label: 'Tasa de Aprobación (%)',
+                    data: data.map(p => p.tasaAprobacion),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Evolución de la Tasa de Aprobación',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { callback: value => value + '%' }
+                    }
+                }
+            }
+        });
+
+        const tablaHTML = `
+            <table class="tabla-tasa">
+                <thead>
+                    <tr>
+                        <th>Periodo</th>
+                        <th>Total</th>
+                        <th>Aprobados</th>
+                        <th>Reprobados</th>
+                        <th>Tasa</th>
+                        <th>Promedio</th>
+                        <th>Tendencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(p => `
+                        <tr>
+                            <td><strong>${p.periodo}</strong></td>
+                            <td>${formatNumber(p.totalEstudiantes)}</td>
+                            <td style="color: #10b981;">${formatNumber(p.aprobados)}</td>
+                            <td style="color: #ef4444;">${formatNumber(p.reprobados)}</td>
+                            <td><strong>${p.tasaAprobacion.toFixed(1)}%</strong></td>
+                            <td>${p.promedioGeneral.toFixed(2)}</td>
+                            <td>
+                                <span class="tendencia-badge tendencia-${p.tendenciaIndicador.toLowerCase()}">
+                                    ${p.tendenciaIndicador === 'MEJORA' ? '↑' :
+            p.tendenciaIndicador === 'DISMINUYE' ? '↓' : '→'}
+                                    ${Math.abs(p.tendencia).toFixed(1)}%
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('tablaPeriodos').innerHTML = tablaHTML;
+    }
+
+    function renderTasaPorDepartamento(data) {
+        const ctx = document.getElementById('graficoDepartamentos').getContext('2d');
+        if (graficoDepartamentos) graficoDepartamentos.destroy();
+
+        graficoDepartamentos = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.nombreDepartamento),
+                datasets: [{
+                    label: 'Tasa de Aprobación (%)',
+                    data: data.map(d => d.tasaAprobacion),
+                    backgroundColor: data.map(d => getColorTasa(d.tasaAprobacion)),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Ranking de Departamentos',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { callback: value => value + '%' }
+                    }
+                }
+            }
+        });
+
+        const tablaHTML = `
+            <table class="tabla-tasa">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Departamento</th>
+                        <th>Total</th>
+                        <th>Aprobados</th>
+                        <th>Reprobados</th>
+                        <th>Tasa</th>
+                        <th>Promedio</th>
+                        <th>Materias</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(d => `
+                        <tr>
+                            <td><span class="ranking-badge">${d.ranking}</span></td>
+                            <td><strong>${d.nombreDepartamento}</strong></td>
+                            <td>${formatNumber(d.totalEstudiantes)}</td>
+                            <td style="color: #10b981;">${formatNumber(d.aprobados)}</td>
+                            <td style="color: #ef4444;">${formatNumber(d.reprobados)}</td>
+                            <td><strong>${d.tasaAprobacion.toFixed(1)}%</strong></td>
+                            <td>${d.promedioGeneral.toFixed(2)}</td>
+                            <td>${formatNumber(d.totalMaterias)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById('tablaDepartamentos').innerHTML = tablaHTML;
+    }
+
+    function actualizarDatos() {
+        cargarReporte();
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+</body>
+</html>
