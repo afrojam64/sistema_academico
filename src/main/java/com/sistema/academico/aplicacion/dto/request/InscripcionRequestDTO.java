@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 public class InscripcionRequestDTO {
 
-    @NotNull(message = "El estudiante es obligatorio")
+    //@NotNull(message = "El estudiante es obligatorio")
     private Long estudianteId;
 
     @NotNull(message = "El curso es obligatorio")

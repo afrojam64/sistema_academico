@@ -7,10 +7,7 @@ import com.sistema.academico.aplicacion.dto.response.CalificacionesEstudianteRep
 import com.sistema.academico.aplicacion.dto.response.EstudiantesEnRiesgoReporteDTO;
 import com.sistema.academico.aplicacion.mapper.CalificacionMapper;
 import com.sistema.academico.aplicacion.servicio.ICalificacionService;
-import com.sistema.academico.dominio.entidad.Calificacion;
-import com.sistema.academico.dominio.entidad.Curso;
-import com.sistema.academico.dominio.entidad.Estudiante;
-import com.sistema.academico.dominio.entidad.Inscripcion;
+import com.sistema.academico.dominio.entidad.*;
 import com.sistema.academico.dominio.enumeracion.Estado;
 import com.sistema.academico.dominio.enumeracion.EstadoInscripcion;
 import com.sistema.academico.dominio.enumeracion.Rol;
@@ -24,9 +21,14 @@ import com.sistema.academico.infraestructura.repositorio.InscripcionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.sistema.academico.aplicacion.dto.request.CalificacionBatchRequestDTO;
+
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -639,5 +641,91 @@ public class CalificacionServiceImpl implements ICalificacionService {
                 .promedioGeneralRiesgo(Math.round(promedioGeneralRiesgo * 100.0) / 100.0)
                 .estudiantes(estudiantesEnRiesgo)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public List<CalificacionResponseDTO> registrarBatch(CalificacionBatchRequestDTO request) {
+        // Validar que el curso existe
+        Curso curso = cursoRepository.findById(request.getCursoId())
+                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
+
+        List<CalificacionResponseDTO> calificacionesCreadas = new ArrayList<>();
+
+        // Registrar cada calificación
+        for (CalificacionBatchRequestDTO.CalificacionIndividualDTO calificacionDTO : request.getCalificaciones()) {
+            // Validar inscripción
+            Inscripcion inscripcion = inscripcionRepository.findById(calificacionDTO.getInscripcionId())
+                    .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
+
+            // CORRECCIÓN 1: Usar EstadoInscripcion en lugar de Estado
+            if (inscripcion.getEstado() != EstadoInscripcion.ACTIVO) {
+                throw new RuntimeException("La inscripción no está activa");
+            }
+
+            if (!inscripcion.getCurso().getId().equals(request.getCursoId())) {
+                throw new RuntimeException("La inscripción no pertenece al curso seleccionado");
+            }
+
+            // CORRECCIÓN 2 y 3: Convertir Double a BigDecimal
+            BigDecimal notaBigDecimal = BigDecimal.valueOf(calificacionDTO.getNota());
+
+            // Crear calificación
+            Calificacion calificacion = Calificacion.builder()
+                    .inscripcion(inscripcion)
+                    .nombreEvaluacion(request.getNombreEvaluacion())
+                    .nota(notaBigDecimal)  // Usar BigDecimal
+                    .porcentaje(request.getPorcentaje())
+                    .observaciones(request.getObservaciones())
+                    .fechaCalificacion(LocalDate.now())
+                    .build();
+
+            Calificacion calificacionGuardada = calificacionRepository.save(calificacion);
+
+            // Mapear a DTO - Convertir BigDecimal a Double
+            CalificacionResponseDTO responseDTO = CalificacionResponseDTO.builder()
+                    .id(calificacionGuardada.getId())
+                    .inscripcionId(calificacionGuardada.getInscripcion().getId())
+                    .nombreEvaluacion(calificacionGuardada.getNombreEvaluacion())
+                    .nota(calificacionGuardada.getNota().doubleValue())  // Convertir a Double
+                    .porcentaje(calificacionGuardada.getPorcentaje())
+                    .observaciones(calificacionGuardada.getObservaciones())
+                    .fechaCalificacion(calificacionGuardada.getFechaCalificacion())
+                    .build();
+
+            calificacionesCreadas.add(responseDTO);
+        }
+
+        return calificacionesCreadas;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> obtenerInscripcionesPorCurso(Long cursoId) {
+        // Validar curso
+        Curso curso = cursoRepository.findById(cursoId)
+                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
+
+        // CORRECCIÓN 4: Usar EstadoInscripcion.ACTIVO
+        List<Inscripcion> inscripciones = inscripcionRepository
+                .findByCursoAndEstado(curso, EstadoInscripcion.ACTIVO);
+
+        List<Map<String, Object>> resultado = new ArrayList<>();
+
+        for (Inscripcion inscripcion : inscripciones) {
+            Estudiante estudiante = inscripcion.getEstudiante();
+            Usuario usuario = estudiante.getUsuario();
+
+            Map<String, Object> estudianteInfo = new HashMap<>();
+            estudianteInfo.put("inscripcionId", inscripcion.getId());
+            estudianteInfo.put("estudianteId", estudiante.getId());
+            estudianteInfo.put("codigoEstudiante", estudiante.getCodigoEstudiante());
+            estudianteInfo.put("nombreCompleto", usuario.getNombre() + " " + usuario.getApellido());
+            estudianteInfo.put("email", usuario.getEmail());
+
+            resultado.add(estudianteInfo);
+        }
+
+        return resultado;
     }
 }

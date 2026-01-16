@@ -13,6 +13,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.sistema.academico.aplicacion.dto.request.CalificacionBatchRequestDTO;
+import java.util.Map;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -153,5 +155,33 @@ public class CalificacionController {
                 calificacionService.generarReporteEstudiantesEnRiesgo(estudianteId);
 
         return ResponseEntity.ok(reporte);
+    }
+
+    /**
+     * Registrar múltiples calificaciones para un curso completo
+     * Ruta: POST /api/calificaciones/batch
+     */
+    @PostMapping("/batch")
+    public ResponseEntity<List<CalificacionResponseDTO>> registrarBatch(
+            @Valid @RequestBody CalificacionBatchRequestDTO request) {
+
+        List<CalificacionResponseDTO> calificaciones =
+                calificacionService.registrarBatch(request);
+
+        return new ResponseEntity<>(calificaciones, HttpStatus.CREATED);
+    }
+
+    /**
+     * Obtener inscripciones activas de un curso para calificar
+     * Ruta: GET /api/calificaciones/curso/{cursoId}/inscripciones
+     */
+    @GetMapping("/curso/{cursoId}/inscripciones")
+    public ResponseEntity<List<Map<String, Object>>> obtenerInscripcionesPorCurso(
+            @PathVariable Long cursoId) {
+
+        List<Map<String, Object>> inscripciones =
+                calificacionService.obtenerInscripcionesPorCurso(cursoId);
+
+        return ResponseEntity.ok(inscripciones);
     }
 }

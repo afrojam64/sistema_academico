@@ -5,14 +5,19 @@ import com.sistema.academico.aplicacion.dto.response.InscripcionResponseDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionesPorCursoReporteDTO;
 import com.sistema.academico.aplicacion.dto.response.InscripcionesPorPeriodoReporteDTO;
 import com.sistema.academico.aplicacion.servicio.IInscripcionService;
+import com.sistema.academico.dominio.entidad.Estudiante;
 import com.sistema.academico.dominio.enumeracion.Rol;
+import com.sistema.academico.infraestructura.repositorio.EstudianteRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller REST para gestionar Inscripciones
@@ -35,11 +40,32 @@ import java.util.List;
 public class InscripcionController {
 
     private final IInscripcionService inscripcionService;
+    private final EstudianteRepository estudianteRepository;
 
     @PostMapping
     public ResponseEntity<InscripcionResponseDTO> crear(@Valid @RequestBody InscripcionRequestDTO request) {
         InscripcionResponseDTO inscripcion = inscripcionService.crear(request);
         return new ResponseEntity<>(inscripcion, HttpStatus.CREATED);
+    }
+
+    /**
+     * Obtener información del estudiante autenticado
+     * Para que solo vea su propia información
+     */
+    @GetMapping("/estudiante-actual")
+    public ResponseEntity<?> obtenerEstudianteActual() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String nombreUsuario = auth.getName();
+
+        Estudiante estudiante = estudianteRepository
+                .findByUsuario_NombreUsuario(nombreUsuario)
+                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
+
+        return ResponseEntity.ok(Map.of(
+                "id", estudiante.getId(),
+                "codigo", estudiante.getCodigoEstudiante(),
+                "nombre", estudiante.getUsuario().getNombre() + " " + estudiante.getUsuario().getApellido()
+        ));
     }
 
     @GetMapping("/{id}")

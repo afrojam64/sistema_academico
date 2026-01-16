@@ -47,4 +47,9 @@ public interface IProfesorService {
      * @return Lista de profesores que coinciden con el término
      */
     List<ProfesorResponseDTO> buscarPorTermino(String termino);
+
+    /**
+     * Listar solo profesores que tienen cursos activos asignados
+     */
+    List<ProfesorResponseDTO> listarProfesoresConCursosActivos();
 }

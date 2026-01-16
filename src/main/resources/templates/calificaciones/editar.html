@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Calificación - Sistema Académico</title>
+    <title>Editar Calificaciones - Sistema Académico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -23,6 +23,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-top: 30px;
             margin-bottom: 30px;
+            max-width: 1200px;
         }
         .form-header {
             border-bottom: 3px solid #059669;
@@ -36,17 +37,54 @@
         .btn-success:hover {
             background: linear-gradient(135deg, #047857, #059669);
         }
-        .char-counter {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 4px;
+        .alert-info {
+            background-color: #dbeafe;
+            border-left: 4px solid #3b82f6;
         }
-        .nota-preview {
-            background: #f0fdf4;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            border: 2px solid #10b981;
+        .estudiantes-table {
+            margin-top: 20px;
+            display: none;
+        }
+        .estudiantes-table table {
+            font-size: 14px;
+        }
+        .nota-display {
+            background: #f3f4f6;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .nota-input {
+            width: 80px;
+            text-align: center;
+        }
+        .nota-aprobada {
+            color: #059669;
+        }
+        .nota-reprobada {
+            color: #dc2626;
+        }
+        .btn-edit-nota {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 10;
+        }
+        .badge-evaluacion {
+            background: #3b82f6;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
         }
         .loading-overlay {
             position: fixed;
@@ -55,7 +93,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 9999;
@@ -75,23 +113,23 @@
         <div class="spinner-border" style="width: 3rem; height: 3rem; color: #059669;" role="status">
             <span class="visually-hidden">Cargando...</span>
         </div>
-        <p class="mt-3 mb-0">Cargando calificación...</p>
+        <p class="mt-3 mb-0">Cargando calificaciones...</p>
     </div>
 </div>
 
 <nav class="navbar navbar-dark">
     <div class="container-fluid">
         <div>
-            <button class="btn btn-outline-light me-2" onclick="volverLista()">
-                <i class="fas fa-arrow-left"></i> Volver a Lista
+            <button class="btn btn-outline-light me-2" onclick="volver()">
+                <i class="fas fa-arrow-left"></i> Volver
             </button>
             <span class="navbar-brand mb-0 h1">
-                <i class="fas fa-edit"></i> Editar Calificación
+                <i class="fas fa-edit"></i> Editar Calificaciones por Curso
             </span>
         </div>
         <div class="user-info">
             <i class="fas fa-user"></i>
-            <span id="userName">Admin</span>
+            <span id="userName">Usuario</span>
             <button class="btn btn-sm btn-light ms-3" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i> Salir
             </button>
@@ -102,77 +140,83 @@
 <div class="container">
     <div class="form-container">
         <div class="form-header">
-            <h2><i class="fas fa-graduation-cap"></i> Editar Calificación</h2>
-            <p class="text-muted mb-0">Modifica los datos de la calificación</p>
+            <h2><i class="fas fa-edit"></i> Editar Calificaciones por Curso</h2>
+            <p class="text-muted mb-0">Selecciona un curso y evaluación para editar las calificaciones</p>
         </div>
 
-        <form id="formEditarCalificacion">
-            <input type="hidden" id="calificacionId">
-
-            <!-- INSCRIPCIÓN (SOLO LECTURA) -->
-            <div class="mb-4">
-                <label class="form-label fw-bold">Inscripción</label>
-                <input type="text" class="form-control" id="inscripcionNombre" readonly>
-                <small class="text-muted">No se puede cambiar la inscripción</small>
-            </div>
-
-            <!-- NOMBRE EVALUACIÓN -->
-            <div class="mb-4">
-                <label for="nombreEvaluacion" class="form-label fw-bold">
-                    Nombre de la Evaluación <span class="text-danger">*</span>
-                </label>
-                <input type="text" class="form-control" id="nombreEvaluacion" maxlength="100" required>
-                <div class="char-counter">
-                    <span id="nombreCounter">0/100</span> caracteres
+        <div class="alert alert-info">
+            <div class="d-flex align-items-start">
+                <i class="fas fa-info-circle me-2 mt-1"></i>
+                <div class="flex-grow-1">
+                    <strong>Importante:</strong>
+                    <ul class="mb-0 mt-2 small">
+                        <li>✅ Las notas aparecen deshabilitadas por seguridad</li>
+                        <li>✅ Usa el botón "Editar" para modificar cada nota individual</li>
+                        <li>✅ Nota mínima: 0.0 - Nota máxima: 5.0</li>
+                        <li>✅ Los cambios se guardan inmediatamente</li>
+                    </ul>
                 </div>
             </div>
+        </div>
 
-            <!-- NOTA -->
-            <div class="mb-4">
-                <label for="nota" class="form-label fw-bold">
-                    Nota <span class="text-danger">*</span>
-                </label>
-                <input type="number" class="form-control" id="nota" min="0" max="5" step="0.1" required>
-                <small class="text-muted">Entre 0.0 y 5.0 (Aprobación >= 3.0)</small>
+        <!-- PROFESOR (Solo para ADMIN/SUPER_ADMIN) -->
+        <div class="mb-4" id="profesorContainer" style="display: none;">
+            <label for="profesorId" class="form-label fw-bold">
+                Profesor <span class="text-danger">*</span>
+            </label>
+            <select class="form-select" id="profesorId" required>
+                <option value="">Selecciona un profesor</option>
+            </select>
+        </div>
+
+        <!-- CURSO -->
+        <div class="mb-4">
+            <label for="cursoId" class="form-label fw-bold">
+                Curso <span class="text-danger">*</span>
+            </label>
+            <select class="form-select" id="cursoId" required>
+                <option value="">Selecciona un curso</option>
+            </select>
+        </div>
+
+        <!-- EVALUACIÓN -->
+        <div class="mb-4" id="evaluacionContainer" style="display: none;">
+            <label for="evaluacionNombre" class="form-label fw-bold">
+                Evaluación <span class="text-danger">*</span>
+            </label>
+            <select class="form-select" id="evaluacionNombre" required>
+                <option value="">Selecciona una evaluación</option>
+            </select>
+        </div>
+
+        <!-- TABLA DE CALIFICACIONES -->
+        <div class="estudiantes-table" id="calificacionesTable">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-users"></i> Calificaciones
+                    <span class="badge-evaluacion" id="infoEvaluacion"></span>
+                </h5>
             </div>
 
-            <!-- PORCENTAJE -->
-            <div class="mb-4">
-                <label for="porcentaje" class="form-label fw-bold">
-                    Porcentaje <span class="text-danger">*</span>
-                </label>
-                <input type="number" class="form-control" id="porcentaje" min="1" max="100" required>
-                <small class="text-muted">Entre 1% y 100%</small>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered sticky-header">
+                    <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Código</th>
+                        <th>Nombre Completo</th>
+                        <th style="width: 120px;">Nota</th>
+                        <th style="width: 150px;">Estado</th>
+                        <th style="width: 100px;">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody id="calificacionesBody">
+                    <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
             </div>
+        </div>
 
-            <!-- PREVIEW DE NOTA PONDERADA -->
-            <div class="nota-preview" id="notaPreview" style="display: none;">
-                <h6><i class="fas fa-calculator"></i> Cálculo Actualizado</h6>
-                <p class="mb-1"><strong>Nota Ponderada:</strong> <span id="notaPonderadaCalc">0.00</span></p>
-                <p class="mb-0"><strong>Estado:</strong> <span id="estadoNota"></span></p>
-            </div>
-
-            <!-- OBSERVACIONES -->
-            <div class="mb-4 mt-4">
-                <label for="observaciones" class="form-label fw-bold">
-                    Observaciones <span class="text-muted">(Opcional)</span>
-                </label>
-                <textarea class="form-control" id="observaciones" rows="3" maxlength="500"></textarea>
-                <div class="char-counter">
-                    <span id="observacionesCounter">0/500</span> caracteres
-                </div>
-            </div>
-
-            <!-- BOTONES -->
-            <div class="d-flex gap-2 justify-content-end mt-4">
-                <button type="button" class="btn btn-secondary" onclick="cancelar()">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save"></i> Guardar Cambios
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 
@@ -182,154 +226,259 @@
 <script>
     const token = localStorage.getItem('token');
     const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
 
     if (!token) window.location.href = '/login';
-    document.getElementById('userName').textContent = userName || 'Admin';
+    document.getElementById('userName').textContent = userName || 'Usuario';
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const calificacionId = urlParams.get('id') || window.location.pathname.split('/').pop();
+    let calificacionesData = [];
 
-    let formModificado = false;
-    let guardandoFormulario = false;
-    let calificacionOriginal = null;
-    let inscripcionId = null;
+    // Configurar según rol
+    async function configurarInterfazPorRol() {
+        if (userRole === 'SUPER_ADMIN' || userRole === 'ADMIN') {
+            document.getElementById('profesorContainer').style.display = 'block';
+            await cargarProfesores();
 
-    async function cargarCalificacion() {
+            document.getElementById('profesorId').addEventListener('change', async function() {
+                const profesorId = this.value;
+                if (profesorId) {
+                    await cargarCursosDeProfesor(profesorId);
+                } else {
+                    document.getElementById('cursoId').innerHTML = '<option value="">Selecciona un curso</option>';
+                    ocultarEvaluaciones();
+                }
+            });
+        } else if (userRole === 'PROFESOR') {
+            await cargarMisCursos();
+        }
+    }
+
+    // Cargar profesores
+    async function cargarProfesores() {
         try {
-            const response = await axios.get(`http://localhost:8080/api/calificaciones/${calificacionId}`, {
+            const response = await axios.get('http://localhost:8080/api/profesores', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            calificacionOriginal = response.data;
-            inscripcionId = calificacionOriginal.inscripcionId;
+            const select = document.getElementById('profesorId');
+            response.data.forEach(profesor => {
+                const option = document.createElement('option');
+                option.value = profesor.id;
+                option.textContent = `${profesor.nombreCompleto} - ${profesor.departamentoNombre}`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando profesores:', error);
+        }
+    }
 
-            // Llenar formulario
-            document.getElementById('calificacionId').value = calificacionOriginal.id;
-            document.getElementById('nombreEvaluacion').value = calificacionOriginal.nombreEvaluacion;
-            document.getElementById('nota').value = calificacionOriginal.nota;
-            document.getElementById('porcentaje').value = calificacionOriginal.porcentaje;
-            document.getElementById('observaciones').value = calificacionOriginal.observaciones || '';
+    // Cargar cursos de un profesor
+    async function cargarCursosDeProfesor(profesorId) {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/cursos/profesor/${profesorId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-            // Actualizar contadores
-            document.getElementById('nombreCounter').textContent = `${calificacionOriginal.nombreEvaluacion.length}/100`;
-            document.getElementById('observacionesCounter').textContent = `${(calificacionOriginal.observaciones || '').length}/500`;
+            const select = document.getElementById('cursoId');
+            select.innerHTML = '<option value="">Selecciona un curso</option>';
 
-            // Mostrar inscripción (solo lectura - necesitaríamos otro endpoint para obtener el nombre)
-            document.getElementById('inscripcionNombre').value = 'Inscripción ID: ' + calificacionId;
+            response.data.forEach(curso => {
+                const option = document.createElement('option');
+                option.value = curso.id;
+                option.textContent = `${curso.codigo} - ${curso.materia} (${curso.periodo})`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando cursos:', error);
+        }
+    }
 
-            calcularNotaPonderada();
+    // Cargar mis cursos (profesor autenticado)
+    async function cargarMisCursos() {
+        try {
+            const response = await axios.get('http://localhost:8080/api/cursos/mis-cursos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-            document.getElementById('loadingOverlay').style.display = 'none';
+            const select = document.getElementById('cursoId');
+            select.innerHTML = '<option value="">Selecciona un curso</option>';
+
+            response.data.forEach(curso => {
+                const option = document.createElement('option');
+                option.value = curso.id;
+                option.textContent = `${curso.codigo} - ${curso.materia} (${curso.periodo})`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando cursos:', error);
+        }
+    }
+
+    // Cargar evaluaciones del curso
+    async function cargarEvaluaciones(cursoId) {
+        try {
+            mostrarLoading();
+
+            const response = await axios.get(
+                `http://localhost:8080/api/calificaciones/curso/${cursoId}`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            // Obtener nombres únicos de evaluaciones
+            const evaluacionesUnicas = [...new Set(response.data.map(c => c.nombreEvaluacion))];
+
+            const select = document.getElementById('evaluacionNombre');
+            select.innerHTML = '<option value="">Selecciona una evaluación</option>';
+
+            evaluacionesUnicas.forEach(nombre => {
+                const option = document.createElement('option');
+                option.value = nombre;
+                option.textContent = nombre;
+                select.appendChild(option);
+            });
+
+            if (evaluacionesUnicas.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sin evaluaciones',
+                    text: 'Este curso no tiene evaluaciones registradas',
+                    confirmButtonColor: '#059669'
+                });
+                ocultarEvaluaciones();
+            } else {
+                document.getElementById('evaluacionContainer').style.display = 'block';
+            }
 
         } catch (error) {
-            console.error('Error cargando calificación:', error);
-            document.getElementById('loadingOverlay').style.display = 'none';
-
+            console.error('Error cargando evaluaciones:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'No se pudo cargar la calificación',
+                text: 'No se pudieron cargar las evaluaciones',
                 confirmButtonColor: '#059669'
-            }).then(() => {
-                window.location.href = '/calificaciones';
             });
+        } finally {
+            ocultarLoading();
         }
     }
 
-    cargarCalificacion();
+    // Cargar calificaciones de una evaluación
+    async function cargarCalificaciones(cursoId, nombreEvaluacion) {
+        try {
+            mostrarLoading();
 
-    // Contadores
-    document.getElementById('nombreEvaluacion').addEventListener('input', function(e) {
-        document.getElementById('nombreCounter').textContent = `${e.target.value.length}/100`;
-        formModificado = true;
-    });
+            const response = await axios.get(
+                `http://localhost:8080/api/calificaciones/curso/${cursoId}`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
 
-    document.getElementById('observaciones').addEventListener('input', function(e) {
-        document.getElementById('observacionesCounter').textContent = `${e.target.value.length}/500`;
-        formModificado = true;
-    });
+            // Filtrar por nombre de evaluación
+            calificacionesData = response.data.filter(c => c.nombreEvaluacion === nombreEvaluacion);
 
-    // Calcular nota ponderada en tiempo real
-    function calcularNotaPonderada() {
-        const nota = parseFloat(document.getElementById('nota').value) || 0;
-        const porcentaje = parseInt(document.getElementById('porcentaje').value) || 0;
+            if (calificacionesData.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sin calificaciones',
+                    text: 'No hay calificaciones para esta evaluación',
+                    confirmButtonColor: '#059669'
+                });
+                document.getElementById('calificacionesTable').style.display = 'none';
+                return;
+            }
 
-        if (nota > 0 && porcentaje > 0) {
-            const notaPonderada = (nota * porcentaje / 100).toFixed(2);
-            document.getElementById('notaPonderadaCalc').textContent = notaPonderada;
+            // Obtener info de la evaluación (todas tienen la misma)
+            const primeraCalif = calificacionesData[0];
+            document.getElementById('infoEvaluacion').textContent =
+                `${nombreEvaluacion} - ${primeraCalif.porcentaje}%`;
 
-            const estado = nota >= 3.0
-                ? '<span class="text-success"><i class="fas fa-check"></i> APROBADA</span>'
-                : '<span class="text-danger"><i class="fas fa-times"></i> REPROBADA</span>';
-            document.getElementById('estadoNota').innerHTML = estado;
+            // Llenar tabla
+            const tbody = document.getElementById('calificacionesBody');
+            tbody.innerHTML = '';
 
-            document.getElementById('notaPreview').style.display = 'block';
-        } else {
-            document.getElementById('notaPreview').style.display = 'none';
+            calificacionesData.forEach((calif, index) => {
+                const estadoClass = calif.nota >= 3.0 ? 'nota-aprobada' : 'nota-reprobada';
+                const estadoText = calif.nota >= 3.0 ? 'Aprobado' : 'Reprobado';
+                const estadoBadge = calif.nota >= 3.0 ? 'bg-success' : 'bg-danger';
+
+                const row = `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td>${calif.codigoEstudiante || calif.estudianteCodigo}</td>
+                        <td>${calif.estudianteNombre}</td>
+                        <td>
+                            <span class="nota-display ${estadoClass}" id="nota-display-${calif.id}">
+                                ${calif.nota.toFixed(1)}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge ${estadoBadge}">${estadoText}</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning btn-edit-nota"
+                                    onclick="editarNota(${calif.id}, ${calif.nota})">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            document.getElementById('calificacionesTable').style.display = 'block';
+
+        } catch (error) {
+            console.error('Error cargando calificaciones:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar las calificaciones',
+                confirmButtonColor: '#059669'
+            });
+        } finally {
+            ocultarLoading();
         }
     }
 
-    document.getElementById('nota').addEventListener('input', function() {
-        calcularNotaPonderada();
-        formModificado = true;
-    });
-
-    document.getElementById('porcentaje').addEventListener('input', function() {
-        calcularNotaPonderada();
-        formModificado = true;
-    });
-
-    // Enviar formulario
-    document.getElementById('formEditarCalificacion').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const nombreEvaluacion = document.getElementById('nombreEvaluacion').value.trim();
-        const nota = parseFloat(document.getElementById('nota').value);
-        const porcentaje = parseInt(document.getElementById('porcentaje').value);
-        const observaciones = document.getElementById('observaciones').value.trim();
-
-        if (!nombreEvaluacion || !nota || !porcentaje) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Campos incompletos',
-                text: 'Completa todos los campos obligatorios',
-                confirmButtonColor: '#059669'
-            });
-            return;
-        }
-
-        if (nota < 0 || nota > 5) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Nota inválida',
-                text: 'La nota debe estar entre 0.0 y 5.0',
-                confirmButtonColor: '#059669'
-            });
-            return;
-        }
-
+    // Editar nota individual
+    async function editarNota(calificacionId, notaActual) {
         const result = await Swal.fire({
-            title: '¿Guardar cambios?',
-            text: 'Se actualizará la información de la calificación',
+            title: 'Editar Nota',
+            html: `
+                <div class="text-start mb-3">
+                    <p><strong>Nota actual:</strong> ${notaActual.toFixed(1)}</p>
+                </div>
+                <input type="number" id="nuevaNota" class="swal2-input"
+                       value="${notaActual}" min="0" max="5" step="0.1"
+                       placeholder="Nueva nota (0.0 - 5.0)">
+            `,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: 'Sí, guardar',
+            confirmButtonText: 'Guardar',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#059669'
+            confirmButtonColor: '#059669',
+            preConfirm: () => {
+                const nuevaNota = parseFloat(document.getElementById('nuevaNota').value);
+                if (isNaN(nuevaNota) || nuevaNota < 0 || nuevaNota > 5) {
+                    Swal.showValidationMessage('La nota debe estar entre 0.0 y 5.0');
+                    return false;
+                }
+                return nuevaNota;
+            }
         });
 
         if (result.isConfirmed) {
-            document.getElementById('loadingOverlay').querySelector('p').textContent = 'Guardando cambios...';
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            guardandoFormulario = true;
-
             try {
+                mostrarLoading();
+
+                // Obtener datos completos de la calificación
+                const calif = calificacionesData.find(c => c.id === calificacionId);
+
                 const datos = {
-                    inscripcionId: inscripcionId, // Necesitaríamos obtener esto del backend
-                    nombreEvaluacion: nombreEvaluacion,
-                    nota: nota,
-                    porcentaje: porcentaje,
-                    observaciones: observaciones || null
+                    inscripcionId: calif.inscripcionId,
+                    nombreEvaluacion: calif.nombreEvaluacion,
+                    nota: result.value,
+                    porcentaje: calif.porcentaje,
+                    observaciones: calif.observaciones
                 };
 
                 await axios.put(
@@ -338,74 +487,90 @@
                     { headers: { 'Authorization': `Bearer ${token}` } }
                 );
 
-                document.getElementById('loadingOverlay').style.display = 'none';
+                // Actualizar la nota en pantalla
+                const notaDisplay = document.getElementById(`nota-display-${calificacionId}`);
+                notaDisplay.textContent = result.value.toFixed(1);
+
+                // Actualizar clase de color
+                notaDisplay.classList.remove('nota-aprobada', 'nota-reprobada');
+                notaDisplay.classList.add(result.value >= 3.0 ? 'nota-aprobada' : 'nota-reprobada');
+
+                // Actualizar badge de estado
+                const row = notaDisplay.closest('tr');
+                const badge = row.querySelector('.badge');
+                badge.className = result.value >= 3.0 ? 'badge bg-success' : 'badge bg-danger';
+                badge.textContent = result.value >= 3.0 ? 'Aprobado' : 'Reprobado';
 
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Cambios guardados!',
-                    text: 'La calificación fue actualizada correctamente',
-                    confirmButtonColor: '#059669'
-                }).then(() => {
-                    window.location.href = '/calificaciones';
+                    title: '¡Nota actualizada!',
+                    text: `La nota se actualizó a ${result.value.toFixed(1)}`,
+                    confirmButtonColor: '#059669',
+                    timer: 2000,
+                    showConfirmButton: false
                 });
 
             } catch (error) {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                guardandoFormulario = false;
-
-                let mensajeError = 'No se pudieron guardar los cambios';
-
-                if (error.response?.data?.message?.includes('porcentajes excede 100')) {
-                    mensajeError = error.response.data.message;
-                } else if (error.response?.data?.message) {
-                    mensajeError = error.response.data.message;
-                }
-
+                console.error('Error actualizando nota:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: mensajeError,
+                    text: error.response?.data?.message || 'No se pudo actualizar la nota',
                     confirmButtonColor: '#059669'
                 });
+            } finally {
+                ocultarLoading();
             }
         }
-    });
+    }
 
-    function cancelar() {
-        if (formModificado) {
-            Swal.fire({
-                title: '¿Descartar cambios?',
-                text: 'Se perderán las modificaciones realizadas',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, descartar',
-                cancelButtonText: 'Continuar editando',
-                confirmButtonColor: '#dc2626'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/calificaciones';
-                }
-            });
+    // Listeners
+    document.getElementById('cursoId').addEventListener('change', async function() {
+        const cursoId = this.value;
+        if (cursoId) {
+            await cargarEvaluaciones(cursoId);
         } else {
-            window.location.href = '/calificaciones';
-        }
-    }
-
-    function volverLista() {
-        cancelar();
-    }
-
-    window.addEventListener('beforeunload', function(e) {
-        if (formModificado && !guardandoFormulario) {
-            e.preventDefault();
-            e.returnValue = '';
+            ocultarEvaluaciones();
         }
     });
+
+    document.getElementById('evaluacionNombre').addEventListener('change', async function() {
+        const cursoId = document.getElementById('cursoId').value;
+        const nombreEvaluacion = this.value;
+
+        if (nombreEvaluacion && cursoId) {
+            await cargarCalificaciones(cursoId, nombreEvaluacion);
+        } else {
+            document.getElementById('calificacionesTable').style.display = 'none';
+        }
+    });
+
+    function ocultarEvaluaciones() {
+        document.getElementById('evaluacionContainer').style.display = 'none';
+        document.getElementById('calificacionesTable').style.display = 'none';
+        document.getElementById('evaluacionNombre').innerHTML = '<option value="">Selecciona una evaluación</option>';
+    }
+
+    function mostrarLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function ocultarLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    function volver() {
+        const ruta = userRole === 'PROFESOR' ? '/dashboard/profesor' : '/calificaciones';
+        window.location.href = ruta;
+    }
 
     function logout() {
         localStorage.clear();
         window.location.href = '/login';
     }
+
+    // Inicializar
+    configurarInterfazPorRol();
 </script>
 
 </body>

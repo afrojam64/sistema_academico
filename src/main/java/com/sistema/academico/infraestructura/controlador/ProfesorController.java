@@ -134,4 +134,14 @@ public class ProfesorController {
 
         return ResponseEntity.ok(profesores);
     }
+
+    /**
+     * Listar solo profesores que tienen cursos activos asignados
+     * Ruta: GET /api/profesores/con-cursos-activos
+     */
+    @GetMapping("/con-cursos-activos")
+    public ResponseEntity<List<ProfesorResponseDTO>> listarProfesoresConCursosActivos() {
+        List<ProfesorResponseDTO> profesores = profesorService.listarProfesoresConCursosActivos();
+        return ResponseEntity.ok(profesores);
+    }
 }

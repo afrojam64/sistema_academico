@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Calificación - Sistema Académico</title>
+    <title>Registrar Calificaciones - Sistema Académico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -23,6 +23,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-top: 30px;
             margin-bottom: 30px;
+            max-width: 1200px;
         }
         .form-header {
             border-bottom: 3px solid #059669;
@@ -36,21 +37,52 @@
         .btn-success:hover {
             background: linear-gradient(135deg, #047857, #059669);
         }
-        .char-counter {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 4px;
-        }
         .alert-info {
             background-color: #dbeafe;
             border-left: 4px solid #3b82f6;
         }
-        .nota-preview {
-            background: #f0fdf4;
+        .estudiantes-table {
+            margin-top: 20px;
+            display: none;
+        }
+        .estudiantes-table table {
+            font-size: 14px;
+        }
+        .estudiantes-table input[type="number"] {
+            width: 80px;
+        }
+        .nota-input {
+            text-align: center;
+        }
+        .nota-input.is-invalid {
+            border-color: #dc3545;
+        }
+        .nota-input.is-valid {
+            border-color: #198754;
+        }
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 10;
+        }
+        .resumen-container {
+            background: #f3f4f6;
             padding: 15px;
             border-radius: 10px;
-            margin-top: 15px;
-            border: 2px solid #10b981;
+            margin-top: 20px;
+            display: none;
+        }
+        .badge-estudiantes {
+            background: #3b82f6;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -59,16 +91,16 @@
 <nav class="navbar navbar-dark">
     <div class="container-fluid">
         <div>
-            <button class="btn btn-outline-light me-2" onclick="window.location.href='/calificaciones'">
+            <button class="btn btn-outline-light me-2" onclick="volver()">
                 <i class="fas fa-arrow-left"></i> Volver
             </button>
             <span class="navbar-brand mb-0 h1">
-                <i class="fas fa-graduation-cap"></i> Registrar Calificación
+                <i class="fas fa-graduation-cap"></i> Registrar Calificaciones
             </span>
         </div>
         <div class="user-info">
             <i class="fas fa-user"></i>
-            <span id="userName">Admin</span>
+            <span id="userName">Usuario</span>
             <button class="btn btn-sm btn-light ms-3" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i> Salir
             </button>
@@ -79,8 +111,8 @@
 <div class="container">
     <div class="form-container">
         <div class="form-header">
-            <h2><i class="fas fa-graduation-cap"></i> Registrar Nueva Calificación</h2>
-            <p class="text-muted mb-0">Registra la nota de una evaluación</p>
+            <h2><i class="fas fa-graduation-cap"></i> Registrar Calificaciones por Curso</h2>
+            <p class="text-muted mb-0">Califica a todos los estudiantes de un curso en una sola operación</p>
         </div>
 
         <div class="alert alert-info">
@@ -89,7 +121,7 @@
                 <div class="flex-grow-1">
                     <strong>Importante:</strong>
                     <ul class="mb-0 mt-2 small">
-                        <li>✅ Solo inscripciones ACTIVAS pueden tener calificaciones</li>
+                        <li>✅ Solo se pueden calificar cursos con inscripciones ACTIVAS</li>
                         <li>✅ La suma de porcentajes NO puede exceder 100%</li>
                         <li>✅ Nota mínima: 0.0 - Nota máxima: 5.0</li>
                         <li>✅ Nota aprobatoria: >= 3.0</li>
@@ -98,67 +130,112 @@
             </div>
         </div>
 
-        <form id="formCrearCalificacion">
-            <!-- INSCRIPCIÓN -->
-            <div class="mb-4">
-                <label for="inscripcionId" class="form-label fw-bold">
-                    Inscripción <span class="text-danger">*</span>
+        <form id="formCalificaciones">
+            <!-- PROFESOR (Solo para ADMIN/SUPER_ADMIN) -->
+            <div class="mb-4" id="profesorContainer" style="display: none;">
+                <label for="profesorId" class="form-label fw-bold">
+                    Profesor <span class="text-danger">*</span>
                 </label>
-                <select class="form-select" id="inscripcionId" required>
-                    <option value="">Selecciona una inscripción</option>
+                <select class="form-select" id="profesorId" required>
+                    <option value="">Selecciona un profesor</option>
                 </select>
-                <small class="text-muted">Estudiante - Curso</small>
             </div>
 
-            <!-- NOMBRE EVALUACIÓN -->
+            <!-- CURSO -->
             <div class="mb-4">
-                <label for="nombreEvaluacion" class="form-label fw-bold">
-                    Nombre de la Evaluación <span class="text-danger">*</span>
+                <label for="cursoId" class="form-label fw-bold">
+                    Curso <span class="text-danger">*</span>
                 </label>
-                <input type="text" class="form-control" id="nombreEvaluacion"
-                       placeholder="Ej: Parcial 1, Quiz 2, Examen Final" maxlength="100" required>
-                <div class="char-counter">
-                    <span id="nombreCounter">0/100</span> caracteres
+                <select class="form-select" id="cursoId" required>
+                    <option value="">Selecciona un curso</option>
+                </select>
+            </div>
+
+            <!-- TABLA DE ESTUDIANTES -->
+            <div class="estudiantes-table" id="estudiantesTable">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users"></i> Estudiantes Inscritos
+                        <span class="badge-estudiantes" id="cantidadEstudiantes">0 estudiantes</span>
+                    </h5>
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="aplicarNotaATodos()">
+                        <i class="fas fa-magic"></i> Aplicar Nota a Todos
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered sticky-header">
+                        <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Código</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th style="width: 120px;">Nota <span class="text-danger">*</span></th>
+                        </tr>
+                        </thead>
+                        <tbody id="estudiantesBody">
+                        <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- NOTA -->
-            <div class="mb-4">
-                <label for="nota" class="form-label fw-bold">
-                    Nota <span class="text-danger">*</span>
-                </label>
-                <input type="number" class="form-control" id="nota"
-                       placeholder="Ej: 4.5" min="0" max="5" step="0.1" required>
-                <small class="text-muted">Entre 0.0 y 5.0 (Aprobación >= 3.0)</small>
+            <!-- RESUMEN -->
+            <div class="resumen-container" id="resumenContainer">
+                <h6><i class="fas fa-chart-bar"></i> Resumen Estadístico</h6>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <small class="text-muted">Calificadas</small>
+                        <h4 id="totalCalificadas">0</h4>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Promedio</small>
+                        <h4 id="promedioNotas">0.0</h4>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Aprobados</small>
+                        <h4 id="totalAprobados" class="text-success">0</h4>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Reprobados</small>
+                        <h4 id="totalReprobados" class="text-danger">0</h4>
+                    </div>
+                </div>
             </div>
 
-            <!-- PORCENTAJE -->
-            <div class="mb-4">
-                <label for="porcentaje" class="form-label fw-bold">
-                    Porcentaje <span class="text-danger">*</span>
-                </label>
-                <input type="number" class="form-control" id="porcentaje"
-                       placeholder="Ej: 30" min="1" max="100" required>
-                <small class="text-muted">Entre 1% y 100%</small>
+            <!-- DATOS DE LA EVALUACIÓN -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <label for="nombreEvaluacion" class="form-label fw-bold">
+                        Nombre de la Evaluación <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="nombreEvaluacion"
+                           placeholder="Ej: Parcial 1, Quiz 2, Examen Final"
+                           maxlength="100" required>
+                    <small class="text-muted">0/100 caracteres</small>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="porcentaje" class="form-label fw-bold">
+                        Porcentaje <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="porcentaje"
+                               min="1" max="100" required>
+                        <span class="input-group-text">%</span>
+                    </div>
+                    <small class="text-muted">Entre 1% y 100%</small>
+                </div>
             </div>
 
-            <!-- PREVIEW DE NOTA PONDERADA -->
-            <div class="nota-preview" id="notaPreview" style="display: none;">
-                <h6><i class="fas fa-calculator"></i> Cálculo Automático</h6>
-                <p class="mb-1"><strong>Nota Ponderada:</strong> <span id="notaPonderadaCalc">0.00</span></p>
-                <p class="mb-0"><strong>Estado:</strong> <span id="estadoNota"></span></p>
-            </div>
-
-            <!-- OBSERVACIONES -->
-            <div class="mb-4 mt-4">
+            <div class="mb-4 mt-3">
                 <label for="observaciones" class="form-label fw-bold">
-                    Observaciones <span class="text-muted">(Opcional)</span>
+                    Observaciones (Opcional)
                 </label>
                 <textarea class="form-control" id="observaciones" rows="3"
-                          placeholder="Comentarios adicionales..." maxlength="500"></textarea>
-                <div class="char-counter">
-                    <span id="observacionesCounter">0/500</span> caracteres
-                </div>
+                          maxlength="500" placeholder="Comentarios adicionales..."></textarea>
+                <small class="text-muted">0/500 caracteres</small>
             </div>
 
             <!-- BOTONES -->
@@ -166,8 +243,8 @@
                 <button type="button" class="btn btn-secondary" onclick="cancelar()">
                     <i class="fas fa-times"></i> Cancelar
                 </button>
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save"></i> Registrar Calificación
+                <button type="submit" class="btn btn-success" id="btnGuardar">
+                    <i class="fas fa-save"></i> Registrar Calificaciones
                 </button>
             </div>
         </form>
@@ -181,170 +258,318 @@
     const token = localStorage.getItem('token');
     const userName = localStorage.getItem('userName');
     const userRole = localStorage.getItem('userRole');
-    const profesorId = localStorage.getItem('profesorId');
 
     if (!token) window.location.href = '/login';
-    document.getElementById('userName').textContent = userName || 'Admin';
+    document.getElementById('userName').textContent = userName || 'Usuario';
 
     let formModificado = false;
+    let estudiantesData = [];
 
-    async function cargarInscripciones() {
-        try {
-            let response;
+    // Configurar según rol
+    async function configurarInterfazPorRol() {
+        if (userRole === 'SUPER_ADMIN' || userRole === 'ADMIN') {
+            // Mostrar selector de profesor
+            document.getElementById('profesorContainer').style.display = 'block';
+            document.getElementById('profesorId').setAttribute('required', 'required');
+            await cargarProfesores();
 
-            // Si es PROFESOR, cargar solo inscripciones de sus cursos
-            if (userRole === 'PROFESOR') {
-                if (!profesorId) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'No se pudo identificar al profesor. Por favor inicie sesión nuevamente.',
-                        confirmButtonColor: '#059669'
-                    }).then(() => {
-                        localStorage.clear();
-                        window.location.href = '/login';
-                    });
-                    return;
+            // Listener para cargar cursos del profesor
+            document.getElementById('profesorId').addEventListener('change', async function() {
+                const profesorId = this.value;
+                if (profesorId) {
+                    await cargarCursosDeProfesor(profesorId);
+                } else {
+                    document.getElementById('cursoId').innerHTML = '<option value="">Selecciona un curso</option>';
                 }
+            });
+        } else if (userRole === 'PROFESOR') {
+            document.getElementById('profesorId').removeAttribute('required');
+            await cargarMisCursos();
+        }
+    }
 
-                // Endpoint específico para profesor
-                response = await axios.get(`http://localhost:8080/api/inscripciones/profesor/${profesorId}/activas`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-            } else {
-                // ADMIN y SUPER_ADMIN ven todas las inscripciones activas
-                response = await axios.get('http://localhost:8080/api/inscripciones/activas', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-            }
+    // Cargar profesores (ADMIN/SUPER_ADMIN)
+    async function cargarProfesores() {
+        try {
+            const response = await axios.get('http://localhost:8080/api/profesores/con-cursos-activos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-            const select = document.getElementById('inscripcionId');
+            const select = document.getElementById('profesorId');
+            response.data.forEach(profesor => {
+                const option = document.createElement('option');
+                option.value = profesor.id;
+                option.textContent = `${profesor.nombreCompleto} - ${profesor.departamentoNombre}`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando profesores:', error);
+        }
+    }
 
-            if (response.data.length === 0) {
-                select.innerHTML = '<option value="">No hay inscripciones disponibles</option>';
+    // Cargar cursos de un profesor específico (ADMIN)
+    async function cargarCursosDeProfesor(profesorId) {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/cursos/profesor/${profesorId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const select = document.getElementById('cursoId');
+            select.innerHTML = '<option value="">Selecciona un curso</option>';
+
+            response.data.forEach(curso => {
+                const option = document.createElement('option');
+                option.value = curso.id;
+                option.textContent = `${curso.codigo} - ${curso.materia} (${curso.periodo})`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando cursos:', error);
+        }
+    }
+
+    // Cargar cursos del profesor autenticado
+    async function cargarMisCursos() {
+        try {
+            const response = await axios.get('http://localhost:8080/api/cursos/mis-cursos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const select = document.getElementById('cursoId');
+            select.innerHTML = '<option value="">Selecciona un curso</option>';
+
+            response.data.forEach(curso => {
+                const option = document.createElement('option');
+                option.value = curso.id;
+                option.textContent = `${curso.codigo} - ${curso.materia} (${curso.periodo})`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando cursos:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron cargar tus cursos',
+                confirmButtonColor: '#059669'
+            });
+        }
+    }
+
+    // Cargar estudiantes del curso
+    async function cargarEstudiantes(cursoId) {
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/api/calificaciones/curso/${cursoId}/inscripciones`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            estudiantesData = response.data;
+            const tbody = document.getElementById('estudiantesBody');
+            tbody.innerHTML = '';
+
+            if (estudiantesData.length === 0) {
+                document.getElementById('estudiantesTable').style.display = 'none';
                 Swal.fire({
                     icon: 'info',
-                    title: 'Sin inscripciones',
-                    text: userRole === 'PROFESOR'
-                        ? 'No tienes estudiantes inscritos en tus cursos activos'
-                        : 'No hay inscripciones activas en el sistema',
+                    title: 'Sin estudiantes',
+                    text: 'Este curso no tiene estudiantes inscritos',
                     confirmButtonColor: '#059669'
                 });
                 return;
             }
 
-            response.data.forEach(inscripcion => {
-                const option = document.createElement('option');
-                option.value = inscripcion.id;
-                option.textContent = `${inscripcion.estudiante} - ${inscripcion.curso}`;
-                select.appendChild(option);
+            estudiantesData.forEach((est, index) => {
+                const row = `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td>${est.codigoEstudiante}</td>
+                        <td>${est.nombreCompleto}</td>
+                        <td class="text-muted small">${est.email}</td>
+                        <td>
+                            <input type="number"
+                                   class="form-control form-control-sm nota-input"
+                                   id="nota-${est.inscripcionId}"
+                                   data-inscripcion="${est.inscripcionId}"
+                                   min="0"
+                                   max="5"
+                                   step="0.1"
+                                   placeholder="0.0">
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
             });
 
+            // Agregar listeners a los inputs
+            document.querySelectorAll('.nota-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    validarNota(this);
+                    calcularResumen();
+                    formModificado = true;
+                });
+            });
+
+            document.getElementById('cantidadEstudiantes').textContent =
+                `${estudiantesData.length} estudiante${estudiantesData.length !== 1 ? 's' : ''}`;
+
+            document.getElementById('estudiantesTable').style.display = 'block';
+            document.getElementById('resumenContainer').style.display = 'block';
+
         } catch (error) {
-            console.error('Error cargando inscripciones:', error);
+            console.error('Error cargando estudiantes:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'No se pudieron cargar las inscripciones',
+                text: 'No se pudieron cargar los estudiantes del curso',
                 confirmButtonColor: '#059669'
             });
         }
     }
 
-    cargarInscripciones();
+    // Validar nota individual
+    function validarNota(input) {
+        const valor = parseFloat(input.value);
 
-    // Contadores
-    document.getElementById('nombreEvaluacion').addEventListener('input', function(e) {
-        document.getElementById('nombreCounter').textContent = `${e.target.value.length}/100`;
-        formModificado = true;
-    });
+        input.classList.remove('is-valid', 'is-invalid');
 
-    document.getElementById('observaciones').addEventListener('input', function(e) {
-        document.getElementById('observacionesCounter').textContent = `${e.target.value.length}/500`;
-        formModificado = true;
-    });
-
-    // Calcular nota ponderada en tiempo real
-    function calcularNotaPonderada() {
-        const nota = parseFloat(document.getElementById('nota').value) || 0;
-        const porcentaje = parseInt(document.getElementById('porcentaje').value) || 0;
-
-        if (nota > 0 && porcentaje > 0) {
-            const notaPonderada = (nota * porcentaje / 100).toFixed(2);
-            document.getElementById('notaPonderadaCalc').textContent = notaPonderada;
-
-            const estado = nota >= 3.0
-                ? '<span class="text-success"><i class="fas fa-check"></i> APROBADA</span>'
-                : '<span class="text-danger"><i class="fas fa-times"></i> REPROBADA</span>';
-            document.getElementById('estadoNota').innerHTML = estado;
-
-            document.getElementById('notaPreview').style.display = 'block';
-        } else {
-            document.getElementById('notaPreview').style.display = 'none';
+        if (input.value === '') {
+            return true;
         }
+
+        if (isNaN(valor) || valor < 0 || valor > 5) {
+            input.classList.add('is-invalid');
+            return false;
+        }
+
+        input.classList.add('is-valid');
+        return true;
     }
 
-    document.getElementById('nota').addEventListener('input', calcularNotaPonderada);
-    document.getElementById('porcentaje').addEventListener('input', calcularNotaPonderada);
+    // Calcular resumen estadístico
+    function calcularResumen() {
+        const inputs = document.querySelectorAll('.nota-input');
+        let total = 0;
+        let suma = 0;
+        let aprobados = 0;
+        let reprobados = 0;
 
-    ['inscripcionId', 'nota', 'porcentaje'].forEach(id => {
-        document.getElementById(id).addEventListener('change', () => formModificado = true);
+        inputs.forEach(input => {
+            const valor = parseFloat(input.value);
+            if (!isNaN(valor) && valor >= 0 && valor <= 5) {
+                total++;
+                suma += valor;
+                if (valor >= 3.0) aprobados++;
+                else reprobados++;
+            }
+        });
+
+        const promedio = total > 0 ? (suma / total).toFixed(2) : '0.0';
+
+        document.getElementById('totalCalificadas').textContent = total;
+        document.getElementById('promedioNotas').textContent = promedio;
+        document.getElementById('totalAprobados').textContent = aprobados;
+        document.getElementById('totalReprobados').textContent = reprobados;
+    }
+
+    // Aplicar nota a todos
+    function aplicarNotaATodos() {
+        Swal.fire({
+            title: 'Aplicar nota a todos',
+            input: 'number',
+            inputLabel: 'Ingresa la nota (0.0 - 5.0)',
+            inputPlaceholder: '0.0',
+            inputAttributes: {
+                min: 0,
+                max: 5,
+                step: 0.1
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Aplicar',
+            confirmButtonColor: '#059669',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (value) => {
+                const num = parseFloat(value);
+                if (!value) return 'Debes ingresar una nota';
+                if (isNaN(num) || num < 0 || num > 5) return 'La nota debe estar entre 0.0 y 5.0';
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.querySelectorAll('.nota-input').forEach(input => {
+                    input.value = result.value;
+                    validarNota(input);
+                });
+                calcularResumen();
+                formModificado = true;
+            }
+        });
+    }
+
+    // Listener del curso
+    document.getElementById('cursoId').addEventListener('change', async function() {
+        const cursoId = this.value;
+        if (cursoId) {
+            await cargarEstudiantes(cursoId);
+        } else {
+            document.getElementById('estudiantesTable').style.display = 'none';
+            document.getElementById('resumenContainer').style.display = 'none';
+        }
+        formModificado = true;
     });
 
-    // Enviar formulario
-    document.getElementById('formCrearCalificacion').addEventListener('submit', async function(e) {
+    // Contadores de caracteres
+    document.getElementById('nombreEvaluacion').addEventListener('input', function() {
+        this.nextElementSibling.textContent = `${this.value.length}/100 caracteres`;
+        formModificado = true;
+    });
+
+    document.getElementById('observaciones').addEventListener('input', function() {
+        this.nextElementSibling.textContent = `${this.value.length}/500 caracteres`;
+        formModificado = true;
+    });
+
+    // Submit del formulario
+    document.getElementById('formCalificaciones').addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const inscripcionId = document.getElementById('inscripcionId').value;
-        const nombreEvaluacion = document.getElementById('nombreEvaluacion').value.trim();
-        const nota = parseFloat(document.getElementById('nota').value);
+        const cursoId = document.getElementById('cursoId').value;
+        const nombreEvaluacion = document.getElementById('nombreEvaluacion').value;
         const porcentaje = parseInt(document.getElementById('porcentaje').value);
-        const observaciones = document.getElementById('observaciones').value.trim();
+        const observaciones = document.getElementById('observaciones').value;
 
-        if (!inscripcionId || !nombreEvaluacion || !nota || !porcentaje) {
+        // Recopilar calificaciones
+        const calificaciones = [];
+        let hayNotas = false;
+
+        document.querySelectorAll('.nota-input').forEach(input => {
+            const nota = parseFloat(input.value);
+            if (!isNaN(nota) && nota >= 0 && nota <= 5) {
+                hayNotas = true;
+                calificaciones.push({
+                    inscripcionId: parseInt(input.dataset.inscripcion),
+                    nota: nota
+                });
+            }
+        });
+
+        // Validaciones
+        if (!hayNotas) {
             Swal.fire({
                 icon: 'warning',
-                title: 'Campos incompletos',
-                text: 'Completa todos los campos obligatorios',
+                title: 'Sin calificaciones',
+                text: 'Debes ingresar al menos una nota válida',
                 confirmButtonColor: '#059669'
             });
             return;
         }
 
-        if (nota < 0 || nota > 5) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Nota inválida',
-                text: 'La nota debe estar entre 0.0 y 5.0',
-                confirmButtonColor: '#059669'
-            });
-            return;
-        }
-
-        if (porcentaje < 1 || porcentaje > 100) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Porcentaje inválido',
-                text: 'El porcentaje debe estar entre 1 y 100',
-                confirmButtonColor: '#059669'
-            });
-            return;
-        }
-
-        const inscripcionNombre = document.getElementById('inscripcionId').selectedOptions[0].text;
-        const notaPonderada = (nota * porcentaje / 100).toFixed(2);
-        const estado = nota >= 3.0 ? 'APROBADA' : 'REPROBADA';
-
+        // Confirmación
         const result = await Swal.fire({
-            title: '¿Registrar calificación?',
+            title: '¿Registrar calificaciones?',
             html: `
-                <div style="text-align: left; margin: 20px;">
-                    <p><strong>Inscripción:</strong> ${inscripcionNombre}</p>
+                <div class="text-start">
                     <p><strong>Evaluación:</strong> ${nombreEvaluacion}</p>
-                    <p><strong>Nota:</strong> ${nota}</p>
                     <p><strong>Porcentaje:</strong> ${porcentaje}%</p>
-                    <p><strong>Nota Ponderada:</strong> ${notaPonderada}</p>
-                    <p><strong>Estado:</strong> ${estado}</p>
+                    <p><strong>Estudiantes a calificar:</strong> ${calificaciones.length}</p>
                 </div>
             `,
             icon: 'question',
@@ -357,50 +582,47 @@
         if (result.isConfirmed) {
             try {
                 const datos = {
-                    inscripcionId: parseInt(inscripcionId),
-                    nombreEvaluacion: nombreEvaluacion,
-                    nota: nota,
-                    porcentaje: porcentaje,
-                    observaciones: observaciones || null
+                    cursoId: parseInt(cursoId),
+                    nombreEvaluacion,
+                    porcentaje,
+                    observaciones: observaciones || null,
+                    calificaciones
                 };
 
                 await axios.post(
-                    'http://localhost:8080/api/calificaciones',
+                    'http://localhost:8080/api/calificaciones/batch',
                     datos,
                     { headers: { 'Authorization': `Bearer ${token}` } }
                 );
 
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Calificación registrada!',
-                    text: 'La calificación fue registrada correctamente',
+                    title: '¡Calificaciones registradas!',
+                    text: `Se registraron ${calificaciones.length} calificaciones exitosamente`,
                     confirmButtonColor: '#059669'
                 }).then(() => {
-                    window.location.href = '/calificaciones';
+                    formModificado = false;
+                    volver();
                 });
 
             } catch (error) {
-                let mensajeError = 'No se pudo registrar la calificación';
-
-                if (error.response?.data?.message?.includes('porcentajes excede 100')) {
-                    mensajeError = error.response.data.message;
-                } else if (error.response?.data?.message?.includes('activas')) {
-                    mensajeError = 'Solo se pueden registrar calificaciones en inscripciones activas';
-                } else if (error.response?.data?.message) {
-                    mensajeError = error.response.data.message;
+                let mensaje = 'No se pudieron registrar las calificaciones';
+                if (error.response?.data?.message) {
+                    mensaje = error.response.data.message;
                 }
 
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: mensajeError,
+                    text: mensaje,
                     confirmButtonColor: '#059669'
                 });
             }
         }
     });
 
-    function cancelar() {
+    function volver() {
+        const ruta = userRole === 'PROFESOR' ? '/dashboard/profesor' : '/calificaciones';
         if (formModificado) {
             Swal.fire({
                 title: '¿Descartar cambios?',
@@ -411,13 +633,20 @@
                 cancelButtonText: 'Continuar',
                 confirmButtonColor: '#dc2626'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/calificaciones';
-                }
+                if (result.isConfirmed) window.location.href = ruta;
             });
         } else {
-            window.location.href = '/calificaciones';
+            window.location.href = ruta;
         }
+    }
+
+    function cancelar() {
+        volver();
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
     }
 
     window.addEventListener('beforeunload', function(e) {
@@ -427,10 +656,8 @@
         }
     });
 
-    function logout() {
-        localStorage.clear();
-        window.location.href = '/login';
-    }
+    // Inicializar
+    configurarInterfazPorRol();
 </script>
 
 </body>

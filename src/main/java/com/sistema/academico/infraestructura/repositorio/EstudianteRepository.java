@@ -65,4 +65,10 @@ public interface EstudianteRepository extends JpaRepository<Estudiante, Long> {
 
     // Contar estudiantes por estado
     Long countByEstado(Estado estado);
+
+    /**
+     * Buscar estudiante por nombre de usuario
+     * Útil para obtener el estudiante del usuario autenticado
+     */
+    Optional<Estudiante> findByUsuario_NombreUsuario(String nombreUsuario);
 }

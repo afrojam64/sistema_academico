@@ -372,4 +372,13 @@ public class ViewController {
     public String dashboardEjecutivo() {
         return "reportes/dashboard-ejecutivo";
     }
+
+    // Busca tu clase ViewController y agrega este método:
+
+    @GetMapping("/inscripciones/inscripcion-estudiante")
+    public String inscripcionEstudiante() {
+        return "inscripciones/inscripcion-estudiante";
+    }
+
+
 }

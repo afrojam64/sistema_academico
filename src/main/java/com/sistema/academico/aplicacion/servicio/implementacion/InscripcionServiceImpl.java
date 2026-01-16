@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,9 +43,22 @@ public class InscripcionServiceImpl implements IInscripcionService {
     @Override
     @Transactional
     public InscripcionResponseDTO crear(InscripcionRequestDTO request) {
-        // Validar que el estudiante existe
-        Estudiante estudiante = estudianteRepository.findById(request.getEstudianteId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado"));
+
+        // ✅ NUEVO: Obtener estudiante del token JWT si no viene en el request
+        Estudiante estudiante;
+
+        if (request.getEstudianteId() != null) {
+            // Caso 1: Admin/Profesor creando inscripción (estudianteId viene en request)
+            estudiante = estudianteRepository.findById(request.getEstudianteId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado"));
+        } else {
+            // Caso 2: Estudiante creando su propia inscripción (obtener del token JWT)
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String nombreUsuario = auth.getName();
+
+            estudiante = estudianteRepository.findByUsuario_NombreUsuario(nombreUsuario)
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado"));
+        }
 
         // Validar que el curso existe
         Curso curso = cursoRepository.findById(request.getCursoId())

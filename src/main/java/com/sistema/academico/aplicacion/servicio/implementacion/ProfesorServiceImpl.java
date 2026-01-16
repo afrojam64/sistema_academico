@@ -410,4 +410,25 @@ public class ProfesorServiceImpl implements IProfesorService {
                 .map(profesorMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProfesorResponseDTO> listarProfesoresConCursosActivos() {
+        // Obtener todos los profesores activos
+        List<Profesor> profesores = profesorRepository.findByEstado(Estado.ACTIVO);
+
+        // Filtrar solo los que tienen cursos activos
+        List<Profesor> profesoresConCursos = profesores.stream()
+                .filter(profesor -> {
+                    List<Curso> cursosActivos = cursoRepository
+                            .findByProfesorAndEstado(profesor, Estado.ACTIVO);
+                    return !cursosActivos.isEmpty();
+                })
+                .collect(Collectors.toList());
+
+        // Mapear a DTO
+        return profesoresConCursos.stream()
+                .map(profesorMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 }

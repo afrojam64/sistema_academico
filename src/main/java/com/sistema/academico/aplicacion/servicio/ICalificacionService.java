@@ -6,6 +6,8 @@ import com.sistema.academico.aplicacion.dto.response.CalificacionesCursoReporteD
 import com.sistema.academico.aplicacion.dto.response.CalificacionesEstudianteReporteDTO;
 import com.sistema.academico.aplicacion.dto.response.EstudiantesEnRiesgoReporteDTO;
 import com.sistema.academico.dominio.enumeracion.Rol;
+import com.sistema.academico.aplicacion.dto.request.CalificacionBatchRequestDTO;
+import java.util.Map;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -72,4 +74,14 @@ public interface ICalificacionService {
      * @return DTO con estudiantes en riesgo y sus cursos problemáticos
      */
     EstudiantesEnRiesgoReporteDTO generarReporteEstudiantesEnRiesgo(Long estudianteId);
+
+    /**
+     * Registrar múltiples calificaciones para un curso completo
+     */
+    List<CalificacionResponseDTO> registrarBatch(CalificacionBatchRequestDTO request);
+
+    /**
+     * Obtener inscripciones activas de un curso con datos de estudiantes
+     */
+    List<Map<String, Object>> obtenerInscripcionesPorCurso(Long cursoId);
 }

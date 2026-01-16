@@ -68,7 +68,7 @@
 <nav class="navbar navbar-dark">
     <div class="container-fluid">
         <div>
-            <button class="btn btn-outline-light me-2" onclick="window.location.href='/inscripciones'">
+            <button class="btn btn-outline-light me-2" onclick="volver()">
                 <i class="fas fa-arrow-left"></i> Volver
             </button>
             <span class="navbar-brand mb-0 h1">
@@ -175,7 +175,7 @@
             });
 
             // Cargar cursos con cupos disponibles
-            const cursosResponse = await axios.get('http://localhost:8080/api/cursos/con-cupos', {
+            const cursosResponse = await axios.get('http://localhost:8080/api/cursos/disponibles', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -309,7 +309,7 @@
         }
     });
 
-    function cancelar() {
+    function volver() {
         if (formModificado) {
             Swal.fire({
                 title: '¿Descartar cambios?',
@@ -321,12 +321,16 @@
                 confirmButtonColor: '#dc2626'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = '/inscripciones';
+                    window.location.href = '/inscripciones/lista';
                 }
             });
         } else {
-            window.location.href = '/inscripciones';
+            window.location.href = '/inscripciones/lista';
         }
+    }
+
+    function cancelar() {
+        volver();
     }
 
     window.addEventListener('beforeunload', function(e) {

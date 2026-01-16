@@ -2,6 +2,8 @@ package com.sistema.academico.aplicacion.dto.response;
 
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,14 +16,16 @@ public class CalificacionResponseDTO {
 
     //Campos adicionales paara mostrar en calificaciones
     private String estudiante;
+    private String codigoEstudiante;
+    private String estudianteNombre;
     private String curso;
     private String materia;
 
     private String nombreEvaluacion;
-    private String nota;
+    private Double nota;
     private Integer porcentaje;
     private String notaPonderada;
-    private String fechaCalificacion;
+    private LocalDate fechaCalificacion;
     private String observaciones;
     private Boolean esAprobada;
 }

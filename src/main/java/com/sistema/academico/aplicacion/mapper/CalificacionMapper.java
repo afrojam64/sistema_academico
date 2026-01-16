@@ -60,14 +60,17 @@ public class CalificacionMapper {
                 .inscripcionId(calificacion.getInscripcion().getId())
 
                 .estudiante(estudiante.getNombreCompleto())
+                .codigoEstudiante(estudiante.getCodigoEstudiante())
+                .estudianteNombre(estudiante.getNombreCompleto())
                 .curso(curso.getCodigo() + " - " + curso.getNombre())
                 .materia(curso.getMateria().getNombre())
 
                 .nombreEvaluacion(calificacion.getNombreEvaluacion())
-                .nota(calificacion.getNota() != null ? calificacion.getNota().toString() : "")
+                .nota(calificacion.getNota() != null ? calificacion.getNota().doubleValue() : null)
                 .porcentaje(calificacion.getPorcentaje())
-                .notaPonderada(notaPonderada != null ? notaPonderada.toString() : "0.00")
-                .fechaCalificacion(calificacion.getFechaCalificacion() != null ? calificacion.getFechaCalificacion().format(FORMATTER) : "")
+                .notaPonderada(notaPonderada != null ?
+                        String.format("%.2f", notaPonderada.doubleValue()) : "0.00")
+                .fechaCalificacion(calificacion.getFechaCalificacion())
                 .observaciones(calificacion.getObservaciones())
                 .esAprobada(calificacion.esAprobada())
                 .build();
