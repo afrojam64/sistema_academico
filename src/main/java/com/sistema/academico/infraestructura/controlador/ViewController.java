@@ -364,6 +364,11 @@ public class ViewController {
         return "inscripciones/ver";
     }
 
+    @GetMapping("/inscripciones/inscripcion-estudiante")
+    public String inscripcionEstudiante() {
+        return "inscripciones/inscripcion-estudiante";
+    }
+
     /**
      * Dashboard Ejecutivo
      * Ruta: http://localhost:8080/reportes/dashboard-ejecutivo
@@ -373,12 +378,17 @@ public class ViewController {
         return "reportes/dashboard-ejecutivo";
     }
 
-    // Busca tu clase ViewController y agrega este método:
+    // ========================================
+    // MÓDULO: ASISTENCIAS
+    // ========================================
 
-    @GetMapping("/inscripciones/inscripcion-estudiante")
-    public String inscripcionEstudiante() {
-        return "inscripciones/inscripcion-estudiante";
+    /**
+     * Vista para tomar asistencia de un curso
+     * Ruta: http://localhost:8080/asistencias/tomar/{cursoId}
+     */
+    @GetMapping("/asistencias/tomar/{cursoId}")
+    public String tomarAsistencia(@PathVariable Long cursoId, Model model) {
+        model.addAttribute("cursoId", cursoId);
+        return "asistencias/tomar";
     }
-
-
 }

@@ -257,7 +257,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 flex-wrap">
                         <button class="btn btn-sm btn-orange" onclick="verEstudiantes(${curso.id}, '${curso.nombre}')">
                             <i class="fas fa-users"></i> Ver Estudiantes
                         </button>
@@ -267,6 +267,10 @@
                         <button class="btn btn-sm btn-info" onclick="verCalificaciones(${curso.id}, '${curso.nombre}')">
                             <i class="fas fa-chart-bar"></i> Ver Calificaciones
                         </button>
+                        <!-- NUEVO BOTÓN DE ASISTENCIA -->
+                        <a href="/asistencias/tomar/${curso.id}" class="btn btn-sm btn-secondary">
+                            <i class="fas fa-check-square"></i> Tomar Asistencia
+                        </a>
                     </div>
                 </div>
             `;

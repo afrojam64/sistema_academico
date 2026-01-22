@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomar Asistencia - Sistema Académico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+        .navbar { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+        .navbar-brand { color: white !important; font-weight: 700; }
+        .content-wrapper { padding: 30px; max-width: 1000px; margin: 0 auto; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-orange { background: #f59e0b; color: white; border: none; }
+        .btn-orange:hover { background: #d97706; color: white; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark mb-4">
+    <div class="container-fluid">
+        <span class="navbar-brand"><i class="fas fa-check-square"></i> Tomar Asistencia</span>
+        <a href="/dashboard/profesor" class="btn btn-sm btn-light"><i class="fas fa-arrow-left"></i> Volver</a>
+    </div>
+</nav>
+
+<div class="content-wrapper">
+    <div class="card p-4">
+        <h4 class="mb-3" id="tituloCurso">Cargando curso...</h4>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <label class="form-label">Fecha de Clase</label>
+                <input type="date" id="fechaClase" class="form-control">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-secondary" onclick="cargarAsistenciaExistente()">
+                    <i class="fas fa-sync"></i> Cargar/Verificar
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Estudiante</th>
+                        <th class="text-center">Asistencia</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaEstudiantes">
+                    <!-- Filas generadas por JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+            <button class="btn btn-orange btn-lg" onclick="guardarAsistencia()">
+                <i class="fas fa-save"></i> Guardar Asistencia
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const token = localStorage.getItem('token');
+    // Obtener ID del curso de la URL (ej: /asistencias/tomar/{id})
+    const pathParts = window.location.pathname.split('/');
+    const cursoId = pathParts[pathParts.length - 1];
+
+    // Establecer fecha de hoy por defecto
+    document.getElementById('fechaClase').valueAsDate = new Date();
+
+    let estudiantesList = [];
+
+    async function inicializar() {
+        try {
+            // 1. Obtener info del curso (nombre) - Opcional, o usar endpoint de curso
+            // 2. Obtener lista de estudiantes inscritos
+            const response = await axios.get(`http://localhost:8080/api/inscripciones/curso/${cursoId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            estudiantesList = response.data;
+            renderizarTabla();
+
+            // Intentar cargar si ya se tomó lista hoy
+            cargarAsistenciaExistente();
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'No se pudieron cargar los estudiantes', 'error');
+        }
+    }
+
+    function renderizarTabla(asistenciasPrevias = []) {
+        const tbody = document.getElementById('tablaEstudiantes');
+        tbody.innerHTML = '';
+
+        if (estudiantesList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay estudiantes inscritos</td></tr>';
+            return;
+        }
+
+        estudiantesList.forEach(insc => {
+            // Buscar si ya tiene asistencia registrada
+            const previa = asistenciasPrevias.find(a => a.inscripcionId === insc.id);
+            const isPresente = previa ? previa.presente : true; // Por defecto Presente
+            const obs = previa ? previa.observaciones : '';
+
+            const row = `
+                <tr data-inscripcion-id="${insc.id}">
+                    <td>${insc.estudiante}</td>
+                    <td class="text-center">
+                        <div class="form-check form-switch d-inline-block">
+                            <input class="form-check-input" type="checkbox"
+                                   id="check_${insc.id}" ${isPresente ? 'checked' : ''}>
+                            <label class="form-check-label" for="check_${insc.id}">
+                                ${isPresente ? 'Presente' : 'Ausente'}
+                            </label>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm"
+                               id="obs_${insc.id}" placeholder="Opcional" value="${obs}">
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+        // Agregar listeners para cambiar texto Presente/Ausente dinámicamente
+        document.querySelectorAll('.form-check-input').forEach(check => {
+            check.addEventListener('change', (e) => {
+                const label = e.target.nextElementSibling;
+                label.textContent = e.target.checked ? 'Presente' : 'Ausente';
+                label.style.color = e.target.checked ? '#198754' : '#dc3545';
+            });
+        });
+    }
+
+    async function cargarAsistenciaExistente() {
+        const fecha = document.getElementById('fechaClase').value;
+        if(!fecha) return;
+
+        try {
+            const response = await axios.get(`http://localhost:8080/api/asistencias/curso/${cursoId}?fecha=${fecha}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            // Volver a renderizar combinando con los datos obtenidos
+            renderizarTabla(response.data);
+
+            if(response.data.length > 0) {
+                const Toast = Swal.mixin({
+                    toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
+                });
+                Toast.fire({ icon: 'info', title: 'Asistencia cargada para esta fecha' });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function guardarAsistencia() {
+        const fecha = document.getElementById('fechaClase').value;
+        if(!fecha) {
+            Swal.fire('Atención', 'Seleccione una fecha', 'warning');
+            return;
+        }
+
+        const payload = [];
+        estudiantesList.forEach(insc => {
+            const isChecked = document.getElementById(`check_${insc.id}`).checked;
+            const obs = document.getElementById(`obs_${insc.id}`).value;
+
+            payload.push({
+                inscripcionId: insc.id,
+                presente: isChecked,
+                observaciones: obs,
+                fecha: fecha // Se enviará aunque el endpoint masivo usa query param, por seguridad
+            });
+        });
+
+        try {
+            await axios.post(`http://localhost:8080/api/asistencias/masiva/curso/${cursoId}?fecha=${fecha}`, payload, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Guardado',
+                text: 'La asistencia se ha registrado correctamente',
+                confirmButtonColor: '#f59e0b'
+            }).then(() => {
+                window.location.href = '/dashboard/profesor';
+            });
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'No se pudo guardar la asistencia', 'error');
+        }
+    }
+
+    inicializar();
+</script>
+
+</body>
+</html>

@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "cursos")
@@ -67,6 +69,9 @@ public class Curso {
     @Column(name = "estado", nullable = false, length = 20)
     private Estado estado;
 
+    @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Horario> horarios = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         if (this.estado == null) {
@@ -99,5 +104,15 @@ public class Curso {
         if (this.cupoActual > 0) {
             this.cupoActual--;
         }
+    }
+
+    public void agregarHorario(Horario horario) {
+        horarios.add(horario);
+        horario.setCurso(this);
+    }
+
+    public void removerHorario(Horario horario) {
+        horarios.remove(horario);
+        horario.setCurso(null);
     }
 }

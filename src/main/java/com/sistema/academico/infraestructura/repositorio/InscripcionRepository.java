@@ -17,8 +17,11 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Long> 
     // Buscar inscripciones de un estudiante
     List<Inscripcion> findByEstudiante(Estudiante estudiante);
 
-    // Buscar inscripciones de un curso
+    // Buscar inscripciones de un curso (por objeto Curso)
     List<Inscripcion> findByCurso(Curso curso);
+
+    // Buscar inscripciones de un curso (por ID del curso) - NUEVO MÉTODO AGREGADO
+    List<Inscripcion> findByCursoId(Long cursoId);
 
     // Buscar inscripciones por estado
     List<Inscripcion> findByEstado(EstadoInscripcion estado);
